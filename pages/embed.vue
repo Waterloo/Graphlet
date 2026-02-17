@@ -1,15 +1,20 @@
 <script setup lang="ts">
 import mermaid from 'mermaid';
+import panzoom from 'panzoom';
 import { useShareState } from '~/composables/useShareState';
 import { useEditorState } from '~/composables/useEditorState';
 import { useDebounceFn } from '@vueuse/core';
+import { Plus, Minus, Maximize } from 'lucide-vue-next';
 
 const { code, currentTheme, title, eyebrow, badges } = useEditorState();
 const { loadFromUrl } = useShareState();
 
+const containerRef = ref<HTMLElement | null>(null);
+const wrapperRef = ref<HTMLElement | null>(null);
 const diagramRef = ref<HTMLElement | null>(null);
 const error = ref<string | null>(null);
 const loaded = ref(false);
+let pzInstance: any = null;
 
 // Load state from URL
 onMounted(() => {
@@ -19,6 +24,17 @@ onMounted(() => {
         return;
     }
     loaded.value = true;
+
+    // Init panzoom
+    if (wrapperRef.value) {
+        pzInstance = panzoom(wrapperRef.value, {
+            maxZoom: 5,
+            minZoom: 0.1,
+            bounds: false,
+            boundsPadding: 0.1,
+        });
+    }
+
     renderDiagram();
 });
 
@@ -41,6 +57,10 @@ const renderDiagram = useDebounceFn(async () => {
         const { svg } = await mermaid.render('embed-graph-' + Date.now(), code.value);
         diagramRef.value.innerHTML = svg;
         error.value = null;
+
+        // Auto-fit after first render
+        await nextTick();
+        fitToScreen();
     } catch (e: any) {
         console.error('Mermaid render error:', e);
         error.value = e.message || String(e);
@@ -50,10 +70,66 @@ const renderDiagram = useDebounceFn(async () => {
 watch([code, currentTheme], () => {
     if (loaded.value) renderDiagram();
 });
+
+// Fit to screen
+const fitToScreen = async () => {
+    if (!pzInstance || !containerRef.value || !wrapperRef.value || !diagramRef.value) return;
+
+    await nextTick();
+    const svg = diagramRef.value.querySelector('svg') as SVGSVGElement | null;
+    if (!svg) return;
+
+    const viewport = containerRef.value.getBoundingClientRect();
+    const contentWidth = svg.clientWidth || svg.getBoundingClientRect().width;
+    const contentHeight = svg.clientHeight || svg.getBoundingClientRect().height;
+    if (!contentWidth || !contentHeight) return;
+
+    const padding = 100; // extra room for metadata overlay
+    const scaleX = (viewport.width - padding) / contentWidth;
+    const scaleY = (viewport.height - padding) / contentHeight;
+    const targetScale = Math.min(scaleX, scaleY, 4);
+
+    const offsetX = (viewport.width - contentWidth * targetScale) / 2;
+    const offsetY = (viewport.height - contentHeight * targetScale) / 2;
+
+    // Animate to target
+    const transform = pzInstance.getTransform();
+    const start = { x: transform.x, y: transform.y, scale: transform.scale };
+    const duration = 300;
+    const startTime = performance.now();
+
+    const animate = (now: number) => {
+        const t = Math.min((now - startTime) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+
+        pzInstance.zoomAbs(0, 0, start.scale + (targetScale - start.scale) * ease);
+        pzInstance.moveTo(
+            start.x + (offsetX - start.x) * ease,
+            start.y + (offsetY - start.y) * ease,
+        );
+
+        if (t < 1) requestAnimationFrame(animate);
+    };
+
+    requestAnimationFrame(animate);
+};
+
+const zoomIn = () => {
+    if (!pzInstance || !containerRef.value) return;
+    const { width, height } = containerRef.value.getBoundingClientRect();
+    pzInstance.smoothZoom(width / 2, height / 2, 1.25);
+};
+
+const zoomOut = () => {
+    if (!pzInstance || !containerRef.value) return;
+    const { width, height } = containerRef.value.getBoundingClientRect();
+    pzInstance.smoothZoom(width / 2, height / 2, 0.8);
+};
 </script>
 
 <template>
-    <div class="embed-container" :style="{ background: currentTheme?.mermaid?.background || '#13131f' }">
+    <div ref="containerRef" class="embed-container"
+        :style="{ background: currentTheme?.mermaid?.background || '#13131f' }">
         <!-- Error State -->
         <div v-if="error && !loaded" class="error-state">
             <p>Unable to load diagram.</p>
@@ -75,11 +151,24 @@ watch([code, currentTheme], () => {
                 </div>
             </div>
 
-            <!-- Diagram -->
-            <div class="diagram-wrapper">
+            <!-- PanZoom Wrapper -->
+            <div ref="wrapperRef" class="zoom-wrapper">
                 <div ref="diagramRef" class="mermaid-diagram"
                     :style="{ color: currentTheme?.mermaid?.primaryTextColor }">
                 </div>
+            </div>
+
+            <!-- Zoom Controls -->
+            <div class="zoom-controls">
+                <button @click="zoomIn" title="Zoom In">
+                    <Plus :size="14" />
+                </button>
+                <button @click="zoomOut" title="Zoom Out">
+                    <Minus :size="14" />
+                </button>
+                <button @click="fitToScreen" title="Fit to Screen">
+                    <Maximize :size="14" />
+                </button>
             </div>
 
             <!-- Watermark -->
@@ -94,10 +183,6 @@ watch([code, currentTheme], () => {
 .embed-container {
     width: 100vw;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     position: relative;
     overflow: hidden;
     transition: background 0.3s ease;
@@ -114,15 +199,28 @@ watch([code, currentTheme], () => {
     font-size: 14px;
 }
 
+/* PanZoom */
+.zoom-wrapper {
+    width: 100%;
+    height: 100%;
+    outline: none;
+}
+
+.mermaid-diagram {
+    min-width: 100px;
+    min-height: 100px;
+}
+
 /* Metadata */
 .metadata-layer {
     position: absolute;
-    top: 24px;
-    left: 24px;
+    top: 20px;
+    left: 20px;
     z-index: 5;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    pointer-events: none;
 }
 
 .eyebrow-text {
@@ -159,24 +257,40 @@ watch([code, currentTheme], () => {
     transition: all 0.3s ease;
 }
 
-/* Diagram */
-.diagram-wrapper {
+/* Zoom Controls — subtle, bottom-left */
+.zoom-controls {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    z-index: 10;
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+.zoom-controls:hover {
+    opacity: 0.8;
+}
+
+.zoom-controls button {
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    flex: 1;
-    padding: 80px 40px 40px;
+    background: rgba(28, 28, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
 }
 
-.mermaid-diagram {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-.mermaid-diagram :deep(svg) {
-    max-width: 100%;
-    max-height: 100%;
+.zoom-controls button:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 /* Watermark */
@@ -190,6 +304,7 @@ watch([code, currentTheme], () => {
     text-decoration: none;
     transition: opacity 0.2s;
     letter-spacing: 0.03em;
+    z-index: 5;
 }
 
 .watermark:hover {
