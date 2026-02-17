@@ -3,7 +3,7 @@ import { useEditorState } from '~/composables/useEditorState';
 import { Download, Share2, Copy, Check, Settings } from 'lucide-vue-next';
 import { useClipboard } from '@vueuse/core';
 
-const { currentTheme, currentSvg, isSettingsOpen } = useEditorState();
+const { currentTheme, currentSvg, isSettingsOpen, isShareOpen } = useEditorState();
 const { copy, copied } = useClipboard();
 
 // Helper: Convert SVG string to Blob (PNG)
@@ -142,7 +142,7 @@ const downloadImage = async () => {
             <button class="icon-btn" title="Download PNG" @click="downloadImage">
                 <Download :size="16" />
             </button>
-            <button class="button-primary">
+            <button class="button-primary" @click="isShareOpen = true">
                 Share
             </button>
         </div>

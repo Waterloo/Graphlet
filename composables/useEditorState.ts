@@ -25,6 +25,7 @@ const title = useLocalStorage('graphlet-title', 'Authentication Flow');
 const eyebrow = useLocalStorage('graphlet-eyebrow', 'Sequence Flow');
 const badges = useLocalStorage('graphlet-badges', ['JWT', 'TLS']);
 const isSettingsOpen = ref(false);
+const isShareOpen = ref(false);
 const currentSvg = ref<string>('');
 const { history, undo, redo } = useRefHistory(code);
 
@@ -45,6 +46,7 @@ export const useEditorState = () => {
         themes: THEMES,
         undo,
         redo,
-        isSettingsOpen
+        isSettingsOpen,
+        isShareOpen
     };
 };
