@@ -5,8 +5,9 @@ import { Copy, Check } from 'lucide-vue-next';
 
 const container = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
+let errorDecorations: string[] = [];
 
-const { code, currentTheme } = useEditorState();
+const { code, currentTheme, errorLine } = useEditorState();
 
 const copied = ref(false);
 const copyContent = async () => {
@@ -52,7 +53,6 @@ onMounted(() => {
         }
     });
 
-    // Define keywords for syntax highlighting
     monaco.languages.setLanguageConfiguration('mermaid', {
         comments: {
             lineComment: '%%',
@@ -70,9 +70,9 @@ onMounted(() => {
         inherit: true,
         rules: [],
         colors: {
-            'editor.background': '#13131f', // Midnight bg
-            'editor.foreground': '#f0eeff', // Midnight primary text
-            'editor.lineHighlightBackground': '#ffffff05', // Subtle highlight
+            'editor.background': '#13131f',
+            'editor.foreground': '#f0eeff',
+            'editor.lineHighlightBackground': '#ffffff05',
         }
     });
 
@@ -86,13 +86,13 @@ onMounted(() => {
         fontFamily: "'DM Mono', monospace",
         lineNumbers: 'on',
         scrollBeyondLastLine: false,
-        padding: { top: 32, bottom: 32 }, // More breathing room
+        padding: { top: 32, bottom: 32 },
         roundedSelection: true,
         overviewRulerLanes: 0,
         hideCursorInOverviewRuler: true,
         overviewRulerBorder: false,
         renderLineHighlight: 'line',
-        contextmenu: false, // Custom feel
+        contextmenu: false,
     });
 
     editor.onDidChangeModelContent(() => {
@@ -100,10 +100,34 @@ onMounted(() => {
     });
 });
 
-// Sync external changes (if any) back to editor
+// Sync external changes back to editor
 watch(code, (newVal) => {
     if (editor && editor.getValue() !== newVal) {
         editor.setValue(newVal);
+    }
+});
+
+// Watch error line and highlight it
+watch(errorLine, (line) => {
+    if (!editor) return;
+
+    if (line && line > 0) {
+        errorDecorations = editor.deltaDecorations(errorDecorations, [
+            {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    className: 'error-line-highlight',
+                    glyphMarginClassName: 'error-line-glyph',
+                    overviewRuler: {
+                        color: '#FF453A',
+                        position: monaco.editor.OverviewRulerLane.Full
+                    }
+                }
+            }
+        ]);
+    } else {
+        errorDecorations = editor.deltaDecorations(errorDecorations, []);
     }
 });
 
@@ -167,5 +191,21 @@ onUnmounted(() => {
     opacity: 1;
     color: #34C759;
     border-color: rgba(52, 199, 89, 0.3);
+}
+</style>
+
+<style>
+/* Global styles for Monaco error decorations (must be unscoped) */
+.error-line-highlight {
+    background: rgba(255, 69, 58, 0.08) !important;
+    border-left: 3px solid #FF453A !important;
+}
+
+.error-line-glyph {
+    background: #FF453A;
+    border-radius: 50%;
+    margin-left: 4px;
+    width: 8px !important;
+    height: 8px !important;
 }
 </style>

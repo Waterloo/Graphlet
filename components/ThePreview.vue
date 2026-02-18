@@ -1,23 +1,28 @@
 <script setup lang="ts">
 import mermaid from 'mermaid';
-import panzoom from 'panzoom'; // We need to install this: npm install panzoom
+import panzoom from 'panzoom';
 import { useEditorState } from '~/composables/useEditorState';
+import { DIAGRAM_TEMPLATES } from '~/composables/useEditorState';
 import { useDebounceFn } from '@vueuse/core';
 
 // Components
 import TheSettings from '~/components/TheSettings.vue';
 
 // Icons
-import { AlertCircle, Plus, Minus, Maximize } from 'lucide-vue-next';
+import { AlertCircle, Plus, Minus, Maximize, FileCode2, ExternalLink } from 'lucide-vue-next';
 
-const { code, currentTheme, title, eyebrow, badges, currentSvg } = useEditorState();
+const { code, currentTheme, title, eyebrow, badges, currentSvg, errorLine, loadTemplate } = useEditorState();
 
 const containerRef = ref<HTMLElement | null>(null);
 const diagramRef = ref<HTMLElement | null>(null);
 const wrapperRef = ref<HTMLElement | null>(null);
 const error = ref<string | null>(null);
+const showErrorDetails = ref(false);
 let pzInstance: any = null;
 let isFirstRender = true;
+
+// Is editor empty?
+const isEmpty = computed(() => !code.value || !code.value.trim());
 
 // Initialize Panzoom
 onMounted(() => {
@@ -25,7 +30,7 @@ onMounted(() => {
         pzInstance = panzoom(wrapperRef.value, {
             maxZoom: 5,
             minZoom: 0.1,
-            bounds: false, // Allow free movement for "infinite canvas" feel
+            bounds: false,
             boundsPadding: 0.1
         });
     }
@@ -36,13 +41,12 @@ onMounted(() => {
 const renderDiagram = useDebounceFn(async () => {
     if (!diagramRef.value || !code.value) return;
 
-    // Reset config
     mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
         themeVariables: {
             ...(currentTheme.value?.mermaid || {}),
-            fontFamily: 'DM Mono, monospace', // Force mono for consistnecy
+            fontFamily: 'DM Mono, monospace',
             fontSize: '14px',
         },
         securityLevel: 'loose',
@@ -51,10 +55,10 @@ const renderDiagram = useDebounceFn(async () => {
     try {
         const { svg } = await mermaid.render('mermaid-graph-' + Date.now(), code.value);
         diagramRef.value.innerHTML = svg;
-        currentSvg.value = svg; // Update global state
+        currentSvg.value = svg;
         error.value = null;
+        errorLine.value = null;
 
-        // Auto-fit on first successful render
         if (isFirstRender) {
             isFirstRender = false;
             await nextTick();
@@ -65,6 +69,11 @@ const renderDiagram = useDebounceFn(async () => {
         const message = e.message || String(e);
         error.value = message;
 
+        // Try to extract line number from error message
+        const lineMatch = message.match(/line\s+(\d+)/i);
+        if (lineMatch) {
+            errorLine.value = parseInt(lineMatch[1]);
+        }
     }
 }, 500);
 
@@ -81,11 +90,7 @@ const fitToScreen = async () => {
     const svg = diagramRef.value.querySelector('svg') as SVGSVGElement | null;
     if (!svg) return;
 
-    // Use the stable outer container for viewport dimensions
     const viewport = containerRef.value.getBoundingClientRect();
-
-    // Use the SVG's actual rendered layout size (unaffected by panzoom transforms)
-    // offsetWidth/Height gives accurate dimensions regardless of viewBox or max-width styles
     const contentWidth = svg.clientWidth || svg.getBoundingClientRect().width;
     const contentHeight = svg.clientHeight || svg.getBoundingClientRect().height;
 
@@ -94,16 +99,11 @@ const fitToScreen = async () => {
     const padding = 80;
     const scaleX = (viewport.width - padding) / contentWidth;
     const scaleY = (viewport.height - padding) / contentHeight;
-
-    // Choose the smaller scale to fit both dimensions
     const targetScale = Math.min(scaleX, scaleY, 4);
 
-    // Center the content in the viewport
-    // Content starts at (0,0) in the wrapper (no flex centering)
     const offsetX = (viewport.width - contentWidth * targetScale) / 2;
     const offsetY = (viewport.height - contentHeight * targetScale) / 2;
 
-    // Animate smoothly to the target transform
     const transform = pzInstance.getTransform();
     const startTransform = { x: transform.x, y: transform.y, scale: transform.scale };
     const duration = 300;
@@ -112,7 +112,6 @@ const fitToScreen = async () => {
     const animate = (now: number) => {
         const elapsed = now - startTime;
         const t = Math.min(elapsed / duration, 1);
-        // Ease-out cubic
         const ease = 1 - Math.pow(1 - t, 3);
 
         const currentScale = startTransform.scale + (targetScale - startTransform.scale) * ease;
@@ -140,6 +139,11 @@ const zoomOut = () => {
     pzInstance.smoothZoom(width / 2, height / 2, 0.8);
 };
 
+const loadRandomTemplate = () => {
+    const random = DIAGRAM_TEMPLATES[Math.floor(Math.random() * DIAGRAM_TEMPLATES.length)];
+    loadTemplate(random.id);
+};
+
 defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
 </script>
 
@@ -149,22 +153,13 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
 
         <TheSettings />
 
-        <!-- Metadata Overlay (Draggable? Fixed for now) -->
-        <!-- We use an absolute overlay for metadata that isn't part of the zoomable canvas 
-             OR we put it inside if we want it part of the export. 
-             Plan said: 'Edit Mode: Renders the diagram on an infinite-like canvas... Overlays Title/Eyebrow/Badges'
-             So we keep it UI-level fixed or absolute, but visually integrated. 
-        -->
+        <!-- Metadata Overlay -->
         <div class="metadata-layer">
             <input v-model="eyebrow" class="input-eyebrow" :style="{ color: currentTheme.header.eyebrow }"
                 placeholder="CATEGORY" />
             <input v-model="title" class="input-title" :style="{ color: currentTheme.header.title }"
                 placeholder="Diagram Title" />
             <div class="badges">
-                <!-- Simple tag input logic could go here, for now just display fixed ones to edit? 
-                    Actually, let's just make it a pill list editable. 
-                    For v1, let's just assume simple array editing is handled elsewhere or simple text.
-               -->
                 <span v-for="(badge, i) in badges" :key="i" class="badge" :style="{
                     background: i === 0 ? currentTheme.badge1.bg : currentTheme.badge2.bg,
                     borderColor: i === 0 ? currentTheme.badge1.border : currentTheme.badge2.border,
@@ -175,8 +170,20 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
             </div>
         </div>
 
+        <!-- Empty State -->
+        <div v-if="isEmpty && !error" class="empty-state">
+            <div class="empty-icon">
+                <FileCode2 :size="32" />
+            </div>
+            <h3 class="empty-title">No diagram yet</h3>
+            <p class="empty-desc">Start typing Mermaid syntax in the editor to see your diagram appear here.</p>
+            <button class="empty-action" @click="loadRandomTemplate">
+                Load an example
+            </button>
+        </div>
+
         <!-- PanZoom Wrapper -->
-        <div ref="wrapperRef" class="zoom-wrapper">
+        <div v-show="!isEmpty" ref="wrapperRef" class="zoom-wrapper">
             <div ref="diagramRef" class="mermaid-diagram" :style="{ color: currentTheme.mermaid.primaryTextColor }">
             </div>
         </div>
@@ -199,9 +206,17 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
             <div class="error-card">
                 <div class="error-header">
                     <AlertCircle :size="16" class="error-icon" />
-                    <span>Syntax Error</span>
+                    <span>Couldn't render — check your syntax</span>
                 </div>
-                <pre class="error-body">{{ error }}</pre>
+                <button class="error-toggle" @click="showErrorDetails = !showErrorDetails">
+                    {{ showErrorDetails ? 'Hide' : 'Show' }} details
+                </button>
+                <pre v-if="showErrorDetails" class="error-body">{{ error }}</pre>
+                <a href="https://mermaid.js.org/intro/syntax-reference.html" target="_blank" rel="noopener"
+                    class="error-link">
+                    <ExternalLink :size="12" />
+                    Mermaid Syntax Reference
+                </a>
             </div>
         </div>
     </div>
@@ -219,22 +234,93 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     transition: background 0.3s ease;
 }
 
-
-
 .zoom-wrapper {
     width: 100%;
     height: 100%;
-    /* No flex centering — panzoom manages all positioning */
     outline: none;
 }
 
 .mermaid-diagram {
-    /* Center it initially */
     min-width: 100px;
     min-height: 100px;
 }
 
-/* Metadata Layer - Floating UI */
+/* Empty State */
+.empty-state {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    gap: 12px;
+    animation: fadeIn 0.4s ease;
+}
+
+.empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.2);
+    margin-bottom: 4px;
+}
+
+.empty-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+.empty-desc {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.25);
+    margin: 0;
+    text-align: center;
+    max-width: 280px;
+    line-height: 1.5;
+}
+
+.empty-action {
+    margin-top: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #007AFF;
+    background: rgba(0, 122, 255, 0.08);
+    border: 1px solid rgba(0, 122, 255, 0.2);
+    border-radius: 100px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.empty-action:hover {
+    background: rgba(0, 122, 255, 0.14);
+    transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Metadata Layer */
 .metadata-layer {
     position: absolute;
     top: 32px;
@@ -244,7 +330,6 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     flex-direction: column;
     gap: 4px;
     pointer-events: none;
-    /* Let clicks pass through, inputs will re-enable */
 }
 
 .metadata-layer input {
@@ -321,8 +406,23 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     margin-bottom: 8px;
     font-weight: 600;
     font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: -0.01em;
+}
+
+.error-toggle {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.35);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 0;
+    margin-bottom: 4px;
+    transition: color 0.2s;
+}
+
+.error-toggle:hover {
+    color: rgba(255, 255, 255, 0.6);
 }
 
 .error-body {
@@ -330,8 +430,27 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     font-size: 12px;
     line-height: 1.5;
     white-space: pre-wrap;
-    opacity: 0.9;
-    margin: 0;
+    opacity: 0.7;
+    margin: 4px 0 8px;
+    padding: 8px;
+    background: rgba(255, 69, 58, 0.06);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 69, 58, 0.1);
+}
+
+.error-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.error-link:hover {
+    color: #007AFF;
 }
 
 @keyframes slideUp {
