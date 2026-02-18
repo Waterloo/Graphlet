@@ -65,12 +65,6 @@ const renderDiagram = useDebounceFn(async () => {
         const message = e.message || String(e);
         error.value = message;
 
-        // Trigger shake animation
-        if (containerRef.value) {
-            containerRef.value.classList.remove('shake-x');
-            void containerRef.value.offsetWidth; // force reflow
-            containerRef.value.classList.add('shake-x');
-        }
     }
 }, 500);
 
@@ -225,33 +219,7 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     transition: background 0.3s ease;
 }
 
-.preview-container.shake-x {
-    animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
-}
 
-@keyframes shake {
-
-    10%,
-    90% {
-        transform: translate3d(-1px, 0, 0);
-    }
-
-    20%,
-    80% {
-        transform: translate3d(2px, 0, 0);
-    }
-
-    30%,
-    50%,
-    70% {
-        transform: translate3d(-4px, 0, 0);
-    }
-
-    40%,
-    60% {
-        transform: translate3d(4px, 0, 0);
-    }
-}
 
 .zoom-wrapper {
     width: 100%;
