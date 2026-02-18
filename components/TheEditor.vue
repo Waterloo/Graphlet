@@ -1,11 +1,24 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor';
 import { useEditorState } from '~/composables/useEditorState';
+import { Copy, Check } from 'lucide-vue-next';
 
 const container = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
 
 const { code, currentTheme } = useEditorState();
+
+const copied = ref(false);
+const copyContent = async () => {
+    if (!editor) return;
+    const selection = editor.getSelection();
+    const selectedText = selection && !selection.isEmpty()
+        ? editor.getModel()?.getValueInRange(selection) ?? ''
+        : editor.getValue();
+    await navigator.clipboard.writeText(selectedText);
+    copied.value = true;
+    setTimeout(() => copied.value = false, 2000);
+};
 
 // Initialize Monaco
 onMounted(() => {
@@ -100,13 +113,59 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div ref="container" class="editor-container"></div>
+    <div class="editor-wrapper">
+        <div ref="container" class="editor-container"></div>
+        <button class="copy-btn" :class="{ copied }" @click="copyContent" :title="copied ? 'Copied!' : 'Copy code'">
+            <Check v-if="copied" :size="14" />
+            <Copy v-else :size="14" />
+        </button>
+    </div>
 </template>
 
 <style scoped>
+.editor-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
 .editor-container {
     width: 100%;
     height: 100%;
-    /* overflow: hidden; handled by monaco */
+}
+
+.copy-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(19, 19, 31, 0.8);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.editor-wrapper:hover .copy-btn {
+    opacity: 1;
+}
+
+.copy-btn:hover {
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.copy-btn.copied {
+    opacity: 1;
+    color: #34C759;
+    border-color: rgba(52, 199, 89, 0.3);
 }
 </style>

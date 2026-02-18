@@ -22,5 +22,6 @@
   },
   "devDependencies": {
     "@types/pako": "^2.0.4"
-  }
+  },
+"packageManager":"pnpm@10.29.3"
 }

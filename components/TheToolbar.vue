@@ -37,8 +37,7 @@ const svgToPngBlob = (svgString: string, bgColor: string): Promise<Blob | null> 
         svgEl.removeAttribute('style'); // Remove max-width constraint
 
         const fixedSvgString = new XMLSerializer().serializeToString(svgEl);
-        const svgBlob = new Blob([fixedSvgString], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(svgBlob);
+        const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(fixedSvgString);
 
         const img = new Image();
         img.onload = () => {
@@ -61,12 +60,10 @@ const svgToPngBlob = (svgString: string, bgColor: string): Promise<Blob | null> 
             ctx.drawImage(img, padding, padding, svgWidth, svgHeight);
 
             canvas.toBlob((blob) => {
-                URL.revokeObjectURL(url);
                 resolve(blob);
             }, 'image/png');
         };
         img.onerror = () => {
-            URL.revokeObjectURL(url);
             resolve(null);
         };
         img.src = url;
