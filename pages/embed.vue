@@ -3,11 +3,13 @@ import mermaid from 'mermaid';
 import panzoom from 'panzoom';
 import { useShareState } from '~/composables/useShareState';
 import { useEditorState } from '~/composables/useEditorState';
-import { useDebounceFn } from '@vueuse/core';
+import { useDebounceFn, useWindowSize } from '@vueuse/core';
 import { Plus, Minus, Maximize } from 'lucide-vue-next';
 
 const { code, currentTheme, title, eyebrow, badges } = useEditorState();
 const { loadFromUrl } = useShareState();
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
 
 const containerRef = ref<HTMLElement | null>(null);
 const wrapperRef = ref<HTMLElement | null>(null);
@@ -84,13 +86,14 @@ const fitToScreen = async () => {
     const contentHeight = svg.clientHeight || svg.getBoundingClientRect().height;
     if (!contentWidth || !contentHeight) return;
 
-    const padding = 100; // extra room for metadata overlay
+    const metadataHeight = isMobile.value ? 90 : 0;
+    const padding = isMobile.value ? 24 : 100;
     const scaleX = (viewport.width - padding) / contentWidth;
-    const scaleY = (viewport.height - padding) / contentHeight;
+    const scaleY = (viewport.height - padding - metadataHeight) / contentHeight;
     const targetScale = Math.min(scaleX, scaleY, 4);
 
     const offsetX = (viewport.width - contentWidth * targetScale) / 2;
-    const offsetY = (viewport.height - contentHeight * targetScale) / 2;
+    const offsetY = metadataHeight + (viewport.height - metadataHeight - contentHeight * targetScale) / 2;
 
     // Animate to target
     const transform = pzInstance.getTransform();
@@ -309,5 +312,26 @@ const zoomOut = () => {
 
 .watermark:hover {
     opacity: 0.7;
+}
+
+@media (max-width: 767px) {
+    .metadata-layer {
+        top: 16px;
+        left: 16px;
+        gap: 2px;
+    }
+
+    .title-text {
+        font-size: 16px;
+    }
+
+    .eyebrow-text {
+        font-size: 9px;
+    }
+
+    .badge {
+        font-size: 8px;
+        padding: 2px 7px;
+    }
 }
 </style>

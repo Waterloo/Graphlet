@@ -2,6 +2,7 @@
 import { useEditorState } from '~/composables/useEditorState';
 import { useShareState } from '~/composables/useShareState';
 import { useWindowSize, useLocalStorage } from '@vueuse/core';
+import { Code2, Eye } from 'lucide-vue-next';
 
 // Components
 import TheToolbar from '~/components/TheToolbar.vue';
@@ -12,6 +13,10 @@ import TheShareModal from '~/components/TheShareModal.vue';
 const { width } = useWindowSize();
 const { currentTheme } = useEditorState();
 const { loadFromUrl } = useShareState();
+
+const isMobile = computed(() => width.value < 768);
+// 'editor' | 'preview'
+const mobilePanel = ref<'editor' | 'preview'>('editor');
 
 // Split Pane Logic
 const splitPosition = useLocalStorage('graphlet-split', 40); // Persistent split
@@ -60,16 +65,36 @@ onUnmounted(() => {
         <!-- Main Content -->
         <main class="main-content">
             <!-- Left: Editor -->
-            <div class="pane editor-pane" :style="{ width: `${splitPosition}%` }">
+            <div class="pane editor-pane"
+                :style="isMobile ? {} : { width: `${splitPosition}%` }"
+                :class="{ 'mobile-hidden': isMobile && mobilePanel !== 'editor' }">
                 <TheEditor />
             </div>
 
-            <!-- Resizer -->
-            <div class="resizer" @mousedown="startDrag"></div>
+            <!-- Resizer (desktop only) -->
+            <div v-if="!isMobile" class="resizer" @mousedown="startDrag"></div>
 
             <!-- Right: Preview -->
-            <div class="pane preview-pane" :style="{ width: `${100 - splitPosition}%` }">
+            <div class="pane preview-pane"
+                :style="isMobile ? {} : { width: `${100 - splitPosition}%` }"
+                :class="{ 'mobile-hidden': isMobile && mobilePanel !== 'preview' }">
                 <ThePreview />
+            </div>
+
+            <!-- Mobile Panel Toggle -->
+            <div v-if="isMobile" class="mobile-toggle">
+                <button
+                    :class="['toggle-btn', { active: mobilePanel === 'editor' }]"
+                    @click="mobilePanel = 'editor'">
+                    <Code2 :size="14" />
+                    Code
+                </button>
+                <button
+                    :class="['toggle-btn', { active: mobilePanel === 'preview' }]"
+                    @click="mobilePanel = 'preview'">
+                    <Eye :size="14" />
+                    Preview
+                </button>
             </div>
         </main>
 
@@ -133,5 +158,53 @@ onUnmounted(() => {
 .preview-pane {
     /* background handled by component */
     overflow: hidden;
+}
+
+/* Mobile */
+.mobile-hidden {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .pane {
+        width: 100% !important;
+    }
+
+    .mobile-toggle {
+        position: absolute;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 30;
+        display: flex;
+        gap: 2px;
+        background: rgba(19, 19, 31, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 100px;
+        padding: 4px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 16px;
+        border-radius: 100px;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.45);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .toggle-btn.active {
+        background: #007AFF;
+        color: #fff;
+    }
 }
 </style>

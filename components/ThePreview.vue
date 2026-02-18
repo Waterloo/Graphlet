@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import mermaid from 'mermaid';
-import panzoom from 'panzoom'; // We need to install this: npm install panzoom
+import panzoom from 'panzoom';
 import { useEditorState } from '~/composables/useEditorState';
-import { useDebounceFn } from '@vueuse/core';
+import { useDebounceFn, useWindowSize } from '@vueuse/core';
 
 // Components
 import TheSettings from '~/components/TheSettings.vue';
@@ -11,6 +11,8 @@ import TheSettings from '~/components/TheSettings.vue';
 import { AlertCircle, Plus, Minus, Maximize } from 'lucide-vue-next';
 
 const { code, currentTheme, title, eyebrow, badges, currentSvg } = useEditorState();
+const { width } = useWindowSize();
+const isMobile = computed(() => width.value < 768);
 
 const containerRef = ref<HTMLElement | null>(null);
 const diagramRef = ref<HTMLElement | null>(null);
@@ -97,17 +99,18 @@ const fitToScreen = async () => {
 
     if (!contentWidth || !contentHeight) return;
 
-    const padding = 80;
+    // On mobile, reserve space for the metadata overlay at the top
+    const metadataHeight = isMobile.value ? 100 : 0;
+    const padding = isMobile.value ? 32 : 80;
     const scaleX = (viewport.width - padding) / contentWidth;
-    const scaleY = (viewport.height - padding) / contentHeight;
+    const scaleY = (viewport.height - padding - metadataHeight) / contentHeight;
 
     // Choose the smaller scale to fit both dimensions
     const targetScale = Math.min(scaleX, scaleY, 4);
 
-    // Center the content in the viewport
-    // Content starts at (0,0) in the wrapper (no flex centering)
+    // Center the content; on mobile push it down below the metadata overlay
     const offsetX = (viewport.width - contentWidth * targetScale) / 2;
-    const offsetY = (viewport.height - contentHeight * targetScale) / 2;
+    const offsetY = metadataHeight + (viewport.height - metadataHeight - contentHeight * targetScale) / 2;
 
     // Animate smoothly to the target transform
     const transform = pzInstance.getTransform();
@@ -307,6 +310,31 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     font-size: 28px;
     font-weight: 700;
     letter-spacing: -0.02em;
+}
+
+@media (max-width: 767px) {
+    .metadata-layer {
+        top: 16px;
+        left: 16px;
+        gap: 2px;
+    }
+
+    .input-title {
+        font-size: 18px;
+    }
+
+    .input-eyebrow {
+        font-size: 9px;
+    }
+
+    .badges {
+        margin-top: 4px;
+    }
+
+    .badge {
+        font-size: 9px;
+        padding: 3px 8px;
+    }
 }
 
 .badges {
