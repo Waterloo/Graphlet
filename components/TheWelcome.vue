@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
+import { useDiagramStore } from '~/composables/useDiagramStore';
 import { DIAGRAM_TEMPLATES } from '~/composables/useEditorState';
 import { X, Sparkles, Pencil, Eye, Share2, ArrowRight } from 'lucide-vue-next';
 
 const { isWelcomeOpen, hasBeenWelcomed, loadTemplate } = useEditorState();
+const { createDiagram } = useDiagramStore();
 
 // Show on first visit
 onMounted(() => {
@@ -13,11 +15,20 @@ onMounted(() => {
 });
 
 const selectTemplate = (id: string) => {
-    loadTemplate(id);
+    const template = DIAGRAM_TEMPLATES.find(t => t.id === id);
+    if (template) {
+        createDiagram({
+            code: template.code,
+            title: template.title,
+            eyebrow: template.eyebrow,
+            badges: template.badges,
+        });
+    }
     dismiss();
 };
 
 const startScratch = () => {
+    createDiagram({ title: 'Untitled' });
     dismiss();
 };
 
@@ -89,7 +100,9 @@ onMounted(() => {
                         <div class="template-grid">
                             <button v-for="tmpl in DIAGRAM_TEMPLATES" :key="tmpl.id" class="template-card"
                                 @click="selectTemplate(tmpl.id)">
-                                <span class="template-icon">{{ tmpl.icon }}</span>
+                                <span class="template-icon">
+                                    <component :is="tmpl.icon" :size="24" />
+                                </span>
                                 <span class="template-label">{{ tmpl.label }}</span>
                             </button>
                         </div>
@@ -281,6 +294,7 @@ onMounted(() => {
 .template-icon {
     font-size: 24px;
     line-height: 1;
+    color: #fff;
 }
 
 .template-label {

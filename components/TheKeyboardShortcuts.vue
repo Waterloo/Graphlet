@@ -20,6 +20,7 @@ const shortcuts = computed(() => [
     { action: 'Fit to Screen', keys: `${mod.value}0` },
     { action: 'Toggle Settings', keys: `${mod.value},` },
     { action: 'New / Templates', keys: `${mod.value}N` },
+    { action: 'Toggle Diagrams', keys: `${mod.value}B` },
     { action: 'Show Shortcuts', keys: `${mod.value}/` },
     { action: 'Close Modal', keys: 'Esc' },
 ]);

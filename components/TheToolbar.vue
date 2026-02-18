@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
-import { Download, Share2, Copy, Check, Settings, Plus } from 'lucide-vue-next';
+import { useDiagramStore } from '~/composables/useDiagramStore';
+import { Download, Share2, Copy, Check, Settings, Plus, PanelLeft } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
 
 const { currentTheme, currentSvg, isSettingsOpen, isShareOpen, isWelcomeOpen } = useEditorState();
+const { isSidebarOpen } = useDiagramStore();
 
 // Helper: Convert SVG string to Blob (PNG)
 const svgToPngBlob = (svgString: string, bgColor: string): Promise<Blob | null> => {
@@ -107,6 +109,15 @@ const downloadImage = async () => {
         </div>
 
         <div class="actions">
+            <!-- Sidebar Toggle -->
+            <TheTooltip text="Diagrams" shortcut="⌘B">
+                <button class="icon-btn sidebar-toggle" title="Toggle Sidebar" @click="isSidebarOpen = !isSidebarOpen"
+                    :class="{ active: isSidebarOpen }" id="btn-sidebar">
+                    <PanelLeft :size="16" />
+                </button>
+            </TheTooltip>
+
+            <div class="divider"></div>
             <!-- New / Templates -->
             <TheTooltip text="Templates" shortcut="⌘N">
                 <button class="icon-btn" title="New Diagram" @click="isWelcomeOpen = true" id="btn-new">
@@ -164,11 +175,24 @@ const downloadImage = async () => {
 }
 
 .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.7);
     font-size: 18px;
     letter-spacing: -0.02em;
+}
+
+.sidebar-toggle {
+    background: transparent;
+    border-color: transparent;
+}
+
+.sidebar-toggle:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
 }
 
 .divider {

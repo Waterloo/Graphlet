@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
+import { useDiagramStore } from '~/composables/useDiagramStore';
 import { useShareState } from '~/composables/useShareState';
 import { useWindowSize, useLocalStorage } from '@vueuse/core';
 
@@ -10,9 +11,11 @@ import ThePreview from '~/components/ThePreview.vue';
 import TheShareModal from '~/components/TheShareModal.vue';
 import TheWelcome from '~/components/TheWelcome.vue';
 import TheKeyboardShortcuts from '~/components/TheKeyboardShortcuts.vue';
+import TheDiagramSidebar from '~/components/TheDiagramSidebar.vue';
 
 const { width } = useWindowSize();
 const { currentTheme, isSettingsOpen, isWelcomeOpen, isShortcutsOpen } = useEditorState();
+const { isSidebarOpen } = useDiagramStore();
 const { loadFromUrl } = useShareState();
 
 const previewRef = ref<InstanceType<typeof ThePreview> | null>(null);
@@ -67,6 +70,10 @@ const handleGlobalShortcuts = (e: KeyboardEvent) => {
         e.preventDefault();
         previewRef.value?.fitToScreen?.();
     }
+    if (mod && e.key === 'b') {
+        e.preventDefault();
+        isSidebarOpen.value = !isSidebarOpen.value;
+    }
 };
 
 onMounted(() => {
@@ -117,29 +124,35 @@ onUnmounted(() => {
             </button>
         </div>
 
-        <!-- Main Content -->
-        <main class="main-content" :class="{ mobile: isMobile }">
-            <!-- Desktop: side by side -->
-            <template v-if="!isMobile">
-                <div class="pane editor-pane" :style="{ width: `${splitPosition}%` }">
-                    <TheEditor />
-                </div>
-                <div class="resizer" @mousedown="startDrag"></div>
-                <div class="pane preview-pane" :style="{ width: `${100 - splitPosition}%` }">
-                    <ThePreview ref="previewRef" />
-                </div>
-            </template>
+        <!-- Body: Sidebar + Main Content -->
+        <div class="body-layout">
+            <!-- Sidebar (desktop only) -->
+            <TheDiagramSidebar v-if="!isMobile" />
 
-            <!-- Mobile: stacked with tab switch -->
-            <template v-else>
-                <div v-show="mobileTab === 'editor'" class="pane mobile-pane">
-                    <TheEditor />
-                </div>
-                <div v-show="mobileTab === 'preview'" class="pane mobile-pane">
-                    <ThePreview ref="previewRef" />
-                </div>
-            </template>
-        </main>
+            <!-- Main Content -->
+            <main class="main-content" :class="{ mobile: isMobile }">
+                <!-- Desktop: side by side -->
+                <template v-if="!isMobile">
+                    <div class="pane editor-pane" :style="{ width: `${splitPosition}%` }">
+                        <TheEditor />
+                    </div>
+                    <div class="resizer" @mousedown="startDrag"></div>
+                    <div class="pane preview-pane" :style="{ width: `${100 - splitPosition}%` }">
+                        <ThePreview ref="previewRef" />
+                    </div>
+                </template>
+
+                <!-- Mobile: stacked with tab switch -->
+                <template v-else>
+                    <div v-show="mobileTab === 'editor'" class="pane mobile-pane">
+                        <TheEditor />
+                    </div>
+                    <div v-show="mobileTab === 'preview'" class="pane mobile-pane">
+                        <ThePreview ref="previewRef" />
+                    </div>
+                </template>
+            </main>
+        </div>
 
         <!-- Modals -->
         <TheShareModal />
@@ -206,7 +219,6 @@ onUnmounted(() => {
     flex-direction: column;
     background-color: #13131f;
     color: #f0eeff;
-    transition: background var(--transition-smooth);
     opacity: 0;
     transition: opacity 0.3s ease 0.1s;
 }
@@ -218,6 +230,13 @@ onUnmounted(() => {
 .header {
     flex-shrink: 0;
     z-index: 20;
+}
+
+/* Body: sidebar + main */
+.body-layout {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
 }
 
 .main-content {

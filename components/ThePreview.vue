@@ -140,7 +140,8 @@ const zoomOut = () => {
 };
 
 const loadRandomTemplate = () => {
-    const random = DIAGRAM_TEMPLATES[Math.floor(Math.random() * DIAGRAM_TEMPLATES.length)];
+    if (DIAGRAM_TEMPLATES.length === 0) return;
+    const random = DIAGRAM_TEMPLATES[Math.floor(Math.random() * DIAGRAM_TEMPLATES.length)]!;
     loadTemplate(random.id);
 };
 
@@ -360,6 +361,7 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     font-size: 28px;
     font-weight: 700;
     letter-spacing: -0.02em;
+    width: 600px;
 }
 
 .badges {

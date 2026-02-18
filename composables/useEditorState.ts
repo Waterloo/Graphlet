@@ -1,12 +1,22 @@
 
 import { useRefHistory, useLocalStorage } from '@vueuse/core';
 import { THEMES, DEFAULT_THEME } from '~/config/themes';
+import {
+    Workflow,
+    ArrowLeftRight,
+    Box,
+    CircleDot,
+    Database,
+    Calendar,
+    PieChart,
+    Network
+} from 'lucide-vue-next';
 
 // ─── Diagram Templates ───────────────────────────────────────────────
 export interface DiagramTemplate {
     id: string;
     label: string;
-    icon: string;
+    icon: any;
     code: string;
     title: string;
     eyebrow: string;
@@ -17,7 +27,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     {
         id: 'flowchart',
         label: 'Flowchart',
-        icon: '🔀',
+        icon: Workflow,
         title: 'User Onboarding',
         eyebrow: 'Process Flow',
         badges: ['UX', 'Flow'],
@@ -38,7 +48,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     {
         id: 'sequence',
         label: 'Sequence',
-        icon: '🔄',
+        icon: ArrowLeftRight,
         title: 'Authentication Flow',
         eyebrow: 'Sequence Flow',
         badges: ['JWT', 'TLS'],
@@ -61,7 +71,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     {
         id: 'class',
         label: 'Class',
-        icon: '📦',
+        icon: Box,
         title: 'E-Commerce Model',
         eyebrow: 'Class Diagram',
         badges: ['OOP', 'Design'],
@@ -99,7 +109,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     {
         id: 'state',
         label: 'State',
-        icon: '🔲',
+        icon: CircleDot,
         title: 'Order Lifecycle',
         eyebrow: 'State Machine',
         badges: ['FSM', 'Logic'],
@@ -121,7 +131,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     {
         id: 'er',
         label: 'ER Diagram',
-        icon: '🗄️',
+        icon: Database,
         title: 'Blog Database',
         eyebrow: 'Entity Relationship',
         badges: ['SQL', 'Schema'],
@@ -153,12 +163,13 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     TAG {
         int id PK
         string name
+        string slug
     }`
     },
     {
         id: 'gantt',
         label: 'Gantt',
-        icon: '📅',
+        icon: Calendar,
         title: 'Product Launch',
         eyebrow: 'Timeline',
         badges: ['Planning', 'Sprint'],
@@ -180,7 +191,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     {
         id: 'pie',
         label: 'Pie Chart',
-        icon: '📊',
+        icon: PieChart,
         title: 'Traffic Sources',
         eyebrow: 'Analytics',
         badges: ['Data', 'Viz'],
@@ -194,7 +205,7 @@ export const DIAGRAM_TEMPLATES: DiagramTemplate[] = [
     {
         id: 'mindmap',
         label: 'Mind Map',
-        icon: '🧠',
+        icon: Network,
         title: 'Project Ideas',
         eyebrow: 'Brainstorm',
         badges: ['Ideas', 'Map'],
