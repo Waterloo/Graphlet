@@ -104,7 +104,9 @@ const downloadImage = async () => {
 <template>
     <div class="toolbar">
         <!-- Brand / Logo Area -->
+        <!-- Brand / Logo Area -->
         <div class="brand">
+            <img src="/logo.png" alt="Graphlet Logo" class="brand-logo" />
             <span class="logo-text">Graphlet</span>
         </div>
 
@@ -177,12 +179,18 @@ const downloadImage = async () => {
 .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.9);
     font-size: 18px;
     letter-spacing: -0.02em;
+}
+
+.brand-logo {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
 }
 
 .sidebar-toggle {

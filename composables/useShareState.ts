@@ -84,12 +84,34 @@ export const useShareState = () => {
         return true;
     };
 
+    const syncToUrl = () => {
+        try {
+            const encoded = encodeState(getPayload());
+            const url = new URL(window.location.href);
+            url.searchParams.set('state', encoded);
+            window.history.replaceState({}, '', url.toString());
+        } catch (e) {
+            console.error('Failed to sync state to URL:', e);
+        }
+    };
+
+    const getMermaidInkUrl = (): string => {
+        const inkPayload = {
+            code: code.value,
+            mermaid: { theme: 'dark', themeVariables: { darkMode: true } }
+        };
+        const encoded = encodeState(inkPayload as any);
+        return `https://mermaid.ink/svg/pako:${encoded}`;
+    };
+
     return {
         encodeState,
         decodeState,
         getShareUrl,
         getEmbedUrl,
         getEmbedHtml,
+        getMermaidInkUrl,
         loadFromUrl,
+        syncToUrl
     };
 };
