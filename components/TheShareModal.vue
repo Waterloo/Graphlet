@@ -1,24 +1,40 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useShareState } from '~/composables/useShareState';
-import { Link, Code, Check, X, Copy } from 'lucide-vue-next';
+import { Link, Code, Check, X, Copy, FileText } from 'lucide-vue-next';
 import { useClipboard } from '@vueuse/core';
 
 const { isShareOpen } = useEditorState();
-const { getShareUrl, getEmbedHtml } = useShareState();
+const { getShareUrl, getEmbedHtml, getMermaidInkUrl } = useShareState();
 
-const activeTab = ref<'link' | 'embed'>('link');
+const activeTab = ref<'link' | 'embed' | 'markdown'>('link');
 const shareUrl = ref('');
 const embedCode = ref('');
+const markdownCode = ref('');
+const markdownFormat = ref<'image' | 'native'>('image');
+const { code } = useEditorState();
 
 const { copy: copyText, copied: copiedLink } = useClipboard();
 const copiedEmbed = ref(false);
+const copiedMarkdown = ref(false);
 
-// Regenerate URLs when modal opens
-watch(isShareOpen, (open) => {
+const generateMarkdown = () => {
+    const badge = `[![Edit on Graphlet](https://img.shields.io/badge/Edit%20on-Graphlet-blue)](${shareUrl.value})`;
+
+    if (markdownFormat.value === 'native') {
+        markdownCode.value = "```mermaid\n" + code.value + "\n```\n\n" + badge;
+    } else {
+        const inkUrl = getMermaidInkUrl();
+        markdownCode.value = `[![Diagram](${inkUrl})](${shareUrl.value})\n\n${badge}`;
+    }
+};
+
+// Regenerate URLs when parameters change
+watch([isShareOpen, markdownFormat], ([open]) => {
     if (open) {
         shareUrl.value = getShareUrl();
         embedCode.value = getEmbedHtml();
+        generateMarkdown();
     }
 });
 
@@ -30,6 +46,12 @@ const handleCopyEmbed = async () => {
     await navigator.clipboard.writeText(embedCode.value);
     copiedEmbed.value = true;
     setTimeout(() => copiedEmbed.value = false, 2000);
+};
+
+const handleCopyMarkdown = async () => {
+    await navigator.clipboard.writeText(markdownCode.value);
+    copiedMarkdown.value = true;
+    setTimeout(() => copiedMarkdown.value = false, 2000);
 };
 
 const close = () => {
@@ -60,6 +82,11 @@ const close = () => {
                             <Code :size="14" />
                             Embed
                         </button>
+                        <button class="tab" :class="{ active: activeTab === 'markdown' }"
+                            @click="activeTab = 'markdown'">
+                            <FileText :size="14" />
+                            Badge
+                        </button>
                     </div>
 
                     <!-- Share Link Tab -->
@@ -86,6 +113,33 @@ const close = () => {
                                 <Check v-if="copiedEmbed" :size="14" class="success-icon" />
                                 <Copy v-else :size="14" />
                                 {{ copiedEmbed ? 'Copied!' : 'Copy' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Markdown / Badge Tab -->
+                    <div v-if="activeTab === 'markdown'" class="tab-content">
+                        <p class="description">Add this badge to your README to let others edit this diagram.</p>
+                        <div class="markdown-options">
+                            <label class="option-label">Format:</label>
+                            <div class="toggle-group">
+                                <button class="toggle-btn" :class="{ active: markdownFormat === 'image' }"
+                                    @click="markdownFormat = 'image'">Image (mermaid.ink)</button>
+                                <button class="toggle-btn" :class="{ active: markdownFormat === 'native' }"
+                                    @click="markdownFormat = 'native'">Native (GitHub)</button>
+                            </div>
+                        </div>
+
+                        <div class="preview-box" v-if="markdownFormat === 'image'">
+                            <span class="preview-label">Preview:</span>
+                            <img src="https://img.shields.io/badge/Edit%20on-Graphlet-blue" alt="Edit on Graphlet" />
+                        </div>
+                        <div class="code-box">
+                            <pre class="embed-code">{{ markdownCode }}</pre>
+                            <button class="copy-btn" @click="handleCopyMarkdown">
+                                <Check v-if="copiedMarkdown" :size="14" class="success-icon" />
+                                <Copy v-else :size="14" />
+                                {{ copiedMarkdown ? 'Copied!' : 'Copy' }}
                             </button>
                         </div>
                     </div>
@@ -198,10 +252,71 @@ const close = () => {
 }
 
 .url-box,
-.code-box {
+.code-box,
+.preview-box {
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.preview-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    align-self: flex-start;
+    margin-bottom: 4px;
+}
+
+.markdown-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.option-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.toggle-group {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 2px;
+}
+
+.toggle-btn {
+    background: transparent;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.toggle-btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.toggle-btn.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .url-input {

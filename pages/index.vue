@@ -2,7 +2,7 @@
 import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
 import { useShareState } from '~/composables/useShareState';
-import { useWindowSize, useLocalStorage } from '@vueuse/core';
+import { useWindowSize, useLocalStorage, useDebounceFn } from '@vueuse/core';
 
 // Components
 import TheToolbar from '~/components/TheToolbar.vue';
@@ -16,7 +16,7 @@ import TheDiagramSidebar from '~/components/TheDiagramSidebar.vue';
 const { width } = useWindowSize();
 const { currentTheme, isSettingsOpen, isWelcomeOpen, isShortcutsOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
-const { loadFromUrl } = useShareState();
+const { loadFromUrl, syncToUrl } = useShareState();
 
 const previewRef = ref<InstanceType<typeof ThePreview> | null>(null);
 
@@ -83,6 +83,16 @@ onMounted(() => {
 
     // Load state from URL if ?state= param is present
     loadFromUrl();
+
+    // Auto-sync state to URL
+    const { code, themeId, title, eyebrow, badges } = useEditorState();
+    const debouncedSync = useDebounceFn(() => {
+        syncToUrl();
+    }, 1000);
+
+    watch([code, themeId, title, eyebrow, badges], () => {
+        debouncedSync();
+    }, { deep: true });
 
     // Mark as loaded after a brief delay (allows splash to show)
     setTimeout(() => {
