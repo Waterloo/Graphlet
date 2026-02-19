@@ -8,7 +8,13 @@ const { currentTheme, currentSvg, isSettingsOpen, isShareOpen, isWelcomeOpen } =
 const { isSidebarOpen } = useDiagramStore();
 
 // Helper: Convert SVG string to Blob (PNG)
-const svgToPngBlob = (svgString: string, bgColor: string): Promise<Blob | null> => {
+// Helper: Convert SVG string to Blob (PNG)
+const svgToPngBlob = (svgString: string, opts: {
+    bgColor: string;
+    title: string;
+    eyebrow: string;
+    theme: any;
+}): Promise<Blob | null> => {
     return new Promise((resolve) => {
         const parser = new DOMParser();
         const svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
@@ -26,8 +32,45 @@ const svgToPngBlob = (svgString: string, bgColor: string): Promise<Blob | null> 
         }
 
         const padding = 60;
-        const totalWidth = svgWidth + padding * 2;
-        const totalHeight = svgHeight + padding * 2;
+        // Increase top padding for header
+        const headerHeight = 120; // Increased to 120px for maximum safety
+        const topPadding = padding + headerHeight;
+        const bottomPadding = padding * 1.5; // Increased for descenders
+
+        // Measure Text Widths
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        let minWidth = svgWidth;
+
+        if (ctx) {
+            let maxTextWidth = 0;
+            // Measure Eyebrow
+            if (opts.eyebrow) {
+                ctx.font = '500 13px "DM Mono", monospace';
+                const m = ctx.measureText(opts.eyebrow.toUpperCase());
+                maxTextWidth = Math.max(maxTextWidth, m.width);
+            }
+            // Measure Title
+            if (opts.title) {
+                ctx.font = '700 32px "Plus Jakarta Sans", sans-serif';
+                const m = ctx.measureText(opts.title);
+                maxTextWidth = Math.max(maxTextWidth, m.width);
+            }
+            // Measure Watermark
+            const watermarkText = "Made with graphlet.xyz";
+            ctx.font = '400 12px "DM Mono", monospace';
+            const wm = ctx.measureText(watermarkText);
+
+            // Ensure enough width for text
+            minWidth = Math.max(svgWidth, maxTextWidth);
+
+            // Ensure enough width for watermark if svg is tiny
+            minWidth = Math.max(minWidth, wm.width + 100);
+        }
+
+        // Increase total dimensions
+        const totalWidth = minWidth + padding * 2;
+        const totalHeight = svgHeight + topPadding + bottomPadding;
 
         svgEl.setAttribute('width', `${svgWidth}px`);
         svgEl.setAttribute('height', `${svgHeight}px`);
@@ -38,26 +81,76 @@ const svgToPngBlob = (svgString: string, bgColor: string): Promise<Blob | null> 
 
         const img = new Image();
         img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const scale = 2;
+            const scale = 2; // Retina scale
             canvas.width = totalWidth * scale;
             canvas.height = totalHeight * scale;
-            const ctx = canvas.getContext('2d');
+
             if (!ctx) {
                 URL.revokeObjectURL(url);
                 resolve(null);
                 return;
             }
+
+            // Set scale
             ctx.scale(scale, scale);
-            ctx.fillStyle = bgColor;
+
+            // Draw Background
+            ctx.fillStyle = opts.bgColor;
             ctx.fillRect(0, 0, totalWidth, totalHeight);
-            ctx.drawImage(img, padding, padding, svgWidth, svgHeight);
+
+            // --- Draw Header ---
+            const textX = padding;
+            // Start lower to allow generous ascender space
+            let currentY = padding + 20;
+
+            // 1. Eyebrow (Category)
+            if (opts.eyebrow) {
+                ctx.font = '500 13px "DM Mono", monospace';
+                ctx.fillStyle = opts.theme?.header?.eyebrow || 'rgba(255, 255, 255, 0.6)';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText(opts.eyebrow.toUpperCase(), textX, currentY);
+                // Increased space after eyebrow
+                currentY += 14;
+            } else {
+                // Initial offset if no eyebrow so title isn't at very top
+                currentY += 10;
+            }
+
+            // 2. Title
+            if (opts.title) {
+                ctx.font = '700 32px "Plus Jakarta Sans", sans-serif';
+                ctx.fillStyle = opts.theme?.header?.title || '#ffffff';
+                ctx.textBaseline = 'alphabetic';
+                // Move down by font size + extra to avoid clash with eyebrow descenders
+                currentY += 28; // Reduced from 36
+                ctx.fillText(opts.title, textX, currentY);
+            }
+
+            // --- Draw Diagram ---
+            // Place diagram below the header area
+            // If the canvas is wider than the SVG (due to long text), we keep SVG left-aligned to align with text
+            ctx.drawImage(img, padding, topPadding, svgWidth, svgHeight);
+
+            // --- Draw Watermark ---
+            const watermarkText = "Made with graphlet.xyz";
+            ctx.font = '400 12px "DM Mono", monospace';
+            // Position: bottom right
+            // We draw at baseline = totalHeight - (padding/2). Descenders go into the bottom half of padding.
+            ctx.save();
+            ctx.globalAlpha = 0.4;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillStyle = opts.theme?.header?.eyebrow || '#ffffff';
+            ctx.fillText(watermarkText, totalWidth - padding / 2, totalHeight - padding / 2);
+            ctx.restore();
 
             canvas.toBlob((blob) => {
                 resolve(blob);
+                URL.revokeObjectURL(url);
             }, 'image/png');
         };
         img.onerror = () => {
+            URL.revokeObjectURL(url);
             resolve(null);
         };
         img.src = url;
@@ -67,7 +160,14 @@ const svgToPngBlob = (svgString: string, bgColor: string): Promise<Blob | null> 
 const copyImage = async () => {
     if (!currentSvg.value) return;
     try {
-        const pngBlob = await svgToPngBlob(currentSvg.value, currentTheme.value?.mermaid?.background || '#13131f');
+        const { title, eyebrow, currentTheme } = useEditorState();
+        const pngBlob = await svgToPngBlob(currentSvg.value, {
+            bgColor: currentTheme.value?.mermaid?.background || '#13131f',
+            title: title.value,
+            eyebrow: eyebrow.value,
+            theme: currentTheme.value
+        });
+
         if (pngBlob) {
             await navigator.clipboard.write([
                 new ClipboardItem({ 'image/png': pngBlob })
@@ -87,12 +187,20 @@ const handleCopy = async () => {
 
 const downloadImage = async () => {
     if (!currentSvg.value) return;
-    const pngBlob = await svgToPngBlob(currentSvg.value, currentTheme.value?.mermaid?.background || '#13131f');
+    const { title, eyebrow, currentTheme } = useEditorState();
+
+    const pngBlob = await svgToPngBlob(currentSvg.value, {
+        bgColor: currentTheme.value?.mermaid?.background || '#13131f',
+        title: title.value,
+        eyebrow: eyebrow.value,
+        theme: currentTheme.value
+    });
+
     if (pngBlob) {
         const url = URL.createObjectURL(pngBlob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `graphlet-${Date.now()}.png`;
+        a.download = `${title.value || 'graphlet-diagram'}.png`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -106,7 +214,6 @@ const downloadImage = async () => {
         <!-- Brand / Logo Area -->
         <!-- Brand / Logo Area -->
         <div class="brand">
-            <img src="/logo.png" alt="Graphlet Logo" class="brand-logo" />
             <span class="logo-text">Graphlet</span>
         </div>
 

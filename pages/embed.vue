@@ -58,6 +58,25 @@ const renderDiagram = useDebounceFn(async () => {
         diagramRef.value.innerHTML = svg;
         error.value = null;
 
+        // Fix clipping by expanding viewBox
+        const svgEl = diagramRef.value.querySelector('svg');
+        if (svgEl) {
+            const viewBox = svgEl.getAttribute('viewBox');
+            if (viewBox) {
+                const parts = viewBox.split(/\s+/).map(Number);
+                if (parts.length === 4 && parts.every(p => !isNaN(p))) {
+                    const x = parts[0]!;
+                    const y = parts[1]!;
+                    const w = parts[2]!;
+                    const h = parts[3]!;
+                    const padding = 20;
+                    svgEl.setAttribute('viewBox', `${x - padding} ${y - padding} ${w + padding * 2} ${h + padding * 2}`);
+                    // Also update width/height if set to strict pixels to avoid distortion
+                    // But usually mermaid sets style="max-width..." so viewBox is key
+                }
+            }
+        }
+
         // Auto-fit after first render
         await nextTick();
         fitToScreen();
@@ -173,7 +192,7 @@ const zoomOut = () => {
 
             <!-- Watermark -->
             <a href="/" target="_blank" class="watermark" :style="{ color: currentTheme?.header?.eyebrow }">
-                Made with Graphlet
+                Made with Graphlet.xyz
             </a>
         </template>
     </div>
@@ -233,17 +252,18 @@ const zoomOut = () => {
 }
 
 .title-text {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 22px;
     font-weight: 700;
     letter-spacing: -0.02em;
     transition: color 0.3s ease;
+    padding-bottom: 0.2em;
+    line-height: 1.5;
 }
 
 .badges {
     display: flex;
     gap: 6px;
-    margin-top: 6px;
 }
 
 .badge {
@@ -300,7 +320,7 @@ const zoomOut = () => {
     right: 16px;
     font-family: 'DM Mono', monospace;
     font-size: 10px;
-    opacity: 0.4;
+    opacity: 1;
     text-decoration: none;
     transition: opacity 0.2s;
     letter-spacing: 0.03em;
