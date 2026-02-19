@@ -14,6 +14,7 @@ export const THEMES = [
             signalColor: 'rgba(255,255,255,0.35)', signalTextColor: '#c8c4e8',
             noteBkgColor: 'rgba(124,92,252,0.08)', noteBorderColor: 'rgba(124,92,252,0.22)', noteTextColor: '#b19eff',
             activationBkgColor: 'rgba(124,92,252,0.12)', activationBorderColor: 'rgba(124,92,252,0.35)',
+            themeCSS: '.row-rect-even { fill: #13131f; } .row-rect-odd { fill: #13131f; } .label.row-text-even { color: #f0eeff; } .label.row-text-odd { color: #7c5cfc; } .doneText0 { fill: #7c5cfc !important; }',
         }
     },
     {
@@ -31,6 +32,7 @@ export const THEMES = [
             signalColor: 'rgba(255,255,255,0.3)', signalTextColor: '#b0bdd0',
             noteBkgColor: 'rgba(91,156,246,0.08)', noteBorderColor: 'rgba(91,156,246,0.22)', noteTextColor: '#93c0fc',
             activationBkgColor: 'rgba(91,156,246,0.12)', activationBorderColor: 'rgba(91,156,246,0.3)',
+            themeCSS: '.label.row-text-odd { color: #5b9cf6; } .doneText0 { fill: #5b9cf6 !important; }',
         }
     },
     {
@@ -48,6 +50,7 @@ export const THEMES = [
             signalColor: 'rgba(0,0,0,0.25)', signalTextColor: '#5a3e20',
             noteBkgColor: 'rgba(176,90,42,0.07)', noteBorderColor: 'rgba(176,90,42,0.2)', noteTextColor: '#8a4018',
             activationBkgColor: 'rgba(176,90,42,0.1)', activationBorderColor: 'rgba(176,90,42,0.28)',
+            themeCSS: '.doneText0 { fill: #b05a2a !important; }',
         }
     },
     {
@@ -82,6 +85,7 @@ export const THEMES = [
             signalColor: 'rgba(76,175,125,0.45)', signalTextColor: '#a0d8b8',
             noteBkgColor: 'rgba(76,175,125,0.08)', noteBorderColor: 'rgba(76,175,125,0.22)', noteTextColor: '#7de0a8',
             activationBkgColor: 'rgba(76,175,125,0.12)', activationBorderColor: 'rgba(76,175,125,0.35)',
+            themeCSS: '.label.row-text-odd { color: #4caf7d; } .doneText0 { fill: #4caf7d !important; }',
         }
     },
     {
@@ -99,6 +103,7 @@ export const THEMES = [
             signalColor: 'rgba(245,166,35,0.5)', signalTextColor: '#e8c87a',
             noteBkgColor: 'rgba(245,166,35,0.08)', noteBorderColor: 'rgba(245,166,35,0.25)', noteTextColor: '#f5c86a',
             activationBkgColor: 'rgba(245,166,35,0.12)', activationBorderColor: 'rgba(245,166,35,0.35)',
+            themeCSS: '.label.row-text-odd { color: #f5a623; } .doneText0 { fill: #f5a623 !important; }',
         }
     },
     {
@@ -116,6 +121,7 @@ export const THEMES = [
             signalColor: 'rgba(26,111,212,0.4)', signalTextColor: '#1a4080',
             noteBkgColor: 'rgba(26,111,212,0.06)', noteBorderColor: 'rgba(26,111,212,0.18)', noteTextColor: '#1a5aaa',
             activationBkgColor: 'rgba(26,111,212,0.09)', activationBorderColor: 'rgba(26,111,212,0.25)',
+            themeCSS: '.doneText0 { fill: #1a6fd4 !important; }',
         }
     },
     {
@@ -133,6 +139,7 @@ export const THEMES = [
             signalColor: 'rgba(255,255,255,0.25)', signalTextColor: '#aaaaaa',
             noteBkgColor: 'rgba(255,255,255,0.04)', noteBorderColor: 'rgba(255,255,255,0.1)', noteTextColor: '#999',
             activationBkgColor: 'rgba(255,255,255,0.07)', activationBorderColor: 'rgba(255,255,255,0.18)',
+            themeCSS: '.label.row-text-odd { color: #888; } .doneText0 { fill: #888 !important; }',
         }
     },
     {
@@ -148,8 +155,8 @@ export const THEMES = [
             background: '#fff0fb', primaryColor: '#fcddf5', primaryBorderColor: 'rgba(224,64,160,0.2)', primaryTextColor: '#2a0020',
             actorBkg: '#fcddf5', actorBorder: 'rgba(224,64,160,0.2)', actorTextColor: '#2a0020', actorLineColor: 'rgba(224,64,160,0.12)',
             signalColor: 'rgba(224,64,160,0.4)', signalTextColor: '#a01060',
-            noteBkgColor: 'rgba(224,64,160,0.06)', noteBorderColor: 'rgba(224,64,160,0.2)', noteTextColor: '#c02880',
             activationBkgColor: 'rgba(224,64,160,0.08)', activationBorderColor: 'rgba(224,64,160,0.25)',
+            themeCSS: '.doneText0 { fill: #e040a0 !important; }',
         }
     },
     {
@@ -167,6 +174,7 @@ export const THEMES = [
             signalColor: 'rgba(0,224,90,0.5)', signalTextColor: '#80e8a8',
             noteBkgColor: 'rgba(0,224,90,0.07)', noteBorderColor: 'rgba(0,224,90,0.22)', noteTextColor: '#00e05a',
             activationBkgColor: 'rgba(0,224,90,0.1)', activationBorderColor: 'rgba(0,224,90,0.32)',
+            themeCSS: '.label.row-text-odd { color: #00e05a; } .doneText0 { fill: #00e05a !important; }',
         }
     },
     {
@@ -184,6 +192,7 @@ export const THEMES = [
             signalColor: 'rgba(200,155,255,0.4)', signalTextColor: '#d0b8f8',
             noteBkgColor: 'rgba(200,155,255,0.08)', noteBorderColor: 'rgba(200,155,255,0.22)', noteTextColor: '#c89bff',
             activationBkgColor: 'rgba(200,155,255,0.1)', activationBorderColor: 'rgba(200,155,255,0.3)',
+            themeCSS: '.label.row-text-odd { color: #c89bff; } .doneText0 { fill: #ad70f9ff !important; }',
         }
     },
     {
@@ -201,6 +210,7 @@ export const THEMES = [
             signalColor: 'rgba(0,0,0,0.35)', signalTextColor: '#333',
             noteBkgColor: 'rgba(0,0,0,0.04)', noteBorderColor: 'rgba(0,0,0,0.12)', noteTextColor: '#444',
             activationBkgColor: 'rgba(0,0,0,0.06)', activationBorderColor: 'rgba(0,0,0,0.18)',
+            themeCSS: '.doneText0 { fill: #333 !important; }',
         }
     },
     {
@@ -218,6 +228,7 @@ export const THEMES = [
             signalColor: 'rgba(0,200,224,0.45)', signalTextColor: '#80dff0',
             noteBkgColor: 'rgba(0,200,224,0.08)', noteBorderColor: 'rgba(0,200,224,0.22)', noteTextColor: '#00c8e0',
             activationBkgColor: 'rgba(0,200,224,0.1)', activationBorderColor: 'rgba(0,200,224,0.3)',
+            themeCSS: '.label.row-text-odd { color: #00c8e0; } .doneText0 { fill: #1292a0ff !important; }',
         }
     },
     {
@@ -235,6 +246,7 @@ export const THEMES = [
             signalColor: 'rgba(220,50,50,0.45)', signalTextColor: '#e8a0a0',
             noteBkgColor: 'rgba(220,50,50,0.08)', noteBorderColor: 'rgba(220,50,50,0.22)', noteTextColor: '#e07070',
             activationBkgColor: 'rgba(220,50,50,0.1)', activationBorderColor: 'rgba(220,50,50,0.3)',
+            themeCSS: '.label.row-text-odd { color: #e05050; } .doneText0 { fill: #e05050 !important; }',
         }
     },
     {
@@ -252,6 +264,7 @@ export const THEMES = [
             signalColor: 'rgba(160,120,32,0.35)', signalTextColor: '#6a4a10',
             noteBkgColor: 'rgba(160,120,32,0.07)', noteBorderColor: 'rgba(160,120,32,0.18)', noteTextColor: '#8a6010',
             activationBkgColor: 'rgba(160,120,32,0.09)', activationBorderColor: 'rgba(160,120,32,0.25)',
+            themeCSS: '.doneText0 { fill: #a07820 !important; }',
         }
     },
     {
@@ -269,6 +282,7 @@ export const THEMES = [
             signalColor: 'rgba(255,0,200,0.55)', signalTextColor: '#ff80e8',
             noteBkgColor: 'rgba(255,0,200,0.08)', noteBorderColor: 'rgba(255,0,200,0.28)', noteTextColor: '#ff60e0',
             activationBkgColor: 'rgba(255,0,200,0.1)', activationBorderColor: 'rgba(255,0,200,0.35)',
+            themeCSS: '.label.row-text-odd { color: #ff00c8; } .doneText0 { fill: #ff00c8 !important; }',
         }
     },
     {
@@ -286,6 +300,7 @@ export const THEMES = [
             signalColor: 'rgba(136,192,208,0.45)', signalTextColor: '#b0d4e0',
             noteBkgColor: 'rgba(136,192,208,0.08)', noteBorderColor: 'rgba(136,192,208,0.22)', noteTextColor: '#88c0d0',
             activationBkgColor: 'rgba(136,192,208,0.1)', activationBorderColor: 'rgba(136,192,208,0.3)',
+            themeCSS: '.label.row-text-odd { color: #88c0d0; } .doneText0 { fill: #88c0d0 !important; }',
         }
     },
     {
@@ -303,6 +318,7 @@ export const THEMES = [
             signalColor: 'rgba(5,150,105,0.4)', signalTextColor: '#065f3a',
             noteBkgColor: 'rgba(5,150,105,0.06)', noteBorderColor: 'rgba(5,150,105,0.18)', noteTextColor: '#047857',
             activationBkgColor: 'rgba(5,150,105,0.09)', activationBorderColor: 'rgba(5,150,105,0.25)',
+            themeCSS: '.doneText0 { fill: #059669 !important; }',
         }
     },
     {
@@ -320,6 +336,7 @@ export const THEMES = [
             signalColor: 'rgba(200,120,48,0.5)', signalTextColor: '#d8a878',
             noteBkgColor: 'rgba(200,120,48,0.08)', noteBorderColor: 'rgba(200,120,48,0.25)', noteTextColor: '#d8985a',
             activationBkgColor: 'rgba(200,120,48,0.1)', activationBorderColor: 'rgba(200,120,48,0.3)',
+            themeCSS: '.label.row-text-odd { color: #c87830; } .doneText0 { fill: #c87830 !important; }',
         }
     },
     {
@@ -337,6 +354,7 @@ export const THEMES = [
             signalColor: 'rgba(124,77,204,0.4)', signalTextColor: '#4a1a80',
             noteBkgColor: 'rgba(124,77,204,0.06)', noteBorderColor: 'rgba(124,77,204,0.18)', noteTextColor: '#6030a0',
             activationBkgColor: 'rgba(124,77,204,0.08)', activationBorderColor: 'rgba(124,77,204,0.25)',
+            themeCSS: '.doneText0 { fill: #7c4dcc !important; }',
         }
     },
 ];
