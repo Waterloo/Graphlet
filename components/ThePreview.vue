@@ -41,14 +41,16 @@ onMounted(() => {
 const renderDiagram = useDebounceFn(async () => {
     if (!diagramRef.value || !code.value) return;
 
+    const mermaidConfig = currentTheme.value?.mermaid || {};
     mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
         themeVariables: {
-            ...(currentTheme.value?.mermaid || {}),
+            ...mermaidConfig,
             fontFamily: 'DM Mono, monospace',
             fontSize: '14px',
         },
+        themeCSS: (mermaidConfig as any).themeCSS,
         securityLevel: 'loose',
     });
 
@@ -64,6 +66,12 @@ const renderDiagram = useDebounceFn(async () => {
             await nextTick();
             fitToScreen();
         }
+
+        // Post-process for ER diagram row coloring
+        // We do this in a requestAnimationFrame to ensure the DOM has calculated layout
+        requestAnimationFrame(() => {
+            postProcessMermaid();
+        });
     } catch (e: any) {
         console.error('Mermaid render error:', e);
         const message = e.message || String(e);
@@ -143,6 +151,55 @@ const loadRandomTemplate = () => {
     if (DIAGRAM_TEMPLATES.length === 0) return;
     const random = DIAGRAM_TEMPLATES[Math.floor(Math.random() * DIAGRAM_TEMPLATES.length)]!;
     loadTemplate(random.id);
+};
+
+
+const postProcessMermaid = () => {
+    if (!diagramRef.value) return;
+
+    // Helper to get vertical center of an element
+    const getCenterY = (rect: DOMRect) => rect.top + rect.height / 2;
+
+    const svg = diagramRef.value.querySelector('svg');
+    if (!svg) return;
+
+    // 1. Find all row background rectangles
+    const oddRects = Array.from(svg.querySelectorAll('.row-rect-odd'));
+    const evenRects = Array.from(svg.querySelectorAll('.row-rect-even'));
+
+    // 2. Find all potential text groups (attributes)
+    // Mermaid ER attributes usually have these classes
+    const textGroups = Array.from(svg.querySelectorAll('g.attribute-type, g.attribute-name, g.attribute-keys, g.attribute-comment'));
+
+    if (textGroups.length === 0 || (oddRects.length === 0 && evenRects.length === 0)) return;
+
+    // 3. Map rects to their vertical bounds for hit testing
+    const rows = [
+        ...oddRects.map(el => ({ el, rect: el.getBoundingClientRect(), type: 'odd' })),
+        ...evenRects.map(el => ({ el, rect: el.getBoundingClientRect(), type: 'even' }))
+    ];
+
+    // 4. Assign classes to text groups based on overlap
+    textGroups.forEach(group => {
+        const groupRect = group.getBoundingClientRect();
+        const centerY = getCenterY(groupRect);
+
+        // Find the row that contains this text group
+        const matchingRow = rows.find(row =>
+            centerY >= row.rect.top && centerY <= row.rect.bottom
+        );
+
+        if (matchingRow) {
+            group.classList.add(`row-text-${matchingRow.type}`);
+
+            // Also add to any child text elements to be safe
+            const texts = group.querySelectorAll('text');
+            texts.forEach(t => t.classList.add(`row-text-${matchingRow.type}`));
+        }
+    });
+
+    // Update currentSvg with the modified DOM so exports work
+    currentSvg.value = diagramRef.value.innerHTML;
 };
 
 defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
