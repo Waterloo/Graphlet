@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import * as monaco from 'monaco-editor';
 import { useEditorState } from '~/composables/useEditorState';
-import { Copy, Check } from 'lucide-vue-next';
+import { useMermaidAutocomplete } from '~/composables/useMermaidAutocomplete';
+import { Copy, Check, Sparkles } from 'lucide-vue-next';
+import TheAiAssistant from './TheAiAssistant.vue';
 
 const container = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
 let errorDecorations: string[] = [];
+let completionDisposable: monaco.IDisposable | null = null;
 
 const { code, currentTheme, errorLine } = useEditorState();
+const { completionProvider } = useMermaidAutocomplete();
 
 const copied = ref(false);
 const copyContent = async () => {
@@ -21,12 +25,18 @@ const copyContent = async () => {
     setTimeout(() => copied.value = false, 2000);
 };
 
+const isAiOpen = ref(false);
+
 // Initialize Monaco
 onMounted(() => {
     if (!container.value) return;
 
     // Register Mermaid language (basic)
     monaco.languages.register({ id: 'mermaid' });
+
+    // Register Telepathic Autocomplete
+    completionDisposable = monaco.languages.registerCompletionItemProvider('mermaid', completionProvider);
+
     monaco.languages.setMonarchTokensProvider('mermaid', {
         keywords: [
             'graph', 'td', 'flowchart', 'gantt', 'classDiagram', 'stateDiagram', 'erDiagram',
@@ -133,6 +143,7 @@ watch(errorLine, (line) => {
 
 onUnmounted(() => {
     editor?.dispose();
+    completionDisposable?.dispose();
 });
 </script>
 
@@ -143,6 +154,12 @@ onUnmounted(() => {
             <Check v-if="copied" :size="14" />
             <Copy v-else :size="14" />
         </button>
+
+        <button class="ai-btn" :class="{ active: isAiOpen }" @click="isAiOpen = !isAiOpen" title="AI Assistant">
+            <Sparkles :size="14" />
+        </button>
+
+        <TheAiAssistant :is-open="isAiOpen" @close="isAiOpen = false" />
     </div>
 </template>
 
@@ -191,6 +208,38 @@ onUnmounted(() => {
     opacity: 1;
     color: #34C759;
     border-color: rgba(52, 199, 89, 0.3);
+}
+
+.ai-btn {
+    position: absolute;
+    top: 12px;
+    right: 50px;
+    /* Left of copy button */
+    z-index: 10;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(19, 19, 31, 0.8);
+    color: #A855F7;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.2s, color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.editor-wrapper:hover .ai-btn {
+    opacity: 1;
+}
+
+.ai-btn:hover,
+.ai-btn.active {
+    background: rgba(168, 85, 247, 0.2);
+    border-color: rgba(168, 85, 247, 0.3);
+    color: #C084FC;
 }
 </style>
 

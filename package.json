@@ -7,10 +7,15 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "devtools": "npx @ai-sdk/devtools"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.29",
+    "@ai-sdk/vue": "^3.0.91",
     "@vueuse/core": "^14.2.1",
+    "ai": "^6.0.91",
+    "ai-gateway-provider": "^3.1.1",
     "lucide-vue-next": "^0.574.0",
     "mermaid": "^11.12.3",
     "monaco-editor": "^0.55.1",
@@ -21,7 +26,9 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@ai-sdk/devtools": "^0.0.14",
+    "@types/node": "^25.3.0",
     "@types/pako": "^2.0.4"
   },
-"packageManager":"pnpm@10.29.3"
+  "packageManager": "pnpm@10.29.3"
 }

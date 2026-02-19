@@ -57,7 +57,28 @@ const renderDiagram = useDebounceFn(async () => {
     try {
         const { svg } = await mermaid.render('mermaid-graph-' + Date.now(), code.value);
         diagramRef.value.innerHTML = svg;
-        currentSvg.value = svg;
+
+        // Fix clipping by expanding viewBox
+        const svgEl = diagramRef.value.querySelector('svg');
+        if (svgEl) {
+            const viewBox = svgEl.getAttribute('viewBox');
+            if (viewBox) {
+                const parts = viewBox.split(/\s+/).map(Number);
+                if (parts.length === 4 && parts.every(p => !isNaN(p))) {
+                    const x = parts[0]!;
+                    const y = parts[1]!;
+                    const w = parts[2]!;
+                    const h = parts[3]!;
+                    const padding = 20;
+                    svgEl.setAttribute('viewBox', `${x - padding} ${y - padding} ${w + padding * 2} ${h + padding * 2}`);
+                }
+            }
+            // Update the string for export to match what we see
+            currentSvg.value = diagramRef.value.innerHTML;
+        } else {
+            currentSvg.value = svg;
+        }
+
         error.value = null;
         errorLine.value = null;
 
@@ -419,6 +440,12 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     font-weight: 700;
     letter-spacing: -0.02em;
     width: 600px;
+    padding-bottom: 0;
+    line-height: 48px;
+    height: 48px;
+    /* Fixed generous height */
+    display: flex;
+    align-items: center;
 }
 
 .badges {
