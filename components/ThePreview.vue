@@ -24,6 +24,10 @@ let isFirstRender = true;
 // Is editor empty?
 const isEmpty = computed(() => !code.value || !code.value.trim());
 
+// Returns true if the event target is inside an element with data-no-panzoom
+const isNoPanzoom = (e: Event) =>
+    !!(e.target as Element)?.closest('[data-no-panzoom]');
+
 // Initialize Panzoom
 onMounted(() => {
     if (wrapperRef.value) {
@@ -31,7 +35,9 @@ onMounted(() => {
             maxZoom: 5,
             minZoom: 0.1,
             bounds: false,
-            boundsPadding: 0.1
+            boundsPadding: 0.1,
+            beforeMouseDown: isNoPanzoom,
+            beforeWheel: isNoPanzoom,
         });
     }
     renderDiagram();
@@ -281,7 +287,7 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
         </div>
 
         <!-- Error Overlay -->
-        <div v-if="error" class="error-overlay">
+        <div v-if="error" class="error-overlay" data-no-panzoom>
             <div class="error-card">
                 <div class="error-header">
                     <AlertCircle :size="16" class="error-icon" />
