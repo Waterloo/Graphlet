@@ -281,7 +281,7 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
         </div>
 
         <!-- Error Overlay -->
-        <div v-if="error" class="error-overlay" @mousedown.stop @wheel.stop>
+        <div v-if="error" class="error-overlay" @mousedown.stop @wheel.stop @touchstart.stop @touchmove.stop>
             <div class="error-card">
                 <div class="error-header">
                     <AlertCircle :size="16" class="error-icon" />

@@ -32,7 +32,7 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
 </script>
 
 <template>
-    <div v-if="isSettingsOpen" class="settings-panel" @mousedown.stop @wheel.stop>
+    <div v-if="isSettingsOpen" class="settings-panel" @mousedown.stop @wheel.stop @touchstart.stop @touchmove.stop>
         <div class="header">
             <h3>Settings</h3>
             <button class="close-btn" @click="isSettingsOpen = false" aria-label="Close settings">
