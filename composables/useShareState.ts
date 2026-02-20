@@ -58,13 +58,14 @@ export const useShareState = () => {
         return `${window.location.origin}?state=${encoded}`;
     };
 
-    const getEmbedUrl = (): string => {
+    const getEmbedUrl = (mermaidVersion?: string): string => {
         const encoded = encodeState(getPayload());
-        return `${window.location.origin}/embed?state=${encoded}`;
+        const versionParam = mermaidVersion ? `&mermaidVersion=${mermaidVersion}` : '';
+        return `${window.location.origin}/embed?state=${encoded}${versionParam}`;
     };
 
-    const getEmbedHtml = (): string => {
-        const url = getEmbedUrl();
+    const getEmbedHtml = (mermaidVersion?: string): string => {
+        const url = getEmbedUrl(mermaidVersion);
         return `<iframe src="${url}" width="100%" height="500" style="border:none;border-radius:12px;" allowfullscreen></iframe>`;
     };
 

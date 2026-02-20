@@ -12,6 +12,8 @@ const shareUrl = ref('');
 const embedCode = ref('');
 const markdownCode = ref('');
 const markdownFormat = ref<'image' | 'native'>('image');
+const pinMermaidVersion = ref(true);
+const BUNDLED_MERMAID_VERSION = '11.12.3';
 const { code } = useEditorState();
 
 const { copy: copyText, copied: copiedLink } = useClipboard();
@@ -30,10 +32,11 @@ const generateMarkdown = () => {
 };
 
 // Regenerate URLs when parameters change
-watch([isShareOpen, markdownFormat], ([open]) => {
+watch([isShareOpen, markdownFormat, pinMermaidVersion], ([open]) => {
     if (open) {
         shareUrl.value = getShareUrl();
-        embedCode.value = getEmbedHtml();
+        const version = pinMermaidVersion.value ? BUNDLED_MERMAID_VERSION : undefined;
+        embedCode.value = getEmbedHtml(version);
         generateMarkdown();
     }
 });
@@ -82,11 +85,11 @@ const close = () => {
                             <Code :size="14" />
                             Embed
                         </button>
-                        <button class="tab" :class="{ active: activeTab === 'markdown' }"
+                        <!-- <button class="tab" :class="{ active: activeTab === 'markdown' }"
                             @click="activeTab = 'markdown'">
                             <FileText :size="14" />
                             Badge
-                        </button>
+                        </button> -->
                     </div>
 
                     <!-- Share Link Tab -->
@@ -107,6 +110,19 @@ const close = () => {
                     <!-- Embed Tab -->
                     <div v-if="activeTab === 'embed'" class="tab-content">
                         <p class="description">Paste this code into any HTML page to embed your diagram.</p>
+                        <div class="embed-options">
+                            <label class="option-label">Mermaid version:</label>
+                            <div class="toggle-group">
+                                <button class="toggle-btn" :class="{ active: pinMermaidVersion }"
+                                    @click="pinMermaidVersion = true">
+                                    Pin v{{ BUNDLED_MERMAID_VERSION }}
+                                </button>
+                                <button class="toggle-btn" :class="{ active: !pinMermaidVersion }"
+                                    @click="pinMermaidVersion = false">
+                                    Always latest
+                                </button>
+                            </div>
+                        </div>
                         <div class="code-box">
                             <pre class="embed-code">{{ embedCode }}</pre>
                             <button class="copy-btn" @click="handleCopyEmbed">
@@ -118,7 +134,7 @@ const close = () => {
                     </div>
 
                     <!-- Markdown / Badge Tab -->
-                    <div v-if="activeTab === 'markdown'" class="tab-content">
+                    <!-- <div v-if="activeTab === 'markdown'" class="tab-content">
                         <p class="description">Add this badge to your README to let others edit this diagram.</p>
                         <div class="markdown-options">
                             <label class="option-label">Format:</label>
@@ -142,7 +158,7 @@ const close = () => {
                                 {{ copiedMarkdown ? 'Copied!' : 'Copy' }}
                             </button>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </Transition>
@@ -276,6 +292,13 @@ const close = () => {
     letter-spacing: 0.05em;
     align-self: flex-start;
     margin-bottom: 4px;
+}
+
+.embed-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 .markdown-options {

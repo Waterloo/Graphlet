@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import mermaid from 'mermaid';
 import panzoom from 'panzoom';
 import { useShareState } from '~/composables/useShareState';
 import { useEditorState } from '~/composables/useEditorState';
@@ -15,15 +14,44 @@ const diagramRef = ref<HTMLElement | null>(null);
 const error = ref<string | null>(null);
 const loaded = ref(false);
 let pzInstance: any = null;
+let mermaid: any = null;
+
+// Load Mermaid — from CDN if a version is pinned, otherwise use the bundled copy
+const loadMermaid = async (): Promise<void> => {
+    const route = useRoute();
+    const pinnedVersion = route.query.mermaidVersion as string | undefined;
+    if (pinnedVersion) {
+        await new Promise<void>((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = `https://cdn.jsdelivr.net/npm/mermaid@${pinnedVersion}/dist/mermaid.min.js`;
+            script.onload = () => {
+                mermaid = (window as any).mermaid;
+                resolve();
+            };
+            script.onerror = () => reject(new Error(`Failed to load mermaid@${pinnedVersion}`));
+            document.head.appendChild(script);
+        });
+    } else {
+        const mod = await import('mermaid');
+        mermaid = mod.default;
+    }
+};
 
 // Load state from URL
-onMounted(() => {
+onMounted(async () => {
     const success = loadFromUrl();
     if (!success) {
         error.value = 'Invalid or missing diagram data.';
         return;
     }
     loaded.value = true;
+
+    try {
+        await loadMermaid();
+    } catch (e: any) {
+        error.value = e.message || String(e);
+        return;
+    }
 
     // Init panzoom
     if (wrapperRef.value) {
@@ -40,7 +68,7 @@ onMounted(() => {
 
 // Render
 const renderDiagram = useDebounceFn(async () => {
-    if (!diagramRef.value || !code.value) return;
+    if (!diagramRef.value || !code.value || !mermaid) return;
 
     mermaid.initialize({
         startOnLoad: false,
