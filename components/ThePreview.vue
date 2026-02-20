@@ -268,7 +268,7 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
         </div>
 
         <!-- Zoom Controls -->
-        <div class="zoom-controls">
+        <div class="zoom-controls" @mousedown.stop @wheel.stop @touchstart.stop @touchmove.stop>
             <button @click="zoomIn" title="Zoom In">
                 <Plus :size="16" />
             </button>
