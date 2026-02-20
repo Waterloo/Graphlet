@@ -27,7 +27,6 @@ Strict rules:
 Diagram type: <sequenceDiagram | flowchart | classDiagram | erDiagram | stateDiagram | gantt | journey, architecture-beta>
 
 Context:
-<Describe the system/process clearly here>
 
 Requirements:
 - Keep layout clean and readable
@@ -35,6 +34,8 @@ Requirements:
 - Use logical grouping
 - Use subgraphs if helpful
 - Follow Mermaid best practices
+- Pay close attention to activation and deactivation of nodes
+- Use correct mermaid syntax
 
 1. Special Characters in Labels
 Avoid ( ), < >, { }, /, &, # inside node labels or edge text. They confuse the parser.
