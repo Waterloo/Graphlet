@@ -224,7 +224,7 @@ onUnmounted(() => {
 
 /* App Layout */
 .app-layout {
-    height: 100vh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     background-color: #13131f;
