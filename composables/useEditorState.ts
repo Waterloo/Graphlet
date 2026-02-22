@@ -264,6 +264,7 @@ const isSettingsOpen = ref(false);
 const isShareOpen = ref(false);
 const isWelcomeOpen = ref(false);
 const isShortcutsOpen = ref(false);
+const isThemeSwitcherOpen = ref(false);
 const currentSvg = ref<string>('');
 const errorLine = ref<number | null>(null);
 const { history, undo, redo } = useRefHistory(code);
@@ -300,6 +301,7 @@ export const useEditorState = () => {
         isSettingsOpen,
         isShareOpen,
         isWelcomeOpen,
+        isThemeSwitcherOpen,
         isShortcutsOpen,
         errorLine,
         hasBeenWelcomed,
