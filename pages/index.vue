@@ -136,8 +136,8 @@ onUnmounted(() => {
 
         <!-- Body: Sidebar + Main Content -->
         <div class="body-layout">
-            <!-- Sidebar (desktop only) -->
-            <TheDiagramSidebar v-if="!isMobile" />
+            <!-- Sidebar -->
+            <TheDiagramSidebar />
 
             <!-- Main Content -->
             <main class="main-content" :class="{ mobile: isMobile }">
@@ -247,6 +247,7 @@ onUnmounted(() => {
     flex: 1;
     display: flex;
     overflow: hidden;
+    position: relative;
 }
 
 .main-content {

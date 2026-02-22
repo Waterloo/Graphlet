@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
-import { Download, Share2, Copy, Check, Settings, Plus, PanelLeft } from 'lucide-vue-next';
+import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
+import { onClickOutside } from '@vueuse/core';
 
-const { currentTheme, currentSvg, isSettingsOpen, isShareOpen, isWelcomeOpen } = useEditorState();
+const { themes, themeId, currentTheme, currentSvg, isSettingsOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
+
+// Close theme switcher when clicking outside
+const themeDropdownRef = ref(null);
+onClickOutside(themeDropdownRef, () => {
+    isThemeSwitcherOpen.value = false;
+});
 
 // Helper: Convert SVG string to Blob (PNG)
 // Helper: Convert SVG string to Blob (PNG)
@@ -207,6 +214,13 @@ const downloadImage = async () => {
         URL.revokeObjectURL(url);
     }
 };
+
+// Helper for pill styles
+const getPillStyle = (theme: any, isActive: boolean) => ({
+    background: isActive ? theme.pillActive.bg : theme.pill.bg,
+    borderColor: isActive ? theme.pillActive.border : theme.pill.border,
+    color: isActive ? theme.pillActive.text : theme.pill.text
+});
 </script>
 
 <template>
@@ -237,15 +251,37 @@ const downloadImage = async () => {
 
             <div class="divider"></div>
 
-            <!-- Settings -->
-            <TheTooltip text="Settings" shortcut="⌘,">
-                <button class="icon-btn" title="Settings" @click="isSettingsOpen = !isSettingsOpen"
-                    :class="{ active: isSettingsOpen }" id="btn-settings">
-                    <Settings :size="16" />
-                </button>
-            </TheTooltip>
+            <!-- Theme Switcher -->
+            <div class="relative" ref="themeDropdownRef">
+                <TheTooltip text="Theme" shortcut="⌘T">
+                    <button class="icon-btn" title="Select Theme" @click="isThemeSwitcherOpen = !isThemeSwitcherOpen"
+                        :class="{ active: isThemeSwitcherOpen }" id="btn-theme">
+                        <Palette :size="16" />
+                        <span class="btn-label theme-label">{{ currentTheme?.label || 'Theme' }}</span>
+                    </button>
+                </TheTooltip>
+
+                <!-- Theme Popover -->
+                <div v-if="isThemeSwitcherOpen" class="theme-popover">
+                    <div class="theme-header">
+                        <h3>Theme</h3>
+                        <button class="close-btn" @click="isThemeSwitcherOpen = false" aria-label="Close themes">
+                            <X :size="14" />
+                        </button>
+                    </div>
+                    <div class="theme-grid">
+                        <button v-for="theme in themes" :key="theme.id" class="theme-pill"
+                            :style="getPillStyle(theme, themeId === theme.id)" @click="themeId = theme.id"
+                            :aria-label="`Select theme ${theme.label}`" :aria-pressed="themeId === theme.id">
+                            {{ theme.label }}
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <div class="divider"></div>
+
+
 
             <!-- Copy -->
             <TheTooltip text="Copy Image" shortcut="⌘⇧C">
@@ -373,6 +409,92 @@ const downloadImage = async () => {
 
 .success-icon {
     color: #34C759;
+}
+
+.relative {
+    position: relative;
+}
+
+.theme-popover {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 280px;
+    background: #1C1C1E;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    z-index: 100;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+}
+
+.theme-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.theme-header h3 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.close-btn {
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.theme-pill {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s ease;
+    text-align: center;
+    background: transparent;
+}
+
+.theme-pill:hover {
+    transform: translateY(-1px);
+}
+
+.theme-pill:focus-visible {
+    outline: 2px solid #007AFF;
+    outline-offset: 2px;
+}
+
+.theme-label {
+    width: 60px;
+    text-align: left;
+    text-transform: capitalize;
 }
 
 /* Hide labels on small screens */

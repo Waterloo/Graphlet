@@ -9,9 +9,59 @@ import { useDebounceFn } from '@vueuse/core';
 import TheSettings from '~/components/TheSettings.vue';
 
 // Icons
-import { AlertCircle, Plus, Minus, Maximize, FileCode2, ExternalLink } from 'lucide-vue-next';
+import { AlertCircle, Plus, Minus, Maximize, FileCode2, ExternalLink, X } from 'lucide-vue-next';
 
 const { code, currentTheme, title, eyebrow, badges, currentSvg, errorLine, loadTemplate } = useEditorState();
+
+const editingBadgeIndex = ref<number | null>(null);
+const editingBadgeValue = ref('');
+const badgeInputRefs = ref<HTMLInputElement[]>([]);
+
+const newBadge = ref('');
+const isAddingBadge = ref(false);
+const newBadgeInputRef = ref<HTMLInputElement | null>(null);
+
+const addBadge = () => {
+    if (newBadge.value.trim()) {
+        badges.value.push(newBadge.value.trim());
+        newBadge.value = '';
+    }
+    isAddingBadge.value = false;
+};
+
+const saveEditedBadge = () => {
+    if (editingBadgeIndex.value !== null) {
+        if (editingBadgeValue.value.trim() === '') {
+            removeBadge(editingBadgeIndex.value);
+        } else {
+            badges.value[editingBadgeIndex.value] = editingBadgeValue.value.trim();
+        }
+        editingBadgeIndex.value = null;
+    }
+};
+
+const cancelEditBadge = () => {
+    editingBadgeIndex.value = null;
+};
+
+const removeBadge = (index: number) => {
+    badges.value.splice(index, 1);
+};
+
+const startAddingBadge = async () => {
+    isAddingBadge.value = true;
+    await nextTick();
+    newBadgeInputRef.value?.focus();
+};
+
+const startEditingBadge = async (index: number) => {
+    editingBadgeIndex.value = index;
+    editingBadgeValue.value = badges.value[index];
+    await nextTick();
+    if (badgeInputRefs.value[index]) {
+        badgeInputRefs.value[index].focus();
+    }
+};
 
 const containerRef = ref<HTMLElement | null>(null);
 const diagramRef = ref<HTMLElement | null>(null);
@@ -239,13 +289,35 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
             <input v-model="title" class="input-title" :style="{ color: currentTheme.header.title }"
                 placeholder="Diagram Title" />
             <div class="badges">
-                <span v-for="(badge, i) in badges" :key="i" class="badge" :style="{
+                <span v-for="(badge, i) in badges" :key="i" class="badge group" :style="{
                     background: i === 0 ? currentTheme.badge1.bg : currentTheme.badge2.bg,
                     borderColor: i === 0 ? currentTheme.badge1.border : currentTheme.badge2.border,
                     color: i === 0 ? currentTheme.badge1.text : currentTheme.badge2.text
-                }">
-                    {{ badge }}
+                }" @click="startEditingBadge(i)">
+
+                    <input v-if="editingBadgeIndex === i" ref="badgeInputRefs" v-model="editingBadgeValue"
+                        class="edit-badge-input" :style="{ color: 'inherit' }" @keyup.enter="saveEditedBadge"
+                        @blur="saveEditedBadge" @keyup.esc="cancelEditBadge" @click.stop />
+                    <template v-else>
+                        {{ badge }}
+                        <button class="remove-badge" @click.stop="removeBadge(i)" aria-label="Remove badge"
+                            title="Remove badge">
+                            <X :size="10" />
+                        </button>
+                    </template>
                 </span>
+
+                <div v-if="isAddingBadge" class="add-badge-wrapper">
+                    <input ref="newBadgeInputRef" v-model="newBadge" class="add-badge-input" placeholder="Tag name..."
+                        @keyup.enter="addBadge" @blur="addBadge" @keyup.esc="isAddingBadge = false"
+                        :style="{ color: currentTheme.header.eyebrow }" />
+                </div>
+                <button v-else-if="badges.length < 5" class="add-badge-btn" @click="startAddingBadge" :style="{
+                    color: currentTheme.header.eyebrow,
+                    borderColor: currentTheme.header.eyebrow
+                }">
+                    <Plus :size="10" /> <span class="add-badge-text">Add Tag</span>
+                </button>
             </div>
         </div>
 
@@ -464,6 +536,99 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     border-width: 1px;
     border-style: solid;
     transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    cursor: text;
+    /* Indicate it's editable */
+    height: 23px;
+    box-sizing: border-box;
+}
+
+.edit-badge-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    padding: 0;
+    margin: 0;
+    width: 60px;
+    /* Base width, could auto-size if needed */
+    pointer-events: auto;
+}
+
+.remove-badge {
+    background: transparent;
+    border: none;
+    color: currentColor;
+    opacity: 0.5;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.2s;
+    margin-left: 2px;
+}
+
+.remove-badge:hover {
+    opacity: 1;
+}
+
+.add-badge-wrapper {
+    display: inline-flex;
+    align-items: center;
+}
+
+.add-badge-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 100px;
+    padding: 3px 10px 3px 10px !important;
+    /* Added more left padding */
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    width: 84px;
+    /* Slightly wider to accommodate padding */
+    outline: none;
+    pointer-events: auto;
+    transition: all 0.2s;
+    height: 23px;
+    /* Ensure uniform height with badges */
+    box-sizing: border-box;
+}
+
+.add-badge-input:focus {
+    border-color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.add-badge-btn {
+    background: transparent;
+    border: 1px dashed;
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: all 0.2s;
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 23px;
+    box-sizing: border-box;
+}
+
+.add-badge-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 /* Error Overlay */

@@ -177,6 +177,16 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
     -webkit-backdrop-filter: blur(20px);
 }
 
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 50;
+    }
+}
+
 /* Transition */
 .sidebar-enter-active,
 .sidebar-leave-active {
