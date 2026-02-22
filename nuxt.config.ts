@@ -1,3 +1,4 @@
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
@@ -6,7 +7,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'Graphlet - Modern Mermaid Diagram Editor',
+      title: 'graphlet - Diagram Editor',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -17,12 +18,12 @@ export default defineNuxtConfig({
         { property: 'og:site_name', content: 'Graphlet' },
         { property: 'og:type', content: 'website' },
         { property: 'og:url', content: 'https://graphlet.xyz' },
-        { property: 'og:title', content: 'Graphlet - Modern Mermaid Diagram Editor' },
+        { property: 'og:title', content: 'Graphlet - Elegant Mermaid Diagram Editor' },
         { property: 'og:description', content: 'Create beautiful Mermaid diagrams with a modern, real-time editor.' },
         { property: 'og:image', content: 'https://graphlet.xyz/og-image.png' },
         // Twitter
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: 'Graphlet - Modern Mermaid Diagram Editor' },
+        { name: 'twitter:title', content: 'Graphlet - Elegant Mermaid Diagram Editor' },
         { name: 'twitter:description', content: 'Create beautiful Mermaid diagrams with a modern, real-time editor.' },
         { name: 'twitter:image', content: 'https://graphlet.xyz/og-image.png' },
       ],
@@ -45,11 +46,14 @@ export default defineNuxtConfig({
         }
       ],
       link: [
-        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
+        { rel: "preload", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" },
+        { rel: 'icon', type: 'image/png', href: '/favicon-96x96.png' },
+        { rel: 'manifest', href: '/manifest.webmanifest' },
+        { rel: 'apple-touch-icon', href: '/icon-192x192.png' },
         { rel: 'canonical', href: 'https://graphlet.xyz' },
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap' }
       ]
     }
   },
-  css: ['~/assets/css/main.css']
+  css: ['~/assets/css/main.css'],
 })
