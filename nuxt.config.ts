@@ -46,14 +46,13 @@ export default defineNuxtConfig({
         }
       ],
       link: [
-        { rel: "preload", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" },
         { rel: 'icon', type: 'image/png', href: '/favicon-96x96.png' },
         { rel: 'manifest', href: '/manifest.webmanifest' },
         { rel: 'apple-touch-icon', href: '/icon-192x192.png' },
         { rel: 'canonical', href: 'https://graphlet.xyz' },
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap' }
       ]
     }
   },
+  modules: ['@nuxt/fonts'],
   css: ['~/assets/css/main.css'],
 })

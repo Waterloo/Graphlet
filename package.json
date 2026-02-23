@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@ai-sdk/devtools": "^0.0.14",
+    "@nuxt/fonts": "^0.14.0",
     "@types/node": "^25.3.0",
     "@types/pako": "^2.0.4"
   },

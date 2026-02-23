@@ -81,7 +81,11 @@ onMounted(() => {
             maxZoom: 5,
             minZoom: 0.1,
             bounds: false,
-            boundsPadding: 0.1
+            boundsPadding: 0.1,
+            filterKey: ((e: KeyboardEvent) => {
+                const target = e.target as HTMLElement;
+                return target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+            }) as any
         });
     }
     renderDiagram();
@@ -91,14 +95,24 @@ onMounted(() => {
 const renderDiagram = useDebounceFn(async () => {
     if (!diagramRef.value || !code.value) return;
 
+    if (document.fonts) {
+        await document.fonts.ready;
+    }
+
     const mermaidConfig = currentTheme.value?.mermaid || {};
     mermaid.initialize({
         startOnLoad: false,
         theme: 'base',
+        fontFamily: 'DM Mono, monospace',
         themeVariables: {
             ...mermaidConfig,
             fontFamily: 'DM Mono, monospace',
             fontSize: '14px',
+        },
+        sequence: {
+            actorFontFamily: 'DM Mono, monospace',
+            noteFontFamily: 'DM Mono, monospace',
+            messageFontFamily: 'DM Mono, monospace',
         },
         themeCSS: (mermaidConfig as any).themeCSS,
         securityLevel: 'loose',
@@ -394,6 +408,11 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
 .mermaid-diagram {
     min-width: 100px;
     min-height: 100px;
+}
+
+.mermaid-diagram :deep(text),
+.mermaid-diagram :deep(tspan) {
+    font-family: 'DM Mono', monospace !important;
 }
 
 /* Empty State */
