@@ -108,6 +108,12 @@ onMounted(() => {
     editor.onDidChangeModelContent(() => {
         code.value = editor?.getValue() || '';
     });
+
+    if (document.fonts) {
+        document.fonts.ready.then(() => {
+            monaco.editor.remeasureFonts();
+        });
+    }
 });
 
 // Sync external changes back to editor
