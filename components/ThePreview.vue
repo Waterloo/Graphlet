@@ -238,7 +238,6 @@ const loadRandomTemplate = () => {
     loadTemplate(random.id);
 };
 
-
 const postProcessMermaid = () => {
     if (!diagramRef.value) return;
 
@@ -297,7 +296,9 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
         <TheSettings />
 
         <!-- Metadata Overlay -->
-        <div class="metadata-layer">
+        <div class="metadata-layer" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop
+            @mousemove.stop @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop
+            @wheel.stop @dblclick.stop>
             <input v-model="eyebrow" class="input-eyebrow" :style="{ color: currentTheme.header.eyebrow }"
                 placeholder="CATEGORY" />
             <input v-model="title" class="input-title" :style="{ color: currentTheme.header.title }"
@@ -354,7 +355,9 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
         </div>
 
         <!-- Zoom Controls -->
-        <div class="zoom-controls">
+        <div class="zoom-controls" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop
+            @mousemove.stop @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop
+            @wheel.stop @dblclick.stop>
             <button @click="zoomIn" title="Zoom In">
                 <Plus :size="16" />
             </button>
@@ -367,7 +370,9 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
         </div>
 
         <!-- Error Overlay -->
-        <div v-if="error" class="error-overlay">
+        <div v-if="error" class="error-overlay" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop
+            @mousemove.stop @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop
+            @wheel.stop @dblclick.stop>
             <div class="error-card">
                 <div class="error-header">
                     <AlertCircle :size="16" class="error-icon" />
@@ -541,8 +546,10 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
 
 .badges {
     display: flex;
+    flex-wrap: wrap;
     gap: 6px;
     margin-top: 8px;
+    width: min(600px, calc(100vw - 64px));
     pointer-events: auto;
 }
 
@@ -657,6 +664,7 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     right: 20px;
     z-index: 20;
     max-width: 400px;
+    touch-action: none;
     animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
