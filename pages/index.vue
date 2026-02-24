@@ -14,7 +14,7 @@ import TheKeyboardShortcuts from '~/components/TheKeyboardShortcuts.vue';
 import TheDiagramSidebar from '~/components/TheDiagramSidebar.vue';
 
 const { width } = useWindowSize();
-const { currentTheme, isSettingsOpen, isWelcomeOpen, isShortcutsOpen } = useEditorState();
+const { currentTheme, isInfoOpen, isWelcomeOpen, isShortcutsOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
 const { loadFromUrl, syncToUrl } = useShareState();
 
@@ -60,7 +60,7 @@ const handleGlobalShortcuts = (e: KeyboardEvent) => {
     }
     if (mod && e.key === ',') {
         e.preventDefault();
-        isSettingsOpen.value = !isSettingsOpen.value;
+        isInfoOpen.value = !isInfoOpen.value;
     }
     if (mod && e.key === 'n') {
         e.preventDefault();

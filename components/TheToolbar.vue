@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
-import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X } from 'lucide-vue-next';
+import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, Info } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
 import { onClickOutside } from '@vueuse/core';
 
-const { themes, themeId, currentTheme, currentSvg, isSettingsOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
+const { themes, themeId, currentTheme, currentSvg, isInfoOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
 
 // Close theme switcher when clicking outside
@@ -281,7 +281,13 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
 
             <div class="divider"></div>
 
-
+            <!-- Info -->
+            <TheTooltip text="Information" shortcut="⌘,">
+                <button class="icon-btn" title="Information" @click="isInfoOpen = !isInfoOpen"
+                    :class="{ active: isInfoOpen }" id="btn-info">
+                    <Info :size="16" />
+                </button>
+            </TheTooltip>
 
             <!-- Copy -->
             <TheTooltip text="Copy Image" shortcut="⌘⇧C">

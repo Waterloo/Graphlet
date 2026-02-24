@@ -5,7 +5,7 @@ import { X } from 'lucide-vue-next';
 const {
     themes,
     themeId,
-    isSettingsOpen,
+    isInfoOpen,
     badges,
     currentTheme
 } = useEditorState();
@@ -19,12 +19,17 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
 </script>
 
 <template>
-    <div v-if="isSettingsOpen" class="settings-panel">
+    <div v-if="isInfoOpen" class="settings-panel">
         <div class="header">
-            <h3>Settings</h3>
-            <button class="close-btn" @click="isSettingsOpen = false" aria-label="Close settings">
+            <h3>Information</h3>
+            <button class="close-btn" @click="isInfoOpen = false" aria-label="Close information">
                 <X :size="16" />
             </button>
+        </div>
+
+        <div class="info-links">
+            <a href="/privacy.html" class="info-link" @click="isInfoOpen = false">Privacy Policy</a>
+            <a href="/terms.html" class="info-link" @click="isInfoOpen = false">Terms & Conditions</a>
         </div>
     </div>
 </template>
@@ -78,5 +83,24 @@ h3 {
 .close-btn:focus-visible {
     outline: 2px solid #007AFF;
     outline-offset: 2px;
+}
+
+.info-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-link {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+.info-link:hover {
+    color: #fff;
 }
 </style>

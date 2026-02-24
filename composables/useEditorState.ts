@@ -260,7 +260,7 @@ const themeId = useLocalStorage('graphlet-theme', DEFAULT_THEME);
 const title = useLocalStorage('graphlet-title', 'Getting Started');
 const eyebrow = useLocalStorage('graphlet-eyebrow', 'Welcome');
 const badges = useLocalStorage('graphlet-badges', ['Graphlet', 'Mermaid']);
-const isSettingsOpen = ref(false);
+const isInfoOpen = ref(false);
 const isShareOpen = ref(false);
 const isWelcomeOpen = ref(false);
 const isShortcutsOpen = ref(false);
@@ -298,7 +298,7 @@ export const useEditorState = () => {
         themes: THEMES,
         undo,
         redo,
-        isSettingsOpen,
+        isInfoOpen,
         isShareOpen,
         isWelcomeOpen,
         isThemeSwitcherOpen,
