@@ -53,6 +53,8 @@ const stopDrag = () => {
 // Global keyboard shortcuts
 const handleGlobalShortcuts = (e: KeyboardEvent) => {
     const mod = e.metaKey || e.ctrlKey;
+    const target = e.target as HTMLElement | null;
+    const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 
     if (mod && e.key === '/') {
         e.preventDefault();
@@ -62,15 +64,15 @@ const handleGlobalShortcuts = (e: KeyboardEvent) => {
         e.preventDefault();
         isInfoOpen.value = !isInfoOpen.value;
     }
-    if (mod && e.key === 'n') {
+    if (e.altKey && e.code === 'KeyN' && !isInput) {
         e.preventDefault();
         isWelcomeOpen.value = true;
     }
-    if (mod && e.key === '0') {
+    if (e.shiftKey && e.code === 'Digit1' && !isInput) {
         e.preventDefault();
         previewRef.value?.fitToScreen?.();
     }
-    if (mod && e.key === 'b') {
+    if (mod && e.key === '\\') {
         e.preventDefault();
         isSidebarOpen.value = !isSidebarOpen.value;
     }

@@ -11,16 +11,17 @@ const isMac = computed(() => {
     return false;
 });
 const mod = computed(() => isMac.value ? '⌘' : 'Ctrl');
+const alt = computed(() => isMac.value ? '⌥' : 'Alt');
 
 const shortcuts = computed(() => [
     { action: 'Undo', keys: `${mod.value}Z` },
     { action: 'Redo', keys: `${mod.value}⇧Z` },
     { action: 'Zoom In', keys: `${mod.value}+` },
     { action: 'Zoom Out', keys: `${mod.value}−` },
-    { action: 'Fit to Screen', keys: `${mod.value}0` },
+    { action: 'Fit to Screen', keys: `⇧1` },
     { action: 'Toggle Settings', keys: `${mod.value},` },
-    { action: 'New / Templates', keys: `${mod.value}N` },
-    { action: 'Toggle Diagrams', keys: `${mod.value}B` },
+    { action: 'New / Templates', keys: `${alt.value}N` },
+    { action: 'Toggle Diagrams', keys: `${mod.value}\\` },
     { action: 'Show Shortcuts', keys: `${mod.value}/` },
     { action: 'Close Modal', keys: 'Esc' },
 ]);
