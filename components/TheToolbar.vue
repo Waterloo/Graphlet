@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
-import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, Info, ChevronDown, Image as ImageIcon } from 'lucide-vue-next';
+import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown, Image as ImageIcon, Info } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
 import { onClickOutside, onKeyStroke } from '@vueuse/core';
 
