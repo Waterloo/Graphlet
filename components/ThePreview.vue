@@ -6,7 +6,7 @@ import { DIAGRAM_TEMPLATES } from '~/composables/useEditorState';
 import { useDebounceFn } from '@vueuse/core';
 
 // Components
-import TheSettings from '~/components/TheSettings.vue';
+import TheInfo from '~/components/TheInfo.vue';
 
 // Icons
 import { AlertCircle, Plus, Minus, Maximize, FileCode2, ExternalLink, X } from 'lucide-vue-next';
@@ -56,7 +56,7 @@ const startAddingBadge = async () => {
 
 const startEditingBadge = async (index: number) => {
     editingBadgeIndex.value = index;
-    editingBadgeValue.value = badges.value[index];
+    editingBadgeValue.value = badges.value[index] || '';
     await nextTick();
     if (badgeInputRefs.value[index]) {
         badgeInputRefs.value[index].focus();
@@ -293,12 +293,11 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
     <div v-if="currentTheme" ref="containerRef" class="preview-container"
         :style="{ background: currentTheme.mermaid.background }">
 
-        <TheSettings />
+        <TheInfo />
 
         <!-- Metadata Overlay -->
-        <div class="metadata-layer" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop
-            @mousemove.stop @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop
-            @wheel.stop @dblclick.stop>
+        <div class="metadata-layer" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop @mousemove.stop
+            @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop @wheel.stop @dblclick.stop>
             <input v-model="eyebrow" class="input-eyebrow" :style="{ color: currentTheme.header.eyebrow }"
                 placeholder="CATEGORY" />
             <input v-model="title" class="input-title" :style="{ color: currentTheme.header.title }"
@@ -355,9 +354,8 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
         </div>
 
         <!-- Zoom Controls -->
-        <div class="zoom-controls" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop
-            @mousemove.stop @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop
-            @wheel.stop @dblclick.stop>
+        <div class="zoom-controls" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop @mousemove.stop
+            @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop @wheel.stop @dblclick.stop>
             <button @click="zoomIn" title="Zoom In">
                 <Plus :size="16" />
             </button>
@@ -371,8 +369,8 @@ defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
 
         <!-- Error Overlay -->
         <div v-if="error" class="error-overlay" @pointerdown.stop @pointermove.stop @pointerup.stop @mousedown.stop
-            @mousemove.stop @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop
-            @wheel.stop @dblclick.stop>
+            @mousemove.stop @mouseup.stop @touchstart.stop @touchmove.stop @touchend.stop @touchcancel.stop @wheel.stop
+            @dblclick.stop>
             <div class="error-card">
                 <div class="error-header">
                     <AlertCircle :size="16" class="error-icon" />
