@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import Plausible from '@plausible-analytics/tracker'
+
+const { trackPageview } = Plausible({
+    domain: 'graphlet.xyz',
+})
 
 onMounted(() => {
+    trackPageview()
+
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/sw.js').then((registration) => {
