@@ -4,6 +4,7 @@ import { init } from '@plausible-analytics/tracker'
 
 init({
     domain: 'graphlet.xyz',
+    endpoint:'https://chitraguptan.graphlet.xyz/api/event'
 })
 
 onMounted(() => {
