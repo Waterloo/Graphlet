@@ -1,0 +1,60 @@
+<style>
+    body {
+        background-color: #13131f;
+        /* Midnight theme base */
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #f0eeff;
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
+
+    .loader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid rgba(124, 92, 252, 0.2);
+        border-top-color: #7c5cfc;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    h1 {
+        font-size: 1.2rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        opacity: 0.8;
+        margin: 0;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 0.6;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+</style>
+<div class="loader">
+    <div class="spinner"></div>
+    <h1>Graphlet</h1>
+</div>
