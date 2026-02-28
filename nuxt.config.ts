@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
+  spaLoadingTemplate: '~/spa-loading-template.html',
   app: {
     head: {
       htmlAttrs: { lang: 'en' },

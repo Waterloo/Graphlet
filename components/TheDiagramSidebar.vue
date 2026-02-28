@@ -69,7 +69,7 @@ const timeAgo = (ts: number): string => {
 
 // Close on Escape
 const handleKeydown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
+    if (e.code === 'Escape') {
         if (pendingDeleteId.value) {
             cancelDelete();
         } else if (renamingId.value) {

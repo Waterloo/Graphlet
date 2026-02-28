@@ -3,6 +3,7 @@ import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
 import { DIAGRAM_TEMPLATES } from '~/composables/useEditorState';
 import { X, Sparkles, Pencil, Eye, Share2, ArrowRight } from 'lucide-vue-next';
+import { track } from '@plausible-analytics/tracker';
 
 const { isWelcomeOpen, hasBeenWelcomed, loadTemplate } = useEditorState();
 const { createDiagram } = useDiagramStore();
@@ -17,6 +18,7 @@ onMounted(() => {
 const selectTemplate = (id: string) => {
     const template = DIAGRAM_TEMPLATES.find(t => t.id === id);
     if (template) {
+        track('New Diagram', { props: { template: id } });
         createDiagram({
             code: template.code,
             title: template.title,
@@ -28,6 +30,7 @@ const selectTemplate = (id: string) => {
 };
 
 const startScratch = () => {
+    track('New Diagram', { props: { template: 'scratch' } });
     createDiagram({ title: 'Untitled' });
     dismiss();
 };
@@ -40,7 +43,7 @@ const dismiss = () => {
 // Close on Escape
 onMounted(() => {
     const handler = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && isWelcomeOpen.value) {
+        if (e.code === 'Escape' && isWelcomeOpen.value) {
             dismiss();
         }
     };

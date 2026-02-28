@@ -95,14 +95,7 @@ export const useShareState = () => {
         }
     };
 
-    const getMermaidInkUrl = (): string => {
-        const inkPayload = {
-            code: code.value,
-            mermaid: { theme: 'dark', themeVariables: { darkMode: true } }
-        };
-        const encoded = encodeState(inkPayload as any);
-        return `https://mermaid.ink/svg/pako:${encoded}`;
-    };
+
 
     return {
         encodeState,
@@ -110,7 +103,6 @@ export const useShareState = () => {
         getShareUrl,
         getEmbedUrl,
         getEmbedHtml,
-        getMermaidInkUrl,
         loadFromUrl,
         syncToUrl
     };

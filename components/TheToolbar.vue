@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
-import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, Info } from 'lucide-vue-next';
+import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown, Image as ImageIcon, Info } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
-import { onClickOutside } from '@vueuse/core';
+import { onClickOutside, onKeyStroke } from '@vueuse/core';
+import { track } from '@plausible-analytics/tracker';
 
 const { themes, themeId, currentTheme, currentSvg, isInfoOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
@@ -12,6 +13,13 @@ const { isSidebarOpen } = useDiagramStore();
 const themeDropdownRef = ref(null);
 onClickOutside(themeDropdownRef, () => {
     isThemeSwitcherOpen.value = false;
+});
+
+// Export Menu State
+const isExportMenuOpen = ref(false);
+const exportDropdownRef = ref(null);
+onClickOutside(exportDropdownRef, () => {
+    isExportMenuOpen.value = false;
 });
 
 // Helper: Convert SVG string to Blob (PNG)
@@ -102,8 +110,10 @@ const svgToPngBlob = (svgString: string, opts: {
             ctx.scale(scale, scale);
 
             // Draw Background
-            ctx.fillStyle = opts.bgColor;
-            ctx.fillRect(0, 0, totalWidth, totalHeight);
+            if (opts.bgColor !== 'transparent') {
+                ctx.fillStyle = opts.bgColor;
+                ctx.fillRect(0, 0, totalWidth, totalHeight);
+            }
 
             // --- Draw Header ---
             const textX = padding;
@@ -164,6 +174,20 @@ const svgToPngBlob = (svgString: string, opts: {
     });
 };
 
+const executeDownload = (blob: Blob, extension: string) => {
+    const { title } = useEditorState();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${title.value || 'graphlet-diagram'}.${extension}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    isExportMenuOpen.value = false;
+    track('Export', { props: { type: extension } });
+};
+
 const copyImage = async () => {
     if (!currentSvg.value) return;
     try {
@@ -179,6 +203,8 @@ const copyImage = async () => {
             await navigator.clipboard.write([
                 new ClipboardItem({ 'image/png': pngBlob })
             ]);
+            isExportMenuOpen.value = false;
+            track('Copy', { props: { method: 'image' } });
         }
     } catch (err) {
         console.error('Failed to copy image:', err);
@@ -192,28 +218,72 @@ const handleCopy = async () => {
     setTimeout(() => copiedState.value = false, 2000);
 }
 
-const downloadImage = async () => {
+const downloadImage = async (transparent = false) => {
     if (!currentSvg.value) return;
     const { title, eyebrow, currentTheme } = useEditorState();
 
     const pngBlob = await svgToPngBlob(currentSvg.value, {
-        bgColor: currentTheme.value?.mermaid?.background || '#13131f',
+        bgColor: transparent ? 'transparent' : (currentTheme.value?.mermaid?.background || '#13131f'),
         title: title.value,
         eyebrow: eyebrow.value,
         theme: currentTheme.value
     });
 
     if (pngBlob) {
-        const url = URL.createObjectURL(pngBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${title.value || 'graphlet-diagram'}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        executeDownload(pngBlob, 'png');
     }
 };
+
+const downloadSvg = () => {
+    if (!currentSvg.value) return;
+    const blob = new Blob([currentSvg.value], { type: 'image/svg+xml;charset=utf-8' });
+    executeDownload(blob, 'svg');
+};
+
+const isMac = computed(() => {
+    if (import.meta.client) {
+        return navigator.platform.toUpperCase().includes('MAC');
+    }
+    return false;
+});
+const modText = computed(() => isMac.value ? '⌘' : 'Ctrl');
+
+// Keyboard shortcuts for export
+onKeyStroke((e) => {
+    const mod = e.metaKey || e.ctrlKey;
+    if (mod && !e.shiftKey && e.code === 'KeyS') {
+        e.preventDefault();
+        downloadImage(false);
+    }
+    if (mod && e.shiftKey && e.code === 'KeyS') {
+        e.preventDefault();
+        downloadSvg();
+    }
+    if (mod && !e.shiftKey && e.code === 'KeyC') {
+        const activeElement = document.activeElement as HTMLElement | null;
+        const isFocusInEditor = activeElement?.closest('.monaco-editor');
+        const isEditableElement =
+            !!activeElement &&
+            (activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable);
+        const hasTextSelectionInActiveElement =
+            activeElement instanceof HTMLInputElement ||
+                activeElement instanceof HTMLTextAreaElement
+                ? activeElement.selectionStart !== activeElement.selectionEnd
+                : false;
+
+        if (
+            !isFocusInEditor &&
+            !isEditableElement &&
+            !window.getSelection()?.toString() &&
+            !hasTextSelectionInActiveElement
+        ) {
+            e.preventDefault();
+            handleCopy();
+        }
+    }
+});
 
 // Helper for pill styles
 const getPillStyle = (theme: any, isActive: boolean) => ({
@@ -232,18 +302,10 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
         </div>
 
         <div class="actions">
-            <!-- Sidebar Toggle -->
-            <TheTooltip text="Diagrams" shortcut="⌘B">
-                <button class="icon-btn sidebar-toggle" title="Toggle Sidebar" @click="isSidebarOpen = !isSidebarOpen"
-                    :class="{ active: isSidebarOpen }" id="btn-sidebar">
-                    <PanelLeft :size="16" />
-                </button>
-            </TheTooltip>
-
-            <div class="divider"></div>
             <!-- New / Templates -->
-            <TheTooltip text="Templates" shortcut="⌘N">
-                <button class="icon-btn" title="New Diagram" @click="isWelcomeOpen = true" id="btn-new">
+            <TheTooltip text="Templates" :shortcut="`${isMac ? '⌥' : 'Alt'}N`">
+                <button class="icon-btn" title="New Diagram"
+                    @click="isWelcomeOpen = true; track('New Diagram Click', {})" id="btn-new">
                     <Plus :size="16" />
                     <span class="btn-label">New</span>
                 </button>
@@ -253,8 +315,9 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
 
             <!-- Theme Switcher -->
             <div class="relative" ref="themeDropdownRef">
-                <TheTooltip text="Theme" shortcut="⌘T">
-                    <button class="icon-btn" title="Select Theme" @click="isThemeSwitcherOpen = !isThemeSwitcherOpen"
+                <TheTooltip text="Theme">
+                    <button class="icon-btn" title="Select Theme"
+                        @click="isThemeSwitcherOpen = !isThemeSwitcherOpen; if (isThemeSwitcherOpen) track('Toggle', { props: { target: 'theme_switcher' } })"
                         :class="{ active: isThemeSwitcherOpen }" id="btn-theme">
                         <Palette :size="16" />
                         <span class="btn-label theme-label">{{ currentTheme?.label || 'Theme' }}</span>
@@ -271,7 +334,8 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
                     </div>
                     <div class="theme-grid">
                         <button v-for="theme in themes" :key="theme.id" class="theme-pill"
-                            :style="getPillStyle(theme, themeId === theme.id)" @click="themeId = theme.id"
+                            :style="getPillStyle(theme, themeId === theme.id)"
+                            @click="themeId = theme.id; track('Theme Select', { props: { theme: theme.id } });"
                             :aria-label="`Select theme ${theme.label}`" :aria-pressed="themeId === theme.id">
                             {{ theme.label }}
                         </button>
@@ -283,30 +347,75 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
 
             <!-- Info -->
             <TheTooltip text="Information" shortcut="⌘,">
-                <button class="icon-btn" title="Information" @click="isInfoOpen = !isInfoOpen"
+                <button class="icon-btn" title="Information"
+                    @click="isInfoOpen = !isInfoOpen; if (isInfoOpen) track('Toggle', { props: { target: 'info' } })"
                     :class="{ active: isInfoOpen }" id="btn-info">
                     <Info :size="16" />
                 </button>
             </TheTooltip>
 
-            <!-- Copy -->
-            <TheTooltip text="Copy Image" shortcut="⌘⇧C">
-                <button class="icon-btn" title="Copy to Clipboard" @click="handleCopy" id="btn-copy">
-                    <Check v-if="copiedState" :size="16" class="success-icon" />
-                    <Copy v-else :size="16" />
-                </button>
-            </TheTooltip>
+            <!-- Export Menu -->
+            <div class="relative" ref="exportDropdownRef">
+                <div class="export-button-group">
+                    <button class="icon-btn export-main-btn" title="Download PNG" @click="downloadImage(false)">
+                        <Download :size="16" />
+                    </button>
+                    <div class="export-divider"></div>
+                    <button class="icon-btn export-chevron-btn" @click="isExportMenuOpen = !isExportMenuOpen"
+                        :class="{ active: isExportMenuOpen }">
+                        <ChevronDown :size="16" />
+                    </button>
+                </div>
 
-            <!-- Download -->
-            <TheTooltip text="Download PNG">
-                <button class="icon-btn" title="Download PNG" @click="downloadImage" id="btn-download">
-                    <Download :size="16" />
-                </button>
-            </TheTooltip>
+                <!-- Export Popover -->
+                <div v-if="isExportMenuOpen" class="export-popover">
+                    <button class="export-item" @click="downloadImage(false)">
+                        <div class="export-item-left">
+                            <ImageIcon :size="16" class="export-icon" />
+                            <span>Save PNG</span>
+                        </div>
+                        <div class="shortcut-keys">
+                            <kbd>{{ modText }}</kbd> <kbd>S</kbd>
+                        </div>
+                    </button>
+
+                    <button class="export-item" @click="downloadSvg">
+                        <div class="export-item-left">
+                            <ImageIcon :size="16" class="export-icon" />
+                            <span>Save SVG</span>
+                        </div>
+                        <div class="shortcut-keys">
+                            <kbd>{{ modText }}</kbd> <kbd>⇧</kbd> <kbd>S</kbd>
+                        </div>
+                    </button>
+
+                    <button class="export-item" @click="downloadImage(true)">
+                        <div class="export-item-left">
+                            <ImageIcon :size="16" class="export-icon" />
+                            <span>Save Transparent PNG</span>
+                        </div>
+                    </button>
+
+                    <div class="export-menu-divider"></div>
+
+                    <button class="export-item" @click="handleCopy">
+                        <div class="export-item-left">
+                            <Check v-if="copiedState" :size="16" class="success-icon export-icon" />
+                            <Copy v-else :size="16" class="export-icon" />
+                            <span>{{ copiedState ? 'Copied!' : 'Copy Image' }}</span>
+                        </div>
+                        <div class="shortcut-keys" v-if="!copiedState">
+                            <kbd>{{ modText }}</kbd> <kbd>C</kbd>
+                        </div>
+                    </button>
+                </div>
+            </div>
 
             <!-- Share -->
-            <button class="button-primary" @click="isShareOpen = true" id="btn-share">
-                Share
+            <button class="button-primary share-btn"
+                @click="isShareOpen = true; track('Toggle', { props: { target: 'share' } })" id="btn-share">
+                <span class="share-text">Share</span>
+                <Share2 :size="16" class="share-icon" />
             </button>
         </div>
     </div>
@@ -503,10 +612,208 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
     text-transform: capitalize;
 }
 
+/* Export Button Group */
+.export-button-group {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 69, 58, 0.1);
+    /* Subtle red tint like the screenshot */
+    border: 1px solid rgba(255, 69, 58, 0.2);
+    border-radius: 8px;
+    height: 32px;
+    transition: all 0.2s;
+}
+
+.export-button-group:hover {
+    background: rgba(255, 69, 58, 0.15);
+    border-color: rgba(255, 69, 58, 0.3);
+}
+
+.export-main-btn {
+    border: none;
+    background: transparent;
+    color: #FF6B6B;
+    border-radius: 8px 0 0 8px;
+    height: 100%;
+}
+
+.export-main-btn:hover {
+    background: transparent;
+}
+
+.export-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(255, 69, 58, 0.2);
+}
+
+.export-chevron-btn {
+    border: none;
+    background: transparent;
+    color: #FF6B6B;
+    border-radius: 0 8px 8px 0;
+    height: 100%;
+    padding: 0 8px;
+}
+
+.export-chevron-btn:hover,
+.export-chevron-btn.active {
+    background: rgba(255, 69, 58, 0.1);
+}
+
+/* Export Popover */
+.export-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 240px;
+    background: #1C1C1E;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px;
+    z-index: 100;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.export-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.export-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.export-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.export-icon {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.export-item:hover .export-icon {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.shortcut-keys {
+    display: flex;
+    gap: 4px;
+}
+
+.shortcut-keys kbd {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    min-width: 20px;
+    text-align: center;
+}
+
+.export-menu-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 4px 0;
+}
+
 /* Hide labels on small screens */
 @media (max-width: 900px) {
     .btn-label {
         display: none;
+    }
+}
+
+.share-icon {
+    display: none;
+}
+
+.button-primary.share-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 600px) {
+    .toolbar {
+        padding: 0 12px;
+    }
+
+    .brand {
+        font-size: 16px;
+    }
+
+    .actions {
+        margin-left: auto;
+        gap: 6px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .actions::-webkit-scrollbar {
+        display: none;
+    }
+
+    .divider {
+        display: none;
+    }
+
+    .icon-btn {
+        padding: 0 8px;
+    }
+
+    .export-main-btn {
+        padding: 0 8px;
+    }
+
+    .export-chevron-btn {
+        padding: 0 6px;
+    }
+
+    .button-primary.share-btn {
+        padding: 6px 10px;
+    }
+
+    .share-text {
+        display: none;
+    }
+
+    .share-icon {
+        display: block;
+    }
+
+    .theme-popover,
+    .export-popover {
+        position: fixed;
+        top: auto;
+        bottom: 24px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        z-index: 1000;
+        transform: translateZ(0);
+        /* Hardware acceleration */
     }
 }
 </style>

@@ -110,7 +110,7 @@ const handleSubmit = async () => {
 };
 
 const handleKeydown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.code === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         handleSubmit();
     }
