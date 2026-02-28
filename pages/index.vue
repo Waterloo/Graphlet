@@ -56,11 +56,11 @@ const handleGlobalShortcuts = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
     const isInput = target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 
-    if (mod && e.key === '/') {
+    if (mod && e.code === 'Slash' && !isInput) {
         e.preventDefault();
         isShortcutsOpen.value = !isShortcutsOpen.value;
     }
-    if (mod && e.key === ',') {
+    if (mod && e.code === 'Comma' && !isInput) {
         e.preventDefault();
         isInfoOpen.value = !isInfoOpen.value;
     }
@@ -72,7 +72,7 @@ const handleGlobalShortcuts = (e: KeyboardEvent) => {
         e.preventDefault();
         previewRef.value?.fitToScreen?.();
     }
-    if (mod && e.key === '\\') {
+    if (mod && e.code === 'Backslash' && !isInput) {
         e.preventDefault();
         isSidebarOpen.value = !isSidebarOpen.value;
     }

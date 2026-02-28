@@ -40,7 +40,7 @@ const dismiss = () => {
 // Close on Escape
 onMounted(() => {
     const handler = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && isWelcomeOpen.value) {
+        if (e.code === 'Escape' && isWelcomeOpen.value) {
             dismiss();
         }
     };

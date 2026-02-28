@@ -33,7 +33,7 @@ const dismiss = () => {
 // Close on Escape
 onMounted(() => {
     const handler = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && isShortcutsOpen.value) {
+        if (e.code === 'Escape' && isShortcutsOpen.value) {
             dismiss();
         }
     };
