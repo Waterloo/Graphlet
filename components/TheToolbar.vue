@@ -257,10 +257,25 @@ onKeyStroke((e) => {
         downloadSvg();
     }
     if (mod && !e.shiftKey && e.key.toLowerCase() === 'c') {
-        const activeElement = document.activeElement;
+        const activeElement = document.activeElement as HTMLElement | null;
         const isFocusInEditor = activeElement?.closest('.monaco-editor');
+        const isEditableElement =
+            !!activeElement &&
+            (activeElement.tagName === 'INPUT' ||
+                activeElement.tagName === 'TEXTAREA' ||
+                activeElement.isContentEditable);
+        const hasTextSelectionInActiveElement =
+            activeElement instanceof HTMLInputElement ||
+            activeElement instanceof HTMLTextAreaElement
+                ? activeElement.selectionStart !== activeElement.selectionEnd
+                : false;
 
-        if (!isFocusInEditor && !window.getSelection()?.toString()) {
+        if (
+            !isFocusInEditor &&
+            !isEditableElement &&
+            !window.getSelection()?.toString() &&
+            !hasTextSelectionInActiveElement
+        ) {
             e.preventDefault();
             handleCopy();
         }
