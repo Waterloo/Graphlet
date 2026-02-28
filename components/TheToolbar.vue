@@ -4,6 +4,7 @@ import { useDiagramStore } from '~/composables/useDiagramStore';
 import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown, Image as ImageIcon, Info } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
 import { onClickOutside, onKeyStroke } from '@vueuse/core';
+import { track } from '@plausible-analytics/tracker';
 
 const { themes, themeId, currentTheme, currentSvg, isInfoOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
@@ -184,6 +185,7 @@ const executeDownload = (blob: Blob, extension: string) => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     isExportMenuOpen.value = false;
+    track('Export', { props: { type: extension } });
 };
 
 const copyImage = async () => {
@@ -202,6 +204,7 @@ const copyImage = async () => {
                 new ClipboardItem({ 'image/png': pngBlob })
             ]);
             isExportMenuOpen.value = false;
+            track('Copy', { props: { method: 'image' } });
         }
     } catch (err) {
         console.error('Failed to copy image:', err);
@@ -301,7 +304,8 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
         <div class="actions">
             <!-- New / Templates -->
             <TheTooltip text="Templates" :shortcut="`${isMac ? '⌥' : 'Alt'}N`">
-                <button class="icon-btn" title="New Diagram" @click="isWelcomeOpen = true" id="btn-new">
+                <button class="icon-btn" title="New Diagram"
+                    @click="isWelcomeOpen = true; track('New Diagram Click', {})" id="btn-new">
                     <Plus :size="16" />
                     <span class="btn-label">New</span>
                 </button>
@@ -312,7 +316,8 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
             <!-- Theme Switcher -->
             <div class="relative" ref="themeDropdownRef">
                 <TheTooltip text="Theme">
-                    <button class="icon-btn" title="Select Theme" @click="isThemeSwitcherOpen = !isThemeSwitcherOpen"
+                    <button class="icon-btn" title="Select Theme"
+                        @click="isThemeSwitcherOpen = !isThemeSwitcherOpen; if (isThemeSwitcherOpen) track('Toggle', { props: { target: 'theme_switcher' } })"
                         :class="{ active: isThemeSwitcherOpen }" id="btn-theme">
                         <Palette :size="16" />
                         <span class="btn-label theme-label">{{ currentTheme?.label || 'Theme' }}</span>
@@ -329,7 +334,8 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
                     </div>
                     <div class="theme-grid">
                         <button v-for="theme in themes" :key="theme.id" class="theme-pill"
-                            :style="getPillStyle(theme, themeId === theme.id)" @click="themeId = theme.id"
+                            :style="getPillStyle(theme, themeId === theme.id)"
+                            @click="themeId = theme.id; track('Theme Select', { props: { theme: theme.id } });"
                             :aria-label="`Select theme ${theme.label}`" :aria-pressed="themeId === theme.id">
                             {{ theme.label }}
                         </button>
@@ -341,7 +347,8 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
 
             <!-- Info -->
             <TheTooltip text="Information" shortcut="⌘,">
-                <button class="icon-btn" title="Information" @click="isInfoOpen = !isInfoOpen"
+                <button class="icon-btn" title="Information"
+                    @click="isInfoOpen = !isInfoOpen; if (isInfoOpen) track('Toggle', { props: { target: 'info' } })"
                     :class="{ active: isInfoOpen }" id="btn-info">
                     <Info :size="16" />
                 </button>
@@ -405,7 +412,8 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
             </div>
 
             <!-- Share -->
-            <button class="button-primary share-btn" @click="isShareOpen = true" id="btn-share">
+            <button class="button-primary share-btn"
+                @click="isShareOpen = true; track('Toggle', { props: { target: 'share' } })" id="btn-share">
                 <span class="share-text">Share</span>
                 <Share2 :size="16" class="share-icon" />
             </button>

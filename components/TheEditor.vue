@@ -5,6 +5,7 @@ import { useMermaidAutocomplete } from '~/composables/useMermaidAutocomplete';
 import { useDiagramStore } from '~/composables/useDiagramStore';
 import { Copy, Check, Sparkles, PanelLeft } from 'lucide-vue-next';
 import TheAiAssistant from './TheAiAssistant.vue';
+import { track } from '@plausible-analytics/tracker';
 
 const container = ref<HTMLElement | null>(null);
 let editor: monaco.editor.IStandaloneCodeEditor | null = null;
@@ -23,6 +24,7 @@ const copyContent = async () => {
         ? editor.getModel()?.getValueInRange(selection) ?? ''
         : editor.getValue();
     await navigator.clipboard.writeText(selectedText);
+    track('Copy', { props: { method: 'code' } });
     copied.value = true;
     setTimeout(() => copied.value = false, 2000);
 };
@@ -160,7 +162,8 @@ onUnmounted(() => {
         <div class="editor-header">
             <div class="editor-header-left">
                 <!-- Sidebar Toggle -->
-                <button class="icon-btn" :class="{ active: isSidebarOpen }" @click="isSidebarOpen = !isSidebarOpen"
+                <button class="icon-btn" :class="{ active: isSidebarOpen }"
+                    @click="isSidebarOpen = !isSidebarOpen; if (isSidebarOpen) track('Toggle', { props: { target: 'sidebar' } })"
                     title="Toggle Sidebar">
                     <PanelLeft :size="16" />
                 </button>

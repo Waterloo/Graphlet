@@ -3,6 +3,7 @@ import { useEditorState } from '~/composables/useEditorState';
 import { useShareState } from '~/composables/useShareState';
 import { Link, Code, Check, X, Copy } from 'lucide-vue-next';
 import { useClipboard } from '@vueuse/core';
+import { track } from '@plausible-analytics/tracker';
 
 const { isShareOpen } = useEditorState();
 const { getShareUrl, getEmbedHtml } = useShareState();
@@ -25,10 +26,12 @@ watch([isShareOpen], ([open]) => {
 
 const handleCopyLink = () => {
     copyText(shareUrl.value);
+    track('Share', { props: { method: 'link' } });
 };
 
 const handleCopyEmbed = async () => {
     await navigator.clipboard.writeText(embedCode.value);
+    track('Share', { props: { method: 'iframe' } });
     copiedEmbed.value = true;
     setTimeout(() => copiedEmbed.value = false, 2000);
 };
