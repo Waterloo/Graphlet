@@ -1,40 +1,25 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useShareState } from '~/composables/useShareState';
-import { Link, Code, Check, X, Copy, FileText } from 'lucide-vue-next';
+import { Link, Code, Check, X, Copy } from 'lucide-vue-next';
 import { useClipboard } from '@vueuse/core';
 
 const { isShareOpen } = useEditorState();
-const { getShareUrl, getEmbedHtml, getMermaidInkUrl } = useShareState();
+const { getShareUrl, getEmbedHtml } = useShareState();
 
-const activeTab = ref<'link' | 'embed' | 'markdown'>('link');
+const activeTab = ref<'link' | 'embed'>('link');
 const shareUrl = ref('');
 const embedCode = ref('');
-const markdownCode = ref('');
-const markdownFormat = ref<'image' | 'native'>('image');
 const { code } = useEditorState();
 
 const { copy: copyText, copied: copiedLink } = useClipboard();
 const copiedEmbed = ref(false);
-const copiedMarkdown = ref(false);
-
-const generateMarkdown = () => {
-    const badge = `[![Edit on Graphlet](https://img.shields.io/badge/Edit%20on-Graphlet-blue)](${shareUrl.value})`;
-
-    if (markdownFormat.value === 'native') {
-        markdownCode.value = "```mermaid\n" + code.value + "\n```\n\n" + badge;
-    } else {
-        const inkUrl = getMermaidInkUrl();
-        markdownCode.value = `[![Diagram](${inkUrl})](${shareUrl.value})\n\n${badge}`;
-    }
-};
 
 // Regenerate URLs when parameters change
-watch([isShareOpen, markdownFormat], ([open]) => {
+watch([isShareOpen], ([open]) => {
     if (open) {
         shareUrl.value = getShareUrl();
         embedCode.value = getEmbedHtml();
-        generateMarkdown();
     }
 });
 
@@ -46,12 +31,6 @@ const handleCopyEmbed = async () => {
     await navigator.clipboard.writeText(embedCode.value);
     copiedEmbed.value = true;
     setTimeout(() => copiedEmbed.value = false, 2000);
-};
-
-const handleCopyMarkdown = async () => {
-    await navigator.clipboard.writeText(markdownCode.value);
-    copiedMarkdown.value = true;
-    setTimeout(() => copiedMarkdown.value = false, 2000);
 };
 
 const close = () => {
@@ -82,11 +61,6 @@ const close = () => {
                             <Code :size="14" />
                             Embed
                         </button>
-                        <button class="tab" :class="{ active: activeTab === 'markdown' }"
-                            @click="activeTab = 'markdown'">
-                            <FileText :size="14" />
-                            Badge
-                        </button>
                     </div>
 
                     <!-- Share Link Tab -->
@@ -113,33 +87,6 @@ const close = () => {
                                 <Check v-if="copiedEmbed" :size="14" class="success-icon" />
                                 <Copy v-else :size="14" />
                                 {{ copiedEmbed ? 'Copied!' : 'Copy' }}
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Markdown / Badge Tab -->
-                    <div v-if="activeTab === 'markdown'" class="tab-content">
-                        <p class="description">Add this badge to your README to let others edit this diagram.</p>
-                        <div class="markdown-options">
-                            <label class="option-label">Format:</label>
-                            <div class="toggle-group">
-                                <button class="toggle-btn" :class="{ active: markdownFormat === 'image' }"
-                                    @click="markdownFormat = 'image'">Image (mermaid.ink)</button>
-                                <button class="toggle-btn" :class="{ active: markdownFormat === 'native' }"
-                                    @click="markdownFormat = 'native'">Native (GitHub)</button>
-                            </div>
-                        </div>
-
-                        <div class="preview-box" v-if="markdownFormat === 'image'">
-                            <span class="preview-label">Preview:</span>
-                            <img src="https://img.shields.io/badge/Edit%20on-Graphlet-blue" alt="Edit on Graphlet" />
-                        </div>
-                        <div class="code-box">
-                            <pre class="embed-code">{{ markdownCode }}</pre>
-                            <button class="copy-btn" @click="handleCopyMarkdown">
-                                <Check v-if="copiedMarkdown" :size="14" class="success-icon" />
-                                <Copy v-else :size="14" />
-                                {{ copiedMarkdown ? 'Copied!' : 'Copy' }}
                             </button>
                         </div>
                     </div>

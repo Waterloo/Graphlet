@@ -299,15 +299,6 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
         </div>
 
         <div class="actions">
-            <!-- Sidebar Toggle -->
-            <TheTooltip text="Diagrams" :shortcut="`${modText}\\`">
-                <button class="icon-btn sidebar-toggle" title="Toggle Sidebar" @click="isSidebarOpen = !isSidebarOpen"
-                    :class="{ active: isSidebarOpen }" id="btn-sidebar">
-                    <PanelLeft :size="16" />
-                </button>
-            </TheTooltip>
-
-            <div class="divider"></div>
             <!-- New / Templates -->
             <TheTooltip text="Templates" :shortcut="`${isMac ? '⌥' : 'Alt'}N`">
                 <button class="icon-btn" title="New Diagram" @click="isWelcomeOpen = true" id="btn-new">
