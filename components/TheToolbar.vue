@@ -248,15 +248,15 @@ const modText = computed(() => isMac.value ? '⌘' : 'Ctrl');
 // Keyboard shortcuts for export
 onKeyStroke((e) => {
     const mod = e.metaKey || e.ctrlKey;
-    if (mod && !e.shiftKey && e.key.toLowerCase() === 's') {
+    if (mod && !e.shiftKey && e.code === 'KeyS') {
         e.preventDefault();
         downloadImage(false);
     }
-    if (mod && e.shiftKey && e.key.toLowerCase() === 's') {
+    if (mod && e.shiftKey && e.code === 'KeyS') {
         e.preventDefault();
         downloadSvg();
     }
-    if (mod && !e.shiftKey && e.key.toLowerCase() === 'c') {
+    if (mod && !e.shiftKey && e.code === 'KeyC') {
         const activeElement = document.activeElement as HTMLElement | null;
         const isFocusInEditor = activeElement?.closest('.monaco-editor');
         const isEditableElement =
@@ -266,7 +266,7 @@ onKeyStroke((e) => {
                 activeElement.isContentEditable);
         const hasTextSelectionInActiveElement =
             activeElement instanceof HTMLInputElement ||
-            activeElement instanceof HTMLTextAreaElement
+                activeElement instanceof HTMLTextAreaElement
                 ? activeElement.selectionStart !== activeElement.selectionEnd
                 : false;
 
@@ -414,8 +414,9 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
             </div>
 
             <!-- Share -->
-            <button class="button-primary" @click="isShareOpen = true" id="btn-share">
-                Share
+            <button class="button-primary share-btn" @click="isShareOpen = true" id="btn-share">
+                <span class="share-text">Share</span>
+                <Share2 :size="16" class="share-icon" />
             </button>
         </div>
     </div>
@@ -741,6 +742,79 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
 @media (max-width: 900px) {
     .btn-label {
         display: none;
+    }
+}
+
+.share-icon {
+    display: none;
+}
+
+.button-primary.share-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 600px) {
+    .toolbar {
+        padding: 0 12px;
+    }
+
+    .brand {
+        font-size: 16px;
+    }
+
+    .actions {
+        margin-left: auto;
+        gap: 6px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .actions::-webkit-scrollbar {
+        display: none;
+    }
+
+    .divider {
+        display: none;
+    }
+
+    .icon-btn {
+        padding: 0 8px;
+    }
+
+    .export-main-btn {
+        padding: 0 8px;
+    }
+
+    .export-chevron-btn {
+        padding: 0 6px;
+    }
+
+    .button-primary.share-btn {
+        padding: 6px 10px;
+    }
+
+    .share-text {
+        display: none;
+    }
+
+    .share-icon {
+        display: block;
+    }
+
+    .theme-popover,
+    .export-popover {
+        position: fixed;
+        top: auto;
+        bottom: 24px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        z-index: 1000;
+        transform: translateZ(0);
+        /* Hardware acceleration */
     }
 }
 </style>
