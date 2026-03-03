@@ -268,7 +268,7 @@ export const THEMES = [
         }
     },
     {
-        id: 'terminal-dark', label: 'Terminal Dark',
+        id: 'dare-devil', label: 'Dare Devil',
         card: { bg: '#111115', border: 'rgba(255,60,95,0.15)', shadow: '0 16px 60px rgba(0,0,0,0.4)' },
         header: { eyebrow: '#ff3c5f', title: '#e8e8f0' },
         badge1: { bg: 'rgba(255,60,95,0.12)', border: 'rgba(255,60,95,0.25)', text: '#ff3c5f' },
