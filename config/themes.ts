@@ -268,6 +268,24 @@ export const THEMES = [
         }
     },
     {
+        id: 'terminal-dark', label: 'Terminal Dark',
+        card: { bg: '#111115', border: 'rgba(255,60,95,0.15)', shadow: '0 16px 60px rgba(0,0,0,0.4)' },
+        header: { eyebrow: '#ff3c5f', title: '#e8e8f0' },
+        badge1: { bg: 'rgba(255,60,95,0.12)', border: 'rgba(255,60,95,0.25)', text: '#ff3c5f' },
+        badge2: { bg: 'rgba(255,184,0,0.10)', border: 'rgba(255,184,0,0.20)', text: '#ffb800' },
+        divider: 'rgba(42,42,53,1)',
+        pill: { bg: 'rgba(42,42,53,0.6)', border: 'rgba(58,58,80,0.8)', text: '#6b6b80' },
+        pillActive: { bg: 'rgba(255,60,95,0.12)', border: 'rgba(255,60,95,0.30)', text: '#ff3c5f' },
+        mermaid: {
+            background: '#111115', primaryColor: '#1e1e2e', primaryBorderColor: 'rgba(58,58,80,0.8)', primaryTextColor: '#e8e8f0',
+            actorBkg: '#1e1e2e', actorBorder: '#ff3c5f', actorTextColor: '#e8e8f0', actorLineColor: 'rgba(58,58,80,1)',
+            signalColor: 'rgba(232,232,240,0.6)', signalTextColor: '#e8e8f0',
+            noteBkgColor: '#1e1a10', noteBorderColor: 'rgba(255,184,0,0.4)', noteTextColor: '#ffb800',
+            activationBkgColor: '#2a1a20', activationBorderColor: 'rgba(255,60,95,0.5)',
+            themeCSS: '.doneText0 { fill: #ff3c5f !important; }',
+        }
+    },
+    {
         id: 'neon', label: 'Neon',
         card: { bg: '#08080f', border: 'rgba(255,0,200,0.12)', shadow: '0 24px 80px rgba(0,0,0,0.7)' },
         header: { eyebrow: '#ff00c8', title: '#ffe8ff' },
