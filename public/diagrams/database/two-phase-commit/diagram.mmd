@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Coord as Coordinator
+    participant DB1 as Participant DB1
+    participant DB2 as Participant DB2
+
+    Note over Coord,DB2: Phase 1 — Prepare
+    Coord->>DB1: PREPARE (txid=7731)
+    Coord->>DB2: PREPARE (txid=7731)
+    DB1->>DB1: Write to WAL, acquire locks
+    DB2->>DB2: Write to WAL, acquire locks
+    DB1-->>Coord: VOTE-YES
+    DB2-->>Coord: VOTE-YES
+
+    Note over Coord,DB2: Phase 2 — Commit
+    Coord->>Coord: All votes YES — decide COMMIT
+    Coord->>Coord: Write commit decision to coordinator log
+    Coord->>DB1: COMMIT
+    Coord->>DB2: COMMIT
+    DB1->>DB1: Apply changes, release locks
+    DB2->>DB2: Apply changes, release locks
+    DB1-->>Coord: ACK committed
+    DB2-->>Coord: ACK committed
+    Coord-->>Coord: Transaction complete
+
+    Note over Coord,DB2: Abort path (if any VOTE-NO)
+    Note over DB1,DB2: Coordinator sends ABORT to all participants

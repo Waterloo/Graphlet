@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant C as Client
+    participant S as Server
+
+    C->>S: GET /events?since=last-event-id (timeout: 30s)
+    S->>S: Register client in waiting connections map
+    S->>S: Check event queue for pending events
+
+    alt Events already queued
+        S-->>C: 200 OK with event payload
+        C->>C: Process received events
+        C->>S: GET /events?since=new-last-event-id (immediate reconnect)
+    else No events - hold connection open
+        S->>S: Wait for event or timeout
+        alt New event arrives before timeout
+            S->>S: Retrieve event data
+            S-->>C: 200 OK with event payload
+            C->>C: Process received events
+            C->>S: GET /events?since=new-last-event-id (immediate reconnect)
+        else Timeout elapsed - no events
+            S-->>C: 204 No Content
+            C->>S: GET /events?since=last-event-id (reconnect)
+        end
+    end

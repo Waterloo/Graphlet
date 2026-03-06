@@ -1,0 +1,15 @@
+flowchart LR
+    AppContainers[Application Containers\nstdout / stderr] --> Agent1[Fluent Bit Agent\nDaemonSet on each node]
+    CloudServices[Cloud Services\nCloudTrail, VPC Flow Logs] --> Agent2[Cloud Log Forwarder\nmanaged agent]
+    OSLogs[OS Syslog\nand System Metrics] --> Agent1
+    Agent1 --> Parse[Parse and Structure\nJSON / regex extraction]
+    Agent2 --> Enrich[Enrich with Metadata\nenv, region, cluster]
+    Parse --> Enrich
+    Enrich --> Buffer[Buffering Layer\nKinesis / Pub/Sub / Kafka]
+    Buffer --> Aggregator[Log Aggregation Service\nCloudWatch / Loki / Elasticsearch]
+    Aggregator --> HotStore[(Hot Storage\nrecent logs, fast query)]
+    Aggregator --> ColdStore[(Cold Storage\nS3 / GCS archival)]
+    HotStore --> QueryUI[Query Interface\nKibana / Log Insights / Grafana]
+    HotStore --> AlertEngine[Alert Engine\nerror pattern matching]
+    AlertEngine --> Notify[Notify\nPagerDuty / Slack]
+    QueryUI --> DevOps([Developers and Operators])

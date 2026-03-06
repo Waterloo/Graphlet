@@ -1,0 +1,22 @@
+flowchart TD
+    Client([Client Browser\nor application]) --> Config{Proxy configured?}
+    Config -->|Yes| ProxyReq[Send request\nto Forward Proxy]
+    Config -->|No| Direct([Connect directly\nto server])
+
+    ProxyReq --> AuthCheck{Proxy auth\nrequired?}
+    AuthCheck -->|Not authenticated| AuthDeny([407 Proxy Auth Required])
+    AuthCheck -->|Authenticated| Protocol{HTTP or HTTPS?}
+
+    Protocol -->|HTTP| AccessCheck{URL allowed\nby policy?}
+    AccessCheck -->|Blocked| Deny([403 Forbidden\nby proxy policy])
+    AccessCheck -->|Allowed| CacheCheck{Cached\nresponse?}
+    CacheCheck -->|Hit| CacheResp([Return cached response])
+    CacheCheck -->|Miss| FetchHTTP[Fetch from origin server\nvia HTTP]
+    FetchHTTP --> StoreCache[Cache response\nif cacheable]
+    StoreCache --> ReturnHTTP([Return response to client])
+
+    Protocol -->|HTTPS CONNECT| ConnectReq[Client: CONNECT host:443\nHTTP/1.1]
+    ConnectReq --> TunnelCheck{CONNECT allowed?}
+    TunnelCheck -->|No| TunnelDeny([403 Forbidden])
+    TunnelCheck -->|Yes| Tunnel[Proxy opens TCP to host:443\nRelay bytes bidirectionally]
+    Tunnel --> TLSEnd([TLS end-to-end\nbetween client and server])

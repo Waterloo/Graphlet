@@ -1,0 +1,13 @@
+flowchart TD
+    Sources[Data Sources\nWeb crawl, APIs, Uploads] --> Fetch[Fetch raw content]
+    Fetch --> Parse[Parse and extract text]
+    Parse --> Normalize[Normalize and tokenize]
+    Normalize --> Stem[Stem and remove stop words]
+    Stem --> Enrich[Enrich with metadata\nentities, embeddings]
+    Enrich --> Dedupe{Duplicate\ncontent?}
+    Dedupe -->|Yes| Discard[Discard duplicate]
+    Dedupe -->|No| Score[Compute quality score]
+    Score --> Index[Write to inverted index\nposting lists]
+    Index --> Commit[Commit segment]
+    Commit --> Shard[Distribute to shards]
+    Shard --> Searchable[Document searchable]

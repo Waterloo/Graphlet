@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Browser
+    participant LocalCache as Local DNS Cache
+    participant Resolver as Recursive Resolver
+    participant Root as Root Name Server
+    participant TLD as TLD Name Server
+    participant Auth as Authoritative Name Server
+
+    Browser->>LocalCache: Query: example.com?
+    alt Cache hit
+        LocalCache-->>Browser: Return cached IP (TTL valid)
+    else Cache miss
+        LocalCache->>Resolver: Forward query: example.com?
+        Resolver->>Root: Who handles .com?
+        Root-->>Resolver: TLD server: a.gtld-servers.net
+        Resolver->>TLD: Who handles example.com?
+        TLD-->>Resolver: Authoritative: ns1.example.com
+        Resolver->>Auth: What is the IP for example.com?
+        Auth-->>Resolver: A record: 93.184.216.34 (TTL 3600)
+        Resolver-->>LocalCache: Cache result with TTL
+        LocalCache-->>Browser: 93.184.216.34
+    end
+    Note over Browser: Opens TCP connection to 93.184.216.34

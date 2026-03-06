@@ -1,0 +1,18 @@
+flowchart TD
+    Detect[Incident detected via alert or customer report] --> Assess[On-call engineer assesses severity]
+    Assess --> SevGate{High severity?}
+    SevGate -->|No| SelfResolve[Engineer resolves minor issue]
+    SevGate -->|Yes| DeclareIncident[Declare formal incident]
+    DeclareIncident --> AssignIC[Assign incident commander]
+    AssignIC --> NotifyResponders[Page subject matter experts]
+    NotifyResponders --> Investigate[Investigate using metrics, logs, and traces]
+    Investigate --> CauseFound{Root cause identified?}
+    CauseFound -->|No| EscalateExperts[Escalate to additional experts]
+    EscalateExperts --> Investigate
+    CauseFound -->|Yes| Mitigate[Apply fastest mitigation]
+    Mitigate --> ServiceStable{Service restored?}
+    ServiceStable -->|No| Investigate
+    ServiceStable -->|Yes| ResolveIncident[Declare incident resolved]
+    ResolveIncident --> CustomerUpdate[Send customer status update]
+    CustomerUpdate --> PostMortem[Conduct blameless post-mortem]
+    PostMortem --> ActionItems[Create action items to prevent recurrence]

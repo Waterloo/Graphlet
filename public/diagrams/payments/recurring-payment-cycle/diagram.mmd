@@ -1,0 +1,22 @@
+flowchart TD
+    A([Scheduler triggers billing job]) --> B[Query subscriptions due for renewal]
+    B --> C{Any subscriptions found?}
+    C -->|No| Z([End — nothing to process])
+    C -->|Yes| D[Load subscriptions into processing queue]
+    D --> E[Dequeue next subscription]
+    E --> F[Fetch stored payment method token]
+    F --> G[Calculate renewal amount]
+    G --> H[Submit charge to payment gateway with idempotency key]
+    H --> I{Charge result}
+    I -->|Success| J[Mark invoice as paid]
+    J --> K[Calculate next billing date]
+    K --> L[Update subscription record atomically]
+    L --> M[Send renewal confirmation to customer]
+    M --> N{More subscriptions in queue?}
+    I -->|Failure| O[Record failed attempt]
+    O --> P[Increment failure counter]
+    P --> Q[Schedule next retry]
+    Q --> R[Update status to past_due]
+    R --> N
+    N -->|Yes| E
+    N -->|No| Z

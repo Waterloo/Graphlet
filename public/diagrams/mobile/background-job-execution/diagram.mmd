@@ -1,0 +1,20 @@
+flowchart TD
+    A([App registers background task with OS]) --> B[OS scheduler evaluates conditions]
+    B --> C{Conditions met?}
+    C -- No: low battery / thermal throttle --> D[Defer task]
+    D --> B
+    C -- Yes --> E[OS grants background execution window]
+    E --> F[App wakes in background]
+    F --> G[Register expiration handler]
+    G --> H[Execute task work]
+    H --> I{Task finished before deadline?}
+    I -- Yes --> J[Call task completion handler]
+    J --> K[OS records successful execution]
+    K --> L[OS schedules next window based on history]
+    I -- No: OS deadline approaching --> M[Expiration handler fires]
+    M --> N[Save partial progress to local store]
+    N --> O[Call completion handler with failure flag]
+    O --> P[OS records incomplete execution]
+    P --> Q[Shorter window scheduled next time]
+    L --> R([App returns to suspended state])
+    Q --> R

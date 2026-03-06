@@ -1,0 +1,17 @@
+flowchart TD
+    User([User]) --> CDN[CDN\nStatic Assets]
+    User --> LB[Load Balancer]
+    CDN -->|Cache miss| LB
+    LB --> WS1[Web Server 1\nStateless]
+    LB --> WS2[Web Server 2\nStateless]
+    LB --> WS3[Web Server 3\nStateless]
+    WS1 --> Sessions[(Session Store\nRedis)]
+    WS2 --> Sessions
+    WS3 --> Sessions
+    WS1 --> AppLayer[Application Layer\nBusiness Logic]
+    AppLayer --> Cache[(Cache\nRedis)]
+    Cache -->|Cache miss| PrimaryDB[(Primary Database)]
+    PrimaryDB --> ReadReplica[(Read Replica)]
+    AppLayer --> JobQueue[[Async Job Queue]]
+    JobQueue --> Worker1[Worker Process 1]
+    JobQueue --> Worker2[Worker Process 2]

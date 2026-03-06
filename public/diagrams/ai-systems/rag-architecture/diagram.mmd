@@ -1,0 +1,17 @@
+flowchart TD
+    subgraph Ingestion["Document Ingestion Pipeline"]
+        Docs([Source documents]) --> Chunk[Chunk documents]
+        Chunk --> EmbedDocs[Generate chunk embeddings]
+        EmbedDocs --> VDB[(Vector database)]
+    end
+
+    subgraph Query["Query Pipeline"]
+        User([User query]) --> EmbedQ[Generate query embedding]
+        EmbedQ --> Search[ANN search in vector DB]
+        VDB -.->|stored vectors| Search
+        Search --> TopK[Retrieve top-k relevant chunks]
+        TopK --> Context[Assemble context window]
+        Context --> Prompt[Construct augmented prompt]
+        Prompt --> LLM[LLM inference]
+        LLM --> Response([Return grounded response to user])
+    end

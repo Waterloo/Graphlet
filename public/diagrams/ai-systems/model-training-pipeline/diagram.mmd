@@ -1,0 +1,17 @@
+flowchart TD
+    A([Raw training data]) --> B[Data validation and quality checks]
+    B --> C{Data quality pass?}
+    C -- Fail --> D([Alert: data quality issue])
+    C -- Pass --> E[Train / validation / test split]
+    E --> F[Feature scaling and encoding]
+    F --> G[Model training on train split]
+    G --> H{Hyperparameter tuning?}
+    H -- Yes --> I[Launch parallel tuning runs]
+    I --> J[Select best checkpoint from validation metrics]
+    H -- No --> J
+    J --> K[Evaluate on held-out test set]
+    K --> L{Metrics above threshold?}
+    L -- Fail --> M([Fail pipeline: trigger review])
+    L -- Pass --> N[Package model artifact with metadata]
+    N --> O[Register in model registry]
+    O --> P([Trigger deployment pipeline])

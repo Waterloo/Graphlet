@@ -1,0 +1,17 @@
+flowchart TD
+    Schedule[Scheduled drift detection job triggers] --> FetchState[Fetch current IaC desired state]
+    FetchState --> PlanRun[Run terraform plan against live infrastructure]
+    PlanRun --> ParseDiff[Parse plan diff output]
+    ParseDiff --> FilterIgnored[Filter expected and ignored differences]
+    FilterIgnored --> DriftFound{Significant drift detected?}
+    DriftFound -->|No| LogClean[Log clean state and exit]
+    DriftFound -->|Yes| ClassifyDrift[Classify drifted resources]
+    ClassifyDrift --> AlertTeam[Alert infrastructure team]
+    AlertTeam --> ReviewDrift[Team reviews drift report]
+    ReviewDrift --> DriftIntent{Was the change intentional?}
+    DriftIntent -->|Yes| UpdateIaC[Update IaC configuration to codify change]
+    UpdateIaC --> ApplySync[Run terraform apply to synchronize state]
+    DriftIntent -->|No| RevertDrift[Revert change with terraform apply]
+    ApplySync --> VerifyState[Verify live state matches IaC]
+    RevertDrift --> VerifyState
+    VerifyState --> AuditLog[Record drift event in audit log]

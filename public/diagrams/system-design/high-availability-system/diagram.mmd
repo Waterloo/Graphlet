@@ -1,0 +1,22 @@
+flowchart TD
+    Client([Client Traffic]) --> LB_Active[Load Balancer\nActive]
+    LB_Active -.->|Heartbeat| LB_Passive[Load Balancer\nPassive Standby]
+    LB_Passive -->|Promote on failure| LB_Active
+
+    LB_Active --> App1[App Server 1]
+    LB_Active --> App2[App Server 2]
+    LB_Active --> App3[App Server 3]
+
+    App1 --> Cache[(Distributed Cache)]
+    App2 --> Cache
+    App3 --> Cache
+
+    Cache --> PrimaryDB[(Primary Database)]
+    PrimaryDB -->|Sync replication| StandbyDB[(Standby Database)]
+    FC[Failover Controller] --> PrimaryDB
+    FC --> StandbyDB
+    FC -->|Auto-promote| StandbyDB
+
+    App1 --> HealthMon[Health Monitoring\n& Alerting]
+    PrimaryDB --> HealthMon
+    LB_Active --> HealthMon

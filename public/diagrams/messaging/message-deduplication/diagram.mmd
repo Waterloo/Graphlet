@@ -1,0 +1,23 @@
+flowchart TD
+    MQ[Message Queue] -->|deliver message\nwith idempotency key| C[Consumer]
+
+    C -->|check key| DS{Deduplication\nStore}
+
+    DS -->|key NOT found\nnew message| PROC[Process Message]
+    DS -->|key FOUND\nduplicate| SKIP[Skip Processing]
+
+    PROC -->|store key with TTL| DS
+    PROC -->|execute business logic| BL[Write to Database\nSend Email, etc.]
+    PROC -->|acknowledge| MQ
+
+    SKIP -->|acknowledge\nno-op| MQ
+
+    BL --> DONE[Operation Complete]
+
+    subgraph DedupStore[Deduplication Store - Redis]
+        DS
+        TTL[TTL: 24 hours\nper key]
+    end
+
+    style SKIP fill:#fa0,color:#000
+    style DONE fill:#4a4,color:#fff

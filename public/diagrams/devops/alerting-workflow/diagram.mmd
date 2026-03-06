@@ -1,0 +1,19 @@
+flowchart TD
+    Rules[Alert rules evaluate metrics and logs] --> Condition{Threshold condition met?}
+    Condition -->|No| Continue[Continue polling cycle]
+    Condition -->|Yes| Firing[Mark alert as firing]
+    Firing --> AlertManager[Send to alert manager]
+    AlertManager --> Dedup[Deduplicate and group alerts]
+    Dedup --> Inhibit{Higher-severity alert active?}
+    Inhibit -->|Yes| Suppress[Suppress lower-severity alert]
+    Inhibit -->|No| Route[Route alert to on-call engineer]
+    Route --> Notify[Send page via PagerDuty or Slack]
+    Notify --> Ack{Engineer acknowledges?}
+    Ack -->|No, timeout| Escalate[Escalate to secondary on-call]
+    Escalate --> Ack
+    Ack -->|Yes| Investigate[Engineer investigates issue]
+    Investigate --> Resolve[Apply fix or mitigation]
+    Resolve --> MetricsNormal{Metrics returned to normal?}
+    MetricsNormal -->|No| Investigate
+    MetricsNormal -->|Yes| Resolved[Alert transitions to resolved]
+    Resolved --> PostReview[Record timeline for post-incident review]

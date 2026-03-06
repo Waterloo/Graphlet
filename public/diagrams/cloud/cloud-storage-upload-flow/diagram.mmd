@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant C as Client
+    participant API as App Backend
+    participant IAM as IAM / Auth
+    participant S3 as Object Storage
+    participant DB as Database
+    participant FN as Processing Function
+
+    C->>API: POST /uploads/init (filename, size, type)
+    API->>IAM: Verify client token
+    IAM-->>API: Token valid, user ID
+    API->>S3: GeneratePresignedURL(key, TTL=900s)
+    S3-->>API: Presigned PUT URL
+    API-->>C: { uploadUrl, objectKey }
+    C->>S3: PUT file bytes (direct upload)
+    S3-->>C: 200 OK
+    C->>API: POST /uploads/complete (objectKey)
+    API->>S3: HeadObject(objectKey) verify exists
+    S3-->>API: Object metadata confirmed
+    API->>DB: INSERT upload record (userId, key, size)
+    DB-->>API: Record saved
+    API->>FN: Trigger post-upload processing
+    FN-->>API: Processing started
+    API-->>C: 201 Created (uploadId)

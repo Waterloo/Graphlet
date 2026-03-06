@@ -1,0 +1,17 @@
+flowchart TD
+    Data([Production Data\nDatabases and Object Storage]) --> BackupScheduler[Backup Scheduler\ncron or cloud-native]
+    BackupScheduler -->|Weekly| FullBackup[Full Backup\ncomplete snapshot]
+    BackupScheduler -->|Daily| IncrementalBackup[Incremental Backup\nchanges since last backup]
+    BackupScheduler -->|Continuous| WALStream[WAL / Binlog Streaming\ncontinuous replication]
+    FullBackup --> PrimaryRegion[(Primary Region\nBackup Storage)]
+    IncrementalBackup --> PrimaryRegion
+    WALStream --> Replica[(Read Replica\nsame region)]
+    PrimaryRegion --> CrossRegion[Cross-Region Replication\n3-2-1 rule]
+    CrossRegion --> SecondaryRegion[(Secondary Region\nOffsite Backup)]
+    PrimaryRegion --> RetentionPolicy{Age of Backup}
+    RetentionPolicy -->|Under 30 days| HotStorage[Standard Storage\nfast restore]
+    RetentionPolicy -->|30-365 days| ColdStorage[Glacier / Archive\nlow cost]
+    RetentionPolicy -->|Over 365 days| Expire([Delete per retention policy])
+    HotStorage --> RestoreTest[Automated Restore Test\nweekly smoke test]
+    RestoreTest -->|Pass| Verified([Backup Verified])
+    RestoreTest -->|Fail| Alert([Alert On-Call Team])

@@ -1,0 +1,17 @@
+flowchart TD
+    A([Model serves predictions in production]) --> B[Collect user feedback: explicit and implicit signals]
+    B --> C[Store feedback in feedback log]
+    C --> D[Map feedback to ground-truth labels]
+    D --> E[Monitor online and offline performance metrics]
+    E --> F[Run drift detection on feature and prediction distributions]
+    F --> G{Performance below threshold or drift detected?}
+    G -- No --> H[Continue serving, schedule next monitoring cycle]
+    H --> A
+    G -- Yes --> I[Trigger retraining pipeline]
+    I --> J[Merge new labels with training dataset]
+    J --> K[Run model training pipeline]
+    K --> L[Evaluate new model on holdout set]
+    L --> M{New model outperforms incumbent?}
+    M -- No --> N([Alert: retrain did not improve, investigate])
+    M -- Yes --> O[Promote new model version to production]
+    O --> A

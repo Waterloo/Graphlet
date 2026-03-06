@@ -1,0 +1,17 @@
+flowchart TD
+    A[JavaScript Mutates DOM or Style] --> B[Node Marked Dirty]
+    B --> C{More JS mutations in same task?}
+    C -- Yes --> B
+    C -- No --> D[JS Call Stack Empty]
+    D --> E[Style Recalculation]
+    E --> F{Geometry changed?}
+    F -- Yes --> G[Layout / Reflow]
+    F -- No --> H[Skip Layout]
+    G --> I{Paint needed?}
+    H --> I
+    I -- Yes --> J[Paint — Update Draw Commands]
+    I -- No --> K[Compositor-only Update]
+    J --> L[Composite Layers]
+    K --> L
+    L --> M[New Frame Displayed]
+    style M fill:#22c55e,color:#fff

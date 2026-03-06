@@ -1,0 +1,23 @@
+flowchart TD
+    SQL[Raw SQL Query] --> Parser[Parser\nSyntax check + AST]
+    Parser --> Analyzer[Analyzer\nResolve names + types]
+    Analyzer --> LogicalPlan[Logical Query Plan]
+
+    LogicalPlan --> Optimizer[Query Optimizer / Planner]
+    Optimizer --> Stats[(Catalog Statistics\nrow counts, histograms)]
+    Stats --> Optimizer
+
+    Optimizer --> CandidatePlans[Enumerate candidate plans]
+    CandidatePlans --> Plan1[Plan A: SeqScan + HashJoin\nest. cost: 4200]
+    CandidatePlans --> Plan2[Plan B: IndexScan + NestedLoop\nest. cost: 180]
+    CandidatePlans --> Plan3[Plan C: BitmapScan + MergeJoin\nest. cost: 620]
+
+    Plan1 --> CostCompare{Select lowest cost}
+    Plan2 --> CostCompare
+    Plan3 --> CostCompare
+
+    CostCompare --> BestPlan[Chosen Plan: Plan B]
+    BestPlan --> Executor[Executor - Volcano model]
+    Executor --> ScanNode[Index Scan Node]
+    ScanNode --> JoinNode[Nested Loop Join Node]
+    JoinNode --> Results[Return result rows to client]

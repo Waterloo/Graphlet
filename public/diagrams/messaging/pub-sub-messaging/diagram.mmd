@@ -1,0 +1,17 @@
+flowchart LR
+    PUB1[Publisher: Weather Station A] -->|publish| T1[Topic: weather-updates]
+    PUB2[Publisher: Weather Station B] -->|publish| T1
+    PUB3[Publisher: Price Feed] -->|publish| T2[Topic: price-updates]
+
+    T1 -->|copy per subscriber| SUB1[Subscriber: Dashboard App]
+    T1 -->|copy per subscriber| SUB2[Subscriber: Alert Service]
+    T1 -->|copy per subscriber| SUB3[Subscriber: Data Archiver]
+
+    T2 -->|copy per subscriber| SUB4[Subscriber: Trading Bot A]
+    T2 -->|copy per subscriber| SUB5[Subscriber: Trading Bot B]
+    T2 -->|copy per subscriber| SUB3
+
+    subgraph Broker[Message Broker]
+        T1
+        T2
+    end

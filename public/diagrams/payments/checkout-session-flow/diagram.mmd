@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Customer
+    participant Merchant as Merchant Backend
+    participant Gateway as Payment Gateway
+    participant WebhookHandler as Merchant Webhook Handler
+
+    Customer->>Merchant: Proceed to checkout
+    Merchant->>Gateway: POST /checkout/sessions (items, amount, currency, URLs)
+    Gateway-->>Merchant: Session ID + hosted checkout URL
+    Merchant-->>Customer: Redirect to hosted checkout URL
+    Customer->>Gateway: Enter card details on hosted page
+    Gateway->>Gateway: Tokenize card data
+    Gateway->>Gateway: Run fraud checks
+    Gateway->>Gateway: Process charge (with 3DS if required)
+    alt Payment successful
+        Gateway->>WebhookHandler: POST checkout.session.completed event
+        Gateway-->>Customer: Redirect to merchant success_url
+        Customer->>Merchant: Load success page (session ID in query)
+        Merchant->>Gateway: GET /checkout/sessions/:id — verify status
+        Gateway-->>Merchant: Session object (payment_status: paid)
+        Merchant->>Merchant: Fulfill order
+        WebhookHandler->>Merchant: Idempotent fulfillment from webhook
+    else Payment failed
+        Gateway-->>Customer: Redirect to merchant cancel_url
+        Customer->>Merchant: Load cancel page
+    end

@@ -1,0 +1,17 @@
+flowchart TD
+    Write[Write migration script\n+ rollback script] --> Staging[Apply to staging DB]
+    Staging --> StagingValidate{Staging\nvalidation OK?}
+    StagingValidate -->|No| FixScript[Fix migration script]
+    FixScript --> Staging
+    StagingValidate -->|Yes| Backup[Take production backup]
+    Backup --> LockCheck{Requires\ntable lock?}
+    LockCheck -->|Yes| OffPeak[Schedule off-peak window\nor use online DDL]
+    LockCheck -->|No| ApplyProd[Apply to production DB]
+    OffPeak --> ApplyProd
+    ApplyProd --> RecordMigration[Record in migrations table]
+    RecordMigration --> HealthCheck{App health\nchecks pass?}
+    HealthCheck -->|Yes| Done[Migration complete]
+    HealthCheck -->|No| Rollback[Apply rollback script]
+    Rollback --> RestoreCheck{Rollback\nsuccessful?}
+    RestoreCheck -->|Yes| InvestigateFailure[Investigate failure]
+    RestoreCheck -->|No| RestoreBackup[Restore from backup]

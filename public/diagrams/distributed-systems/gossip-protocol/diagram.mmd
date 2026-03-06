@@ -1,0 +1,38 @@
+flowchart TD
+    A([Node A — originates update:\nnew member joined]) --> B[Round 1: A gossips to\nrandom peers B and C]
+    B --> C[Node B receives update]
+    B --> D[Node C receives update]
+
+    C --> E[Round 2: B gossips to\nrandom peers D and E]
+    D --> F[Round 2: C gossips to\nrandom peers D and F]
+
+    E --> G[Node D receives update]
+    E --> H[Node E receives update]
+    F --> G
+    F --> I[Node F receives update]
+
+    G --> J[Round 3: D gossips to\nrandom peers E and G]
+    H --> K[Round 3: E gossips to\nrandom peers F and G]
+    I --> L[Round 3: F gossips to\nrandom peers G and H]
+
+    J --> M[Node G receives update]
+    K --> M
+    L --> M
+    J --> N[Node H receives update]
+    L --> N
+
+    M --> O([Full cluster convergence\nin O log N rounds])
+    N --> O
+
+    subgraph Failure ["Failure Detection — SWIM"]
+        P[Node X misses ACK from Y] --> Q[Ask k random nodes\nto ping Y indirectly]
+        Q --> R{Any indirect\nACK received?}
+        R -->|Yes| S[Y is alive — reset suspicion]
+        R -->|No| T[Mark Y as Suspected\ngossip suspicion]
+        T --> U{Refutation\nreceived from Y?}
+        U -->|Yes| S
+        U -->|No — timeout| V[Declare Y Failed\ngossip to cluster]
+    end
+
+    style O fill:#d1fae5,stroke:#10b981
+    style Failure fill:#fef3c7,stroke:#f59e0b

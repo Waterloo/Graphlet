@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant User
+    participant Client as Browser
+    participant Server
+    participant DB as Token Store
+    participant Email as Email Service
+
+    User->>Client: Enter email and click "Send login link"
+    Client->>Server: POST /auth/magic-link with email
+    Server-->>Server: Generate secure random token
+    Server-->>Server: Hash token
+    Server->>DB: Store hash + email + expiry (15 min)
+    Server->>Email: Send magic link URL with plaintext token
+    Server-->>Client: 200 - check your email
+    Email-->>User: Email with login link
+
+    User->>Client: Click link in email
+    Client->>Server: GET /auth/verify?token=XXXX
+    Server-->>Server: Hash incoming token
+    Server->>DB: Look up hashed token
+    alt Token not found
+        Server-->>Client: 400 - invalid or already used link
+    else Token expired
+        Server->>DB: Delete expired token
+        Server-->>Client: 400 - link expired, request a new one
+    else Token valid
+        Server->>DB: Delete token (one-time use)
+        Server-->>Server: Create session or issue JWT
+        Server-->>Client: 302 Redirect to app with session cookie
+        Client-->>User: Logged in and redirected to dashboard
+    end

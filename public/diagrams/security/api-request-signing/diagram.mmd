@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Client
+    participant Gateway as API Gateway / Server
+    participant KeyStore as Key Store
+
+    Client->>Client: Build canonical request\n(method + URL + headers + body hash)
+    Client->>Client: Construct string to sign\n(algorithm + timestamp + canonical hash)
+    Client->>Client: Compute HMAC-SHA256\nover string to sign using secret key
+    Client->>Gateway: HTTP Request with Authorization header\nHMAC-SHA256 Credential and Signature fields
+    Note over Gateway: Validate timestamp\n(reject if > 5 min old)
+    Gateway->>KeyStore: Look up secret key\nby key-id from Authorization header
+    KeyStore-->>Gateway: Return secret key
+    Gateway->>Gateway: Rebuild canonical request\nfrom received headers and body
+    Gateway->>Gateway: Compute expected HMAC-SHA256\nusing retrieved secret key
+    Gateway->>Gateway: Constant-time compare\nreceived vs computed signature
+    alt Signatures match
+        Gateway-->>Client: 200 OK + response body
+    else Mismatch or expired
+        Gateway-->>Client: 401 Unauthorized
+    end

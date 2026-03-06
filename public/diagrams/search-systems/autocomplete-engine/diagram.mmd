@@ -1,0 +1,13 @@
+flowchart TD
+    Keystroke[Keystroke event\npartial query prefix] --> Normalize[Normalize prefix\nlowercase, trim]
+    Normalize --> TrieLookup[Prefix trie lookup\ntraverse to prefix node]
+    TrieLookup --> Candidates[Retrieve top-K candidates\nby weight from trie]
+    Candidates --> PersonalFilter[Apply personalization\nuser history, language, region]
+    PersonalFilter --> TrendBoost[Apply trending boost\nfrom log processing]
+    TrendBoost --> Rank[Rank completions\nby combined score]
+    Rank --> SafetyFilter[Filter unsafe\nor low-quality suggestions]
+    SafetyFilter --> Response[Return top 5-10 completions]
+    Response --> UI[Render dropdown\nbelow search input]
+    UI --> UserSelect{User selects\na completion?}
+    UserSelect -->|Yes| SubmitQuery[Submit full query\nto search pipeline]
+    UserSelect -->|No| Keystroke

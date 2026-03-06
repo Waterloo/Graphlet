@@ -1,0 +1,17 @@
+flowchart TD
+    SearchEvent[Search result served\nto user] --> ImplicitSignal[Collect implicit signals\nclicks, dwell time, scroll depth]
+    ImplicitSignal --> BackNav{User back-navigated\nimmediately?}
+    BackNav -->|Yes| NegSignal[Record negative signal\nlow relevance indicator]
+    BackNav -->|No| PosSignal[Record positive signal\nengagement confirmed]
+    NegSignal --> ClickModel[Click model normalization\nremove position bias]
+    PosSignal --> ClickModel
+    ClickModel --> ExplicitJudge[Merge with explicit\nhuman rater judgments]
+    ExplicitJudge --> TrainingData[Build LTR training dataset\nquery, document, relevance score]
+    TrainingData --> TrainModel[Retrain ranking model\nLambdaMART or neural LTR]
+    TrainModel --> Offline[Evaluate offline\nNDCG, MAP, MRR metrics]
+    Offline --> ABTest{A/B test\npasses threshold?}
+    ABTest -->|No| Iterate[Iterate on features\nor training data]
+    ABTest -->|Yes| Promote[Promote model\nto production]
+    Promote --> Monitor[Monitor live metrics\nCTR, zero-result rate]
+    Monitor --> SearchEvent
+    Iterate --> TrainModel

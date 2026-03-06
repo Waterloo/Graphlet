@@ -1,0 +1,19 @@
+flowchart TD
+    A[State or Props Change Triggered] --> B[React Schedules Update]
+    B --> C{Priority check}
+    C -- Urgent update --> D[Synchronous render]
+    C -- Deferred update --> E[Concurrent render - interruptible]
+    D --> F[Render Phase — Call Component Function]
+    E --> F
+    F --> G{Bailout possible?}
+    G -- React.memo or shouldComponentUpdate --> H[Skip re-render]
+    G -- No bailout --> I[Produce New Fiber Tree]
+    I --> J[Reconcile Diffs vs Previous Tree]
+    J --> K[Build Effect List]
+    K --> L[Commit Phase — Before Mutation]
+    L --> M[Commit Phase — Apply DOM Mutations]
+    M --> N[Commit Phase — Layout Effects]
+    N --> O[Browser Paints Frame]
+    O --> P[Run useEffect Callbacks]
+    style O fill:#3b82f6,color:#fff
+    style P fill:#22c55e,color:#fff

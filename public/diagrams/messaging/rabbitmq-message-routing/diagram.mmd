@@ -1,0 +1,19 @@
+flowchart LR
+    P[Producer] -->|routing_key=orders.eu.new| TE[Topic Exchange\norders]
+    P -->|broadcast| FE[Fanout Exchange\naudit]
+
+    TE -->|orders.eu.*| QEU[Queue: orders-eu]
+    TE -->|orders.us.*| QUS[Queue: orders-us]
+    TE -->|orders.#| QALL[Queue: orders-all]
+
+    FE --> QA1[Queue: audit-billing]
+    FE --> QA2[Queue: audit-compliance]
+    FE --> QA3[Queue: audit-analytics]
+
+    QEU --> C1[Consumer: EU Processor]
+    QUS --> C2[Consumer: US Processor]
+    QALL --> C3[Consumer: Global Monitor]
+
+    QA1 --> CA1[Consumer: Billing]
+    QA2 --> CA2[Consumer: Compliance]
+    QA3 --> CA3[Consumer: Analytics]

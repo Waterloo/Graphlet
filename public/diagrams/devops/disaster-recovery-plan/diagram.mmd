@@ -1,0 +1,21 @@
+flowchart TD
+    DisasterDeclared[Disaster declared by incident team] --> ScopeAssess[Assess scope and affected systems]
+    ScopeAssess --> PrimaryRecovery{Primary region recoverable within RTO?}
+    PrimaryRecovery -->|Yes| RecoverPrimary[Attempt primary region recovery]
+    RecoverPrimary --> RecoverGate{Primary recovered?}
+    RecoverGate -->|Yes| HealthCheckPrimary[Run health checks on primary]
+    RecoverGate -->|No| Failover[Initiate DR region failover]
+    PrimaryRecovery -->|No| Failover
+    Failover --> ProvisionDR[Provision DR environment from IaC]
+    ProvisionDR --> RestoreBackup[Restore data from latest verified backup]
+    RestoreBackup --> RPOCheck[Verify RPO — measure data loss]
+    RPOCheck --> UpdateDNS[Update DNS to point to DR region]
+    UpdateDNS --> HealthCheckDR[Run health checks on DR environment]
+    HealthCheckDR --> CutoverGate{DR healthy?}
+    CutoverGate -->|No| DiagnoseIssue[Diagnose and fix DR issues]
+    DiagnoseIssue --> HealthCheckDR
+    CutoverGate -->|Yes| CutoverTraffic[Cut over user traffic to DR]
+    HealthCheckPrimary --> CutoverTraffic
+    CutoverTraffic --> UserComms[Send user status communication]
+    UserComms --> Failback[Plan primary region failback]
+    Failback --> PostMortem[Document event and update DR plan]

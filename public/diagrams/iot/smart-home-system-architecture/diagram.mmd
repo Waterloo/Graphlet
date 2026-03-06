@@ -1,0 +1,35 @@
+flowchart TD
+    subgraph Devices[Smart Home Devices]
+        Bulb[Smart bulb\nZigbee]
+        Thermostat[Thermostat\nZ-Wave]
+        Lock[Door lock\nZ-Wave]
+        Camera[IP camera\nWi-Fi]
+        Sensor[Door / motion sensor\nZigbee]
+    end
+
+    subgraph Hub[Local Smart Home Hub]
+        Registry[Device registry]
+        StateStore[Local state store]
+        Automation[Automation engine\nLocal rules]
+        Broker[Local MQTT broker]
+    end
+
+    Devices -->|Zigbee / Z-Wave / Wi-Fi| Hub
+    Hub -->|HTTPS sync| Cloud[Smart Home Cloud Platform]
+    Cloud -->|Push state| Hub
+
+    subgraph Controls[User Control Surfaces]
+        MobileApp[Mobile app]
+        WebUI[Web dashboard]
+        Voice[Voice assistant\nAlexa / Google]
+    end
+
+    MobileApp -->|REST / WebSocket| Cloud
+    WebUI -->|REST| Cloud
+    Voice -->|OAuth API intent| Cloud
+    MobileApp -->|Direct LAN command| Hub
+
+    Cloud -->|Command routing| Hub
+    Hub -->|Device command| Devices
+    Automation -->|Trigger command| Broker
+    Broker --> Devices

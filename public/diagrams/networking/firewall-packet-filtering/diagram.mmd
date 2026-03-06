@@ -1,0 +1,19 @@
+flowchart TD
+    Packet([Incoming Packet]) --> Inbound{Inbound or\nOutbound?}
+
+    Inbound -->|Inbound| StateCheck{Connection\nTracking Table:\nEstablished?}
+    StateCheck -->|ESTABLISHED or RELATED| Allow1([Allow — return traffic])
+    StateCheck -->|NEW connection| RuleCheck{Match firewall\nACL rules\ntop-to-bottom}
+
+    RuleCheck -->|Rule: Allow TCP 443\nfrom any| Allow2([Allow — HTTPS])
+    RuleCheck -->|Rule: Allow TCP 22\nfrom 10.0.0.0/8| Allow3([Allow — SSH from LAN])
+    RuleCheck -->|Rule: Allow ICMP echo| Allow4([Allow — Ping])
+    RuleCheck -->|No rule matched| ImplicitDeny([DROP — implicit deny all])
+
+    Allow2 --> AddState[Add to connection\ntracking table]
+    Allow3 --> AddState
+    AddState --> Forward([Forward packet\nto destination])
+
+    Inbound -->|Outbound| OutRules{Outbound rules\nevaluation}
+    OutRules -->|Allow all outbound| OutAllow([Allow outbound traffic])
+    OutRules -->|Block specific port\nor destination| OutDrop([DROP outbound packet])

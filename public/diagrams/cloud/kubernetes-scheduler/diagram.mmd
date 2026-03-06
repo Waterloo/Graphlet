@@ -1,0 +1,20 @@
+flowchart TD
+    NewPod([Unscheduled Pod\nnodeName: empty]) --> WatchQueue[Scheduler Watch Queue\nAPI Server event]
+    WatchQueue --> Filter[Filtering Phase\neliminate infeasible nodes]
+    Filter --> ResourceFit{Enough CPU\nand Memory?}
+    ResourceFit -->|Fail| Eliminate1([Node Eliminated])
+    ResourceFit -->|Pass| NodeSelector{NodeSelector\nand Affinity Match?}
+    NodeSelector -->|Fail| Eliminate2([Node Eliminated])
+    NodeSelector -->|Pass| Taint{Tolerates\nNode Taints?}
+    Taint -->|Fail| Eliminate3([Node Eliminated])
+    Taint -->|Pass| FeasibleNodes[Feasible Node List]
+    FeasibleNodes --> NoNodes{Any feasible\nnodes found?}
+    NoNodes -->|None| Pending([Pod stays Pending\nretry later])
+    NoNodes -->|Some| Scoring[Scoring Phase\nrank by priority functions]
+    Scoring --> LeastRequested[LeastRequestedPriority\nfree resources weight]
+    Scoring --> Balanced[BalancedAllocation\nCPU-memory balance]
+    LeastRequested --> Aggregate[Aggregate Score\nper node]
+    Balanced --> Aggregate
+    Aggregate --> BestNode[Select Highest Score Node]
+    BestNode --> Bind[Bind Pod to Node\nwrite nodeName to API server]
+    Bind --> Kubelet[Kubelet on Node\npulls image, starts containers]

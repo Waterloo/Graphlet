@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant Client as Client App
+    participant GW as API Gateway
+    participant Serving as Model Serving
+    participant Model as LLM (GPU)
+    participant Meter as Usage Metering
+
+    Client->>GW: POST /v1/chat/completions {stream: true, messages}
+    GW->>Serving: Forward streaming request
+    Serving->>Serving: Tokenize prompt
+    GW-->>Client: HTTP 200 (SSE connection open)
+    Serving->>Model: Begin autoregressive forward pass
+
+    loop Token generation
+        Model-->>Serving: Next token logits
+        Serving->>Serving: Sample token from distribution
+        Serving->>Serving: Detokenize token to text
+        Serving-->>GW: data: {"delta":{"content":" token"}}
+        GW-->>Client: data: {"delta":{"content":" token"}}
+        Client->>Client: Append token to display buffer
+    end
+
+    Model-->>Serving: End-of-sequence token reached
+    Serving-->>GW: data: {"finish_reason":"stop"}
+    Serving-->>GW: data: [DONE]
+    GW-->>Client: data: [DONE] (close SSE stream)
+    Serving->>Meter: Record prompt_tokens + completion_tokens
+    Meter-->>Serving: Ack

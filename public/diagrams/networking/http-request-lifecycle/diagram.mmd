@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Client
+    participant DNSResolver as DNS Resolver
+    participant Server
+
+    Client->>DNSResolver: Resolve hostname (e.g. api.example.com)
+    DNSResolver-->>Client: IP address: 203.0.113.10
+
+    Note over Client,Server: TCP Three-Way Handshake
+    Client->>Server: SYN
+    Server-->>Client: SYN-ACK
+    Client->>Server: ACK
+
+    Note over Client,Server: TLS Handshake (HTTPS only)
+    Client->>Server: ClientHello (TLS)
+    Server-->>Client: ServerHello + Certificate
+    Client->>Server: Key exchange + Finished
+    Server-->>Client: Finished
+
+    Note over Client,Server: HTTP Exchange
+    Client->>Server: GET /api/data HTTP/1.1\nHost: api.example.com\nAccept: application/json
+    Server-->>Client: HTTP/1.1 200 OK\nContent-Type: application/json\n{"data": "response_value"}
+
+    Note over Client,Server: Connection Reuse (Keep-Alive)
+    Client->>Server: GET /api/other HTTP/1.1
+    Server-->>Client: HTTP/1.1 200 OK

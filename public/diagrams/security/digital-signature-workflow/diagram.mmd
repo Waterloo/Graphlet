@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Signer
+    participant Verifier
+    participant PKI as Public Key Infrastructure
+
+    Note over Signer: Signing Process
+    Signer->>Signer: Hash message with SHA-256\nproducing message digest
+    Signer->>Signer: Encrypt digest with private key\n(RSA-PSS or ECDSA)
+    Signer->>Verifier: Send message + digital signature
+
+    Note over Verifier: Verification Process
+    Verifier->>PKI: Request signer's public key\n(or retrieve from certificate)
+    PKI-->>Verifier: Return authenticated public key
+    Verifier->>Verifier: Hash received message\nwith SHA-256
+    Verifier->>Verifier: Decrypt signature\nusing signer's public key
+    Verifier->>Verifier: Compare computed digest\nvs decrypted digest
+    alt Digests match
+        Note over Verifier: Signature VALID\nMessage authentic and unmodified
+    else Digests differ
+        Note over Verifier: Signature INVALID\nReject message
+    end

@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client: State: CLOSED
+    Note over Server: State: LISTEN
+
+    Client->>Server: SYN (seq=1000, SYN=1)
+    Note over Client: State: SYN_SENT
+    Note over Server: Allocate TCB
+    Server-->>Client: SYN-ACK (seq=5000, ack=1001, SYN=1, ACK=1)
+    Note over Server: State: SYN_RECEIVED
+
+    Client->>Server: ACK (seq=1001, ack=5001, ACK=1)
+    Note over Client: State: ESTABLISHED
+    Note over Server: State: ESTABLISHED
+
+    Note over Client,Server: Data transfer begins
+    Client->>Server: Data (seq=1001)
+    Server-->>Client: ACK (ack=1001+data_len)
+
+    Note over Client,Server: Connection Teardown
+    Client->>Server: FIN (seq=N)
+    Server-->>Client: ACK (ack=N+1)
+    Server-->>Client: FIN (seq=M)
+    Client->>Server: ACK (ack=M+1)
+    Note over Client: TIME_WAIT (2xMSL)

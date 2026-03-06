@@ -1,0 +1,18 @@
+flowchart TD
+    A([DNS Query: example.com]) --> B{Browser Cache\nhas record?}
+    B -->|Hit, TTL valid| Z([Return IP to application])
+    B -->|Miss or expired| C{OS Resolver Cache\nhas record?}
+    C -->|Hit, TTL valid| Z
+    C -->|Miss or expired| D{Recursive Resolver Cache\nhas record?}
+    D -->|Hit, TTL valid| E[Return cached answer\nto OS resolver]
+    E --> Z
+    D -->|Miss or expired| F[Query Root Name Server]
+    F --> G[Root returns TLD referral]
+    G --> H[Query TLD Name Server]
+    H --> I[TLD returns authoritative referral]
+    I --> J[Query Authoritative Name Server]
+    J --> K[Authoritative returns A record + TTL]
+    K --> L[Resolver caches answer\nwith TTL]
+    L --> M[OS caches answer\nwith TTL]
+    M --> N[Browser caches answer\nwith TTL]
+    N --> Z

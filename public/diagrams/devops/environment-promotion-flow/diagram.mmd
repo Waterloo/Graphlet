@@ -1,0 +1,18 @@
+flowchart TD
+    Artifact[New artifact published by CI] --> DeployDev[Deploy to development environment]
+    DeployDev --> DevSmoke[Run smoke tests in dev]
+    DevSmoke --> DevGate{Dev tests passed?}
+    DevGate -->|No| NotifyDev[Notify team of dev failure]
+    DevGate -->|Yes| PromoteStage[Promote artifact to staging]
+    PromoteStage --> DeployStage[Deploy to staging environment]
+    DeployStage --> StageTests[Run acceptance and load tests in staging]
+    StageTests --> StageGate{Staging tests passed?}
+    StageGate -->|No| NotifyStage[Notify team of staging failure]
+    StageGate -->|Yes| ApprovalGate[Request production approval]
+    ApprovalGate --> Approved{Approved?}
+    Approved -->|No| HoldRelease[Hold release]
+    Approved -->|Yes| DeployProd[Deploy to production with canary strategy]
+    DeployProd --> MonitorProd[Monitor production metrics]
+    MonitorProd --> ProdGate{Metrics healthy?}
+    ProdGate -->|No| Rollback[Trigger rollback]
+    ProdGate -->|Yes| FullRelease[Complete full rollout]

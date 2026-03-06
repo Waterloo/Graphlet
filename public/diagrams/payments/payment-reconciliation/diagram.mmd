@@ -1,0 +1,23 @@
+flowchart TD
+    A([T+1: Settlement report available]) --> B[Fetch gateway settlement report]
+    B --> C[Fetch internal transaction records for period]
+    C --> D[Fetch bank statement deposits and debits]
+    D --> E[Match internal records to gateway lines by transaction ID]
+    E --> F{Match result}
+    F -->|ID, amount, and status match| G[Mark transaction as reconciled]
+    F -->|In gateway but not in internal system| H[Investigate missing webhook event]
+    H --> I[Replay webhook or manually sync record]
+    F -->|In internal system but not in gateway| J[Investigate unconfirmed capture]
+    J --> K[Check if authorization expired or capture failed]
+    F -->|Amount mismatch| L[Investigate rounding or FX variance]
+    L --> M{Variance acceptable?}
+    M -->|Yes| N[Accept as known variance]
+    M -->|No| O[Raise discrepancy with gateway support]
+    G --> P[Reconcile gateway payout total to bank deposit]
+    N --> P
+    P --> Q{Bank deposit matches gateway net payout?}
+    Q -->|Yes| R[Close reconciliation period]
+    Q -->|No| S[Identify pending transfers or held payouts]
+    S --> T[Track as open reconciling item]
+    T --> U[Monitor until resolved]
+    R --> V([Reconciliation complete — finance records confirmed])

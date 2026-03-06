@@ -1,0 +1,14 @@
+flowchart TD
+    Sources[Data Sources\nDatabases, SaaS, events] --> Ingestion[Data Ingestion Layer\nConnectors and loaders]
+    Ingestion --> Warehouse[Data Warehouse\nBigQuery, Snowflake, Redshift]
+    Warehouse --> Transform[Transformation Layer\ndbt semantic models and metrics]
+    Transform --> SemanticLayer[Semantic Layer\nPredefined metrics and dimensions]
+    SemanticLayer --> QueryEngine[Query Engine\nSQL or metrics API]
+    QueryEngine --> Cache[Cache Layer\nPre-computed query results]
+    Cache -->|Cache hit| DashServer[Dashboard Server]
+    QueryEngine -->|Cache miss| DashServer
+    DashServer --> Auth[Auth and Permissions\nRow-level security]
+    Auth --> Render[Render Charts\nBar, line, table, map]
+    Render --> Browser[End User Browser\nInteractive dashboard]
+    Render --> Embed[Embedded Dashboard\nIframe or SDK]
+    SemanticLayer --> Alerts[Alert Engine\nThreshold notifications]

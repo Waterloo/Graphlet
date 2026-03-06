@@ -1,0 +1,38 @@
+flowchart LR
+    subgraph Producers
+        SVC1[Order Service]
+        SVC2[Payment Service]
+        CDC[DB CDC Agent]
+    end
+
+    subgraph EventBus[Event Streaming Platform\nApache Kafka]
+        T1[Topic: orders]
+        T2[Topic: payments]
+        T3[Topic: db-changes]
+    end
+
+    subgraph StreamProcessors[Stream Processors]
+        SP1[Kafka Streams\nOrder Enrichment]
+        SP2[Apache Flink\nFraud Detection]
+    end
+
+    subgraph Consumers
+        AN[Analytics Engine]
+        NS[Notification Service]
+        SI[Search Indexer]
+        DW[Data Warehouse]
+    end
+
+    SVC1 -->|publish event| T1
+    SVC2 -->|publish event| T2
+    CDC -->|row change event| T3
+
+    T1 --> SP1
+    T2 --> SP2
+    SP1 -->|enriched-orders topic| T1
+    SP2 -->|fraud-alerts topic| T2
+
+    T1 --> AN
+    T1 --> NS
+    T2 --> SI
+    T3 --> DW

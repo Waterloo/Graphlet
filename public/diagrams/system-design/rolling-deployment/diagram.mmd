@@ -1,0 +1,32 @@
+flowchart TD
+    Start([Fleet: 4 instances\nall running v1.0]) --> Batch1
+
+    subgraph Batch1[Batch 1]
+        B1_Remove[Remove Instance 1\nfrom load balancer]
+        B1_Update[Update Instance 1\nto v2.0]
+        B1_Health{Health\nCheck}
+        B1_Restore[Return Instance 1\nto rotation]
+        B1_Remove --> B1_Update --> B1_Health
+        B1_Health -->|Pass| B1_Restore
+        B1_Health -->|Fail| B1_Revert[Revert Instance 1\nHalt rollout]
+    end
+
+    B1_Restore --> Batch2
+
+    subgraph Batch2[Batch 2]
+        B2[Update Instance 2\nto v2.0 - Health Check]
+    end
+
+    Batch2 --> Batch3
+
+    subgraph Batch3[Batch 3]
+        B3[Update Instance 3\nto v2.0 - Health Check]
+    end
+
+    Batch3 --> Batch4
+
+    subgraph Batch4[Batch 4]
+        B4[Update Instance 4\nto v2.0 - Health Check]
+    end
+
+    Batch4 --> Done([All instances\nrunning v2.0])

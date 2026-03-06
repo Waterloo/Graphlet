@@ -1,0 +1,19 @@
+flowchart TD
+    subgraph Stored XSS Attack
+        A[Attacker submits malicious payload\nto comment or profile form\neg. script alert document.cookie script] --> B[Server stores payload\nin database without sanitization]
+        B --> C[Victim visits page\nthat renders stored content]
+        C --> D[Server returns HTML\nwith malicious script embedded]
+        D --> E[Browser executes\ninjected JavaScript]
+        E --> F[Script reads HttpOnly=false cookies\nand session storage]
+        F --> G[Script sends stolen data\nto attacker-controlled server]
+        G --> H[Attacker hijacks user session]
+    end
+
+    subgraph Defenses
+        I[Encode all output\nbefore inserting into HTML/JS/CSS] --> J[Apply Content Security Policy\nblock inline scripts]
+        J --> K[Set cookies HttpOnly\nprevent JS cookie access]
+        K --> L[Validate and sanitize\nall user inputs with allowlist]
+    end
+
+    E -.->|Blocked by| J
+    F -.->|Blocked by| K

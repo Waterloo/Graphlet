@@ -1,0 +1,25 @@
+flowchart TD
+    A([Cardholder disputes transaction]) --> B[Issuer assigns reason code]
+    B --> C[Issuer provisionally credits cardholder]
+    C --> D[Issuer sends chargeback to card network]
+    D --> E[Network forwards to acquirer]
+    E --> F[Acquirer debits merchant settlement account]
+    F --> G[Acquirer notifies merchant with deadline]
+    G --> H{Merchant decision}
+    H -->|Accept chargeback| I[Accept funds loss]
+    H -->|Fight chargeback| J[Compile evidence package]
+    J --> K[Submit representment to acquirer]
+    K --> L[Acquirer forwards to card network]
+    L --> M{Network ruling}
+    M -->|Merchant wins| N[Funds returned to merchant]
+    M -->|Chargeback upheld| O[Merchant loses funds]
+    O --> P{Escalate to pre-arbitration?}
+    P -->|No| Q([End])
+    P -->|Yes| R[Submit pre-arbitration]
+    R --> S{Pre-arbitration result}
+    S -->|Resolved| Q
+    S -->|Unresolved| T[Formal network arbitration]
+    T --> U[Final binding decision]
+    U --> Q
+    N --> Q
+    I --> Q

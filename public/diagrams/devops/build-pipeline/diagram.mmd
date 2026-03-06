@@ -1,0 +1,16 @@
+flowchart TD
+    Source[Fetch source at commit SHA] --> InstallDeps[Install dependencies from lock file]
+    InstallDeps --> CacheCheck{Dependency cache hit?}
+    CacheCheck -->|Yes| SkipInstall[Use cached dependencies]
+    CacheCheck -->|No| Download[Download and cache dependencies]
+    SkipInstall --> Compile[Compile or bundle source code]
+    Download --> Compile
+    Compile --> Package[Package into deployable artifact]
+    Package --> ContainerBuild[Build Docker image]
+    ContainerBuild --> TagImage[Tag image with SHA and version]
+    TagImage --> VulnScan[Run vulnerability scan on image]
+    VulnScan --> VulnGate{Critical CVEs found?}
+    VulnGate -->|Yes| FailBuild[Fail build and notify team]
+    VulnGate -->|No| SignArtifact[Sign artifact]
+    SignArtifact --> Publish[Push to container registry]
+    Publish --> Done[Artifact ready for deployment]

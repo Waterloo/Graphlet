@@ -1,0 +1,16 @@
+flowchart TD
+    A([User request: user ID and surface context]) --> B[Fetch user profile: history, preferences, demographics]
+    B --> C[Parallel candidate generation]
+
+    C --> D[Collaborative filtering: retrieve items from similar users]
+    C --> E[Content-based: retrieve items similar to past interactions]
+
+    D --> F[Merge candidates: deduplicate and remove seen items]
+    E --> F
+
+    F --> G[Fetch user-item pair features from feature store]
+    G --> H[Ranking model: score each candidate for engagement probability]
+    H --> I[Sort candidates by predicted score]
+    I --> J[Apply diversity rules: limit same-category items]
+    J --> K[Apply freshness boost to recent items]
+    K --> L([Return top-N personalized recommendations])

@@ -1,0 +1,19 @@
+flowchart TD
+    A([Webhook delivery response received]) --> B{HTTP status code}
+    B -- 2xx Success --> C([Mark event delivered])
+    B -- 4xx except 408 or 429 --> D([Mark delivery permanently failed\nno retry])
+    B -- 408 or 429 or 5xx --> E[Classify as retriable failure]
+    B -- Timeout or no response --> E
+
+    E --> F[Increment attempt counter]
+    F --> G{Attempts below maximum?}
+    G -- Max attempts reached --> H[Move event to dead-letter store]
+    H --> I[Send alert to consumer account]
+    I --> J([End retry cycle])
+
+    G -- Retries remaining --> K[Compute backoff delay]
+    K --> L[Apply jitter to backoff]
+    L --> M[Schedule retry job with delay]
+    M --> N([Wait for backoff period])
+    N --> O[Re-attempt webhook delivery]
+    O --> A

@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant User
+    participant Browser
+    participant Router
+    participant CodeLoader as Code Loader
+    participant API
+    participant Component
+
+    User->>Browser: Click link or call router.push()
+    Browser->>Router: Intercept navigation event
+    Router->>Browser: History.pushState(newURL)
+    Router->>Router: Match route table
+    alt Route chunk not loaded
+        Router->>CodeLoader: Dynamic import(chunk)
+        CodeLoader-->>Router: JS chunk loaded
+    end
+    Router->>Component: Instantiate route component
+    Component->>API: Fetch required data
+    API-->>Component: JSON response
+    Component->>Browser: Render new view into DOM
+    Browser->>User: Display updated page (no full reload)
+    Note over Browser,Router: Back/forward handled via popstate event

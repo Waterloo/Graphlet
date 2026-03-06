@@ -1,0 +1,15 @@
+flowchart TD
+    Client([HTTPS Request\nexample.com]) --> CloudLB[Cloud Load Balancer\nexternal IP]
+    CloudLB --> IngressCtrl[Ingress Controller\nnginx / Traefik / ALB]
+    IngressCtrl --> TLS[TLS Termination\nread Secret: tls-cert]
+    TLS --> HostMatch{Host Header\nMatch?}
+    HostMatch -->|api.example.com| PathMatchAPI{Path Match}
+    HostMatch -->|app.example.com| FrontendSvc[Service: frontend\nport 80]
+    HostMatch -->|No match| Default404([Default Backend\n404 Not Found])
+    PathMatchAPI -->|/api/users/*| UserSvc[Service: user-api\nport 8080]
+    PathMatchAPI -->|/api/orders/*| OrderSvc[Service: order-api\nport 8080]
+    PathMatchAPI -->|/api/static/*| StaticSvc[Service: static-files\nport 80]
+    UserSvc --> UserPods[User API Pods]
+    OrderSvc --> OrderPods[Order API Pods]
+    FrontendSvc --> FrontendPods[Frontend Pods]
+    StaticSvc --> StaticPods[Static File Pods]

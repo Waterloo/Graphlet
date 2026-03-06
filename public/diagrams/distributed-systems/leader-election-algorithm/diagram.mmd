@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant N1 as Node 1 (Follower)
+    participant N2 as Node 2 (Candidate)
+    participant N3 as Node 3 (Follower)
+    participant N4 as Node 4 (Follower)
+    participant N5 as Node 5 (Follower)
+
+    Note over N1,N5: Current leader has failed — no heartbeats
+    Note over N2: Election timeout fires\nterm = 4 → 5, vote for self
+
+    N2->>N1: RequestVote(term=5, lastIndex=42, lastTerm=4)
+    N2->>N3: RequestVote(term=5, lastIndex=42, lastTerm=4)
+    N2->>N4: RequestVote(term=5, lastIndex=42, lastTerm=4)
+    N2->>N5: RequestVote(term=5, lastIndex=42, lastTerm=4)
+
+    N1-->>N2: VoteGranted(term=5)
+    N3-->>N2: VoteGranted(term=5)
+    N4-->>N2: VoteGranted(term=5)
+    N5-->>N2: VoteDenied(term=5) — log not up-to-date
+
+    Note over N2: 4 votes including self = majority (3 of 5)\nTransition to LEADER
+
+    N2->>N1: AppendEntries heartbeat(term=5, leaderId=N2)
+    N2->>N3: AppendEntries heartbeat(term=5, leaderId=N2)
+    N2->>N4: AppendEntries heartbeat(term=5, leaderId=N2)
+    N2->>N5: AppendEntries heartbeat(term=5, leaderId=N2)
+
+    Note over N1,N5: All nodes recognize N2 as leader for term 5

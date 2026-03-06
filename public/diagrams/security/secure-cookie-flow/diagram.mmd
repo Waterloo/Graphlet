@@ -1,0 +1,17 @@
+flowchart TD
+    A[User authenticates successfully] --> B[Server generates session token\nor signed cookie value]
+    B --> C[Server sets cookie in response\nSet-Cookie header]
+    C --> D["Cookie attributes applied:\nHttpOnly — no JS access\nSecure — HTTPS only\nSameSite=Lax — CSRF protection\nPath=/ — scoped to site"]
+    D --> E[Browser stores cookie\nin cookie jar]
+
+    E --> F[Browser makes subsequent request\nto same origin]
+    F --> G{SameSite check:\nIs request same-site?}
+    G -- Yes or Lax navigation --> H[Browser attaches cookie\nin Cookie header]
+    G -- Cross-site POST or XHR --> I[Browser withholds cookie\nSameSite=Lax blocks it]
+    H --> J{Secure check:\nIs connection HTTPS?}
+    J -- Yes --> K[Cookie sent in request]
+    J -- No --> L[Browser withholds cookie\nSecure flag blocks HTTP]
+    K --> M[Server validates cookie value\nvia session lookup or signature]
+    M --> N{Valid session?}
+    N -- Yes --> O[Return authenticated response]
+    N -- No --> P[Redirect to login]

@@ -1,0 +1,18 @@
+flowchart TD
+    A([User query]) --> B[Query understanding: intent detection and entity extraction]
+    B --> C[Query expansion: synonyms and related terms]
+    C --> D[Parallel retrieval]
+
+    D --> E[Keyword search: BM25 inverted index]
+    D --> F[Vector search: ANN embedding lookup]
+
+    E --> G[Keyword candidates with BM25 scores]
+    F --> H[Vector candidates with cosine scores]
+
+    G --> I[Reciprocal rank fusion: merge candidate lists]
+    H --> I
+
+    I --> J[LLM or cross-encoder re-ranking on top-N candidates]
+    J --> K[Diversity filtering: deduplicate near-identical results]
+    K --> L[Assemble result list with snippets and metadata]
+    L --> M([Return ranked search results])

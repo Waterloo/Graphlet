@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant Device as Constrained Device (TV/CLI)
+    participant AuthServer as Authorization Server
+    participant User
+    participant Browser as User Browser / Phone
+
+    Device->>AuthServer: POST /device/code with client_id + scope
+    AuthServer-->>Device: device_code, user_code, verification_uri, interval
+
+    Device-->>User: Display: Go to https://example.com/activate\nEnter code WDJB-MJHT
+
+    loop Poll every 5 seconds
+        Device->>AuthServer: POST /token with device_code (polling)
+        AuthServer-->>Device: authorization_pending - keep polling
+    end
+
+    User->>Browser: Navigate to verification_uri
+    Browser->>AuthServer: GET /activate
+    AuthServer-->>Browser: Show user code entry form
+    User->>Browser: Enter user_code WDJB-MJHT
+    Browser->>AuthServer: POST user_code
+    AuthServer-->>Browser: Show login form
+    User->>Browser: Authenticate and approve scopes
+    Browser->>AuthServer: Submit approval
+    AuthServer-->>Browser: Authorization complete
+
+    Device->>AuthServer: POST /token with device_code (next poll)
+    AuthServer-->>Device: Access token + refresh token
+    Device-->>User: Authentication successful

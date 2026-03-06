@@ -1,0 +1,13 @@
+flowchart TD
+    Client[Client Application\nWeb, mobile, desktop] --> SDK[Analytics SDK\nCapture interactions]
+    SDK --> Events[Raw Event Stream\nPage views, clicks, form events]
+    Events --> Ingest[Ingestion Service\nEvent collection endpoint]
+    Ingest --> RawStore[Raw Event Store\nAppend-only log per user]
+    RawStore --> Identity[Identity Resolution\nMerge anonymous and known IDs]
+    Identity --> Session[Session Stitching\nGroup events by session gap]
+    Session --> Metrics[Session Metrics\nDuration, depth, entry and exit pages]
+    Metrics --> Profiles[Behavioral Profile Store\nPer-user event history]
+    RawStore --> Funnel[Funnel Analysis\nStep conversion rates]
+    Profiles --> Segmentation[Segmentation Engine\nCohort and segment definitions]
+    Segmentation --> Personalization[Personalization Layer\nRecommendations, feature flags]
+    Segmentation --> Reporting[Reporting Layer\nRetention, engagement dashboards]

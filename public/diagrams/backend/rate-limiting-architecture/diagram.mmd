@@ -1,0 +1,20 @@
+flowchart TD
+    A([Inbound Request]) --> B[Extract client identifier]
+    B --> C[Fetch rate limit counter from Redis]
+    C --> D{Algorithm type}
+    D -- Token Bucket --> E{Tokens available?}
+    D -- Sliding Window --> F{Request count below threshold?}
+
+    E -- No tokens --> G[Return 429 with Retry-After header]
+    E -- Tokens available --> H[Consume one token]
+    H --> I[Write updated token count to Redis]
+
+    F -- Threshold exceeded --> G
+    F -- Below threshold --> J[Increment request counter with TTL]
+    J --> I
+
+    I --> K[Add rate limit headers to request]
+    K --> L[Forward request to upstream service]
+    L --> M[Upstream processes request]
+    M --> N[Add X-RateLimit-Remaining header to response]
+    N --> O([Return response to client])

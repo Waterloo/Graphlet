@@ -1,0 +1,42 @@
+flowchart LR
+    subgraph Sources
+        APP[Application Logs]
+        IOT[IoT Sensors]
+        CDC[DB CDC Feed]
+        CLICK[Clickstream]
+    end
+
+    subgraph Ingestion
+        KP[Kafka Producer\nClient]
+        KT[Kafka Topics\nRaw Events]
+    end
+
+    subgraph Processing[Stream Processor - Apache Flink]
+        FIL[Filter\nInvalid Events]
+        ENR[Enrich\nAdd Context]
+        AGG[Aggregate\nWindowed Counts]
+        DED[Deduplicate\nby Event ID]
+    end
+
+    subgraph Sinks
+        DW[Data Warehouse\nSnowflake]
+        KV[Key-Value Store\nRedis]
+        AL[Alert Engine]
+        KT2[Kafka Topic\nProcessed Events]
+    end
+
+    APP --> KP
+    IOT --> KP
+    CDC --> KP
+    CLICK --> KP
+    KP --> KT
+
+    KT --> FIL
+    FIL --> ENR
+    ENR --> DED
+    DED --> AGG
+
+    AGG --> DW
+    AGG --> KV
+    AGG --> AL
+    ENR --> KT2

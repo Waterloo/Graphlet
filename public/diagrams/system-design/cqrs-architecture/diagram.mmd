@@ -1,0 +1,14 @@
+flowchart LR
+    Client([Client])
+
+    Client -->|Command\ncreate / update / delete| CH[Command Handler]
+    Client -->|Query\nread request| QH[Query Handler]
+
+    CH --> Validate{Validate\nCommand}
+    Validate -->|Invalid| Reject[Return Error\nto Client]
+    Validate -->|Valid| WriteStore[(Write Store\nNormalized DB)]
+    WriteStore --> Event[Domain Event\nPublished]
+    Event --> Bus[[Event Bus]]
+    Bus --> Projector[Event Projector]
+    Projector --> ReadStore[(Read Store\nDenormalized\nProjection)]
+    QH --> ReadStore

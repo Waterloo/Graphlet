@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant HostA as Host A (192.168.1.1)
+    participant Broadcast as LAN Broadcast (FF:FF:FF:FF:FF:FF)
+    participant HostB as Host B (192.168.1.10)
+    participant HostC as Host C (192.168.1.20)
+
+    Note over HostA: Want to send to 192.168.1.10\nCheck ARP cache — miss
+
+    HostA->>Broadcast: ARP Request\nWho has 192.168.1.10?\nTell 192.168.1.1\n(src MAC: aa:bb:cc:11:22:33)
+
+    Note over HostB: Received broadcast\nIP matches — reply
+    Note over HostC: Received broadcast\nIP does not match — ignore
+
+    HostB-->>HostA: ARP Reply (unicast)\n192.168.1.10 is at dd:ee:ff:44:55:66
+
+    Note over HostA: Update ARP cache:\n192.168.1.10 -> dd:ee:ff:44:55:66\n(TTL ~20 min)
+
+    HostA->>HostB: Ethernet frame\nDst MAC: dd:ee:ff:44:55:66\nIP payload to 192.168.1.10
+
+    Note over HostA: Subsequent packets use\ncached MAC — no broadcast

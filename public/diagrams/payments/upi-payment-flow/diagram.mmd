@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Customer
+    participant MerchantApp as Merchant App
+    participant PSP as Payment Service Provider
+    participant NPCI as NPCI UPI Switch
+    participant RemitterBank as Customer Bank
+    participant BeneficiaryBank as Merchant Bank
+
+    MerchantApp->>PSP: Create collect request (merchant VPA, amount, ref ID)
+    PSP->>NPCI: Submit collect request
+    NPCI->>RemitterBank: Route collect request to customer bank
+    RemitterBank->>Customer: Push notification to UPI app
+    Customer->>RemitterBank: Review request and enter UPI PIN
+    RemitterBank->>RemitterBank: Verify PIN and authenticate user
+    RemitterBank->>RemitterBank: Debit customer account
+    RemitterBank-->>NPCI: Debit success notification
+    NPCI->>BeneficiaryBank: Credit instruction to merchant bank
+    BeneficiaryBank->>BeneficiaryBank: Credit merchant account
+    BeneficiaryBank-->>NPCI: Credit confirmed
+    NPCI-->>PSP: Transaction success (UTR number)
+    PSP-->>MerchantApp: Payment confirmed via webhook
+    MerchantApp-->>Customer: Order confirmation

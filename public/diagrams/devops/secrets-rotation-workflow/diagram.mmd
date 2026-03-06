@@ -1,0 +1,16 @@
+flowchart TD
+    RotateTrigger[Rotation trigger: schedule or security event] --> GenerateSecret[Generate new secret value]
+    GenerateSecret --> StoreNew[Store new secret version in secrets manager]
+    StoreNew --> DualActive[Enable dual-active window for old and new versions]
+    DualActive --> UpdateConsumers[Distribute new secret to all consumers]
+    UpdateConsumers --> RestartApps[Restart or reload application pods]
+    RestartApps --> HealthCheck[Monitor health checks during transition]
+    HealthCheck --> HealthGate{All consumers healthy?}
+    HealthGate -->|No| DiagnoseFailure[Diagnose secret path or format issue]
+    DiagnoseFailure --> FixConsumer[Fix consumer configuration]
+    FixConsumer --> HealthCheck
+    HealthGate -->|Yes| VerifyNew[Verify all consumers use new secret version]
+    VerifyNew --> RevokeOld[Revoke old secret version]
+    RevokeOld --> DeleteOld[Delete old secret from secrets manager]
+    DeleteOld --> AuditLog[Record rotation event in audit log]
+    AuditLog --> ScheduleNext[Schedule next rotation]

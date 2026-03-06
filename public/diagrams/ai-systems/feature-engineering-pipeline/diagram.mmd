@@ -1,0 +1,19 @@
+flowchart TD
+    subgraph Sources["Raw Data Sources"]
+        S1([Event stream]) 
+        S2([Relational DB])
+        S3([Third-party API])
+    end
+
+    S1 --> Extract[Extract raw records]
+    S2 --> Extract
+    S3 --> Extract
+    Extract --> Clean[Clean: impute nulls, remove duplicates, normalize timestamps]
+    Clean --> Transform[Compute derived features: aggregates, ratios, embeddings]
+    Transform --> Validate{Feature validation}
+    Validate -- Fail --> Alert([Alert: feature quality failure])
+    Validate -- Pass --> Write[Write to feature store as versioned feature group]
+    Write --> Online[(Online store: Redis or DynamoDB)]
+    Write --> Offline[(Offline store: S3 or BigQuery)]
+    Online --> InferencePipeline([Serve to inference pipeline])
+    Offline --> TrainingPipeline([Serve to training pipeline])

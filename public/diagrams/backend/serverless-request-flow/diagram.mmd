@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway / Trigger
+    participant FP as FaaS Platform
+    participant FN as Function Code
+
+    C->>GW: HTTP request
+    GW->>FP: Invoke function with event payload
+
+    alt Cold start - no warm instance
+        FP->>FP: Provision execution environment
+        FP->>FP: Pull runtime container image
+        FP->>FP: Start runtime process
+        FP->>FN: Run initialization code
+        FN-->>FP: Init complete
+        FP->>FN: Invoke handler with event
+        FN->>FN: Execute business logic
+        FN->>FN: Call downstream services or DB
+        FN-->>FP: Return response payload
+        FP-->>GW: Function response
+        GW-->>C: HTTP response
+        FP->>FP: Keep environment warm for reuse
+    else Warm start - instance available
+        FP->>FN: Invoke handler with event
+        FN->>FN: Execute business logic
+        FN-->>FP: Return response payload
+        FP-->>GW: Function response
+        GW-->>C: HTTP response
+    end

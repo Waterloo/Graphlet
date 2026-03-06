@@ -1,0 +1,17 @@
+flowchart TD
+    Start([New Release Ready]) --> MigCheck{DB Migration\nBackward Compatible?}
+    MigCheck -->|No| Block[Block Release\nRedesign Migration]
+    MigCheck -->|Yes| RunMigration[Run Additive\nDB Migration]
+    RunMigration --> Strategy{Choose\nDeployment Strategy}
+    Strategy -->|Low risk| BlueGreen[Blue-Green\nFull env switch]
+    Strategy -->|Gradual rollout| Canary[Canary\nTraffic shifting]
+    Strategy -->|In-place update| Rolling[Rolling\nBatch updates]
+    BlueGreen --> ReadinessProbe[Readiness Probe\nNew instances healthy?]
+    Canary --> ReadinessProbe
+    Rolling --> ReadinessProbe
+    ReadinessProbe -->|Fail| RollbackDeploy[Rollback\nRestore old version]
+    ReadinessProbe -->|Pass| Drain[Connection Draining\nFinish in-flight requests]
+    Drain --> SwitchTraffic[Switch Traffic\nto New Instances]
+    SwitchTraffic --> SmokeTest{Smoke Test\nPassed?}
+    SmokeTest -->|Fail| RollbackDeploy
+    SmokeTest -->|Pass| Decommission[Decommission\nOld Instances]

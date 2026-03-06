@@ -1,0 +1,17 @@
+flowchart TD
+    HM[Health Monitor] -->|Heartbeat poll| Primary[Primary System\nActive]
+    HM -->|Heartbeat poll| Standby[Standby System\nPassive]
+    Primary -->|Heartbeat OK| HM
+    Standby -->|Heartbeat OK| HM
+
+    Primary -->|Heartbeat missed| Detect{Failure\nDetected?}
+    Detect -->|No| HM
+    Detect -->|Yes| FC[Failover Controller]
+
+    FC --> Promote[Promote Standby\nto Primary]
+    FC --> UpdateDNS[Update DNS / VIP\nto new Primary]
+    FC --> Alert[Notify Operations\nTeam]
+
+    Promote --> NewPrimary[Standby is now\nActive Primary]
+    UpdateDNS --> ClientReconnect[Clients reconnect\nvia new DNS entry]
+    NewPrimary --> OldStandby[Old Primary rejoins\nas new Standby]

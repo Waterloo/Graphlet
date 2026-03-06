@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph Ring ["Consistent Hash Ring (identifier space 0–255)"]
+        direction LR
+        N0["Node A\n0–63"]
+        N1["Node B\n64–127"]
+        N2["Node C\n128–191"]
+        N3["Node D\n192–255"]
+        N0 --> N1 --> N2 --> N3 --> N0
+    end
+
+    subgraph Lookup ["Key Lookup: hash(key) = 150"]
+        C([Client]) --> R1[Compute hash key = 150]
+        R1 --> R2[Route to node owning\nrange containing 150]
+        R2 --> R3[Node C owns 128–191\nhandles request]
+        R3 --> R4[Return value]
+        R4 --> C
+    end
+
+    subgraph Replication ["Replication factor = 3"]
+        K1[Key hash = 150\nprimary → Node C] --> K2[Replica 1 → Node D]
+        K2 --> K3[Replica 2 → Node A]
+    end
+
+    subgraph Join ["Node Join: New Node E — hash = 96"]
+        J1[New Node E contacts any peer] --> J2[Find successor: Node B owns 64–127]
+        J2 --> J3[Node E claims 64–95\nNode B retains 96–127]
+        J3 --> J4[Transfer keys 64–95 from Node B to Node E]
+        J4 --> J5[Update routing tables\nof predecessor and successor]
+    end
+
+    style Ring fill:#eff6ff,stroke:#3b82f6
+    style Replication fill:#fef3c7,stroke:#f59e0b

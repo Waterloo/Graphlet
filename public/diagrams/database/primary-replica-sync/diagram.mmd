@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Client
+    participant Primary as Primary DB
+    participant WAL as Write-Ahead Log
+    participant Replica as Replica DB
+    participant StandbyWAL as Standby WAL
+
+    Client->>Primary: Write transaction
+    Primary->>WAL: Append log entry (LSN 1042)
+    WAL-->>Primary: Logged
+    Primary->>Primary: Apply change to storage
+    Primary->>Replica: Ship WAL segment (LSN 1042)
+    Replica->>StandbyWAL: Write received segment
+    StandbyWAL-->>Replica: Written
+    Replica->>Replica: Apply change to storage
+    Replica-->>Primary: Ack LSN 1042
+    Primary-->>Client: Write confirmed
+    Note over Primary,Replica: Replication lag = 0 (synchronous mode)

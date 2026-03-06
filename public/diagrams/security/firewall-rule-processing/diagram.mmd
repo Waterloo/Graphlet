@@ -1,0 +1,20 @@
+flowchart TD
+    A[Network packet or connection arrives] --> B[Extract packet attributes\nSrc IP, Dst IP, Port, Protocol]
+    B --> C[Check connection state table\nIs this part of established connection?]
+    C --> D{Established connection?}
+    D -- Yes --> E[Permit packet\nStateful allow for return traffic]
+    D -- No, new connection --> F[Evaluate Rule 1\nSrc IP in blocked ranges?]
+    F --> G{Rule 1 match?}
+    G -- Yes, DENY --> H[Block packet\nLog and drop]
+    G -- No --> I[Evaluate Rule 2\nDst Port in allowed services?]
+    I --> J{Rule 2 match?}
+    J -- Yes, ALLOW --> K[Permit packet\nAdd to connection table]
+    J -- No --> L[Evaluate Rule 3\nAdmin IP accessing SSH port 22?]
+    L --> M{Rule 3 match?}
+    M -- Yes, ALLOW --> K
+    M -- No --> N[Continue evaluating remaining rules\nin priority order]
+    N --> O{Any rule matched?}
+    O -- No --> P[Implicit default DENY ALL\nBlock and log]
+    K --> Q[Forward packet to destination]
+    H --> R[Generate security log event]
+    P --> R

@@ -1,0 +1,39 @@
+flowchart TD
+    subgraph ChordRing ["Chord Ring — m=6 bits, identifier space 0–63"]
+        N0["Node 0"]
+        N8["Node 8"]
+        N15["Node 15"]
+        N21["Node 21"]
+        N32["Node 32"]
+        N45["Node 45"]
+        N56["Node 56"]
+        N0 --> N8 --> N15 --> N21 --> N32 --> N45 --> N56 --> N0
+    end
+
+    subgraph FingerTable ["Finger Table for Node 0"]
+        FT1["finger[1]: successor(0+1=1) → Node 8"]
+        FT2["finger[2]: successor(0+2=2) → Node 8"]
+        FT3["finger[3]: successor(0+4=4) → Node 8"]
+        FT4["finger[4]: successor(0+8=8) → Node 15"]
+        FT5["finger[5]: successor(0+16=16) → Node 21"]
+        FT6["finger[6]: successor(0+32=32) → Node 32"]
+    end
+
+    subgraph Lookup ["Lookup: find key hash = 43"]
+        L1["Query starts at Node 0"] --> L2["finger[6]=Node 32\nlargest predecessor of 43"]
+        L2 --> L3["Forward to Node 32"]
+        L3 --> L4["Node 32: finger[4] = Node 45\nlargest predecessor of 43"]
+        L4 --> L5["Forward to Node 45"]
+        L5 --> L6["Node 45 owns range 33–56\n43 is in range — key found!"]
+    end
+
+    subgraph Join ["Node Join: New Node 26"]
+        J1["New node ID = 26"] --> J2["Contact any node\nfind successor of 26"]
+        J2 --> J3["Successor = Node 32\nPredecessor = Node 21"]
+        J3 --> J4["Copy keys 22–26 from Node 32"]
+        J4 --> J5["Run stabilize to update\nNode 21 predecessor pointer"]
+        J5 --> J6["Schedule fix_fingers\nfor background repair"]
+    end
+
+    style L6 fill:#d1fae5,stroke:#10b981
+    style ChordRing fill:#eff6ff,stroke:#3b82f6

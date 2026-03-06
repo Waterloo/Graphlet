@@ -1,0 +1,17 @@
+flowchart TD
+    A([Transactions captured throughout day]) --> B[Acquirer collects captured transactions]
+    B --> C[Apply refunds and reversals to batch]
+    C --> D[Close settlement batch at cutoff time]
+    D --> E[Submit batch file to card network]
+    E --> F[Card network processes batch]
+    F --> G[Calculate net position per acquirer]
+    G --> H[Instruct issuing banks to transfer funds]
+    H --> I[Inter-bank transfer via clearing house]
+    I --> J[Card network credits acquirer settlement account]
+    J --> K[Acquirer calculates merchant net payout]
+    K --> L[Deduct interchange fees — paid to issuer]
+    L --> M[Deduct card network scheme fees]
+    M --> N[Deduct acquirer processing fees]
+    N --> O[Deposit net amount to merchant bank account]
+    O --> P[Generate settlement report for merchant]
+    P --> Q([Merchant reconciles report against internal records])

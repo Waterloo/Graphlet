@@ -1,0 +1,15 @@
+flowchart TD
+    MQ[Message Queue] -->|deliver message\nattempt 1| C[Consumer]
+    C -->|processing fails\ntransient error| F{Attempt\ncount}
+    F -->|attempt <= max\n3 retries| D[Delay Queue\nexponential backoff]
+    D -->|wait 1s / 2s / 4s| MQ
+    F -->|attempt > max| DLQ[Dead Letter Queue]
+
+    C -->|processing succeeds| ACK[Acknowledge\nmessage deleted]
+
+    DLQ --> Alert[Alert On-Call]
+    DLQ --> Inspect[Manual Inspection]
+    DLQ -->|replay after fix| MQ
+
+    style DLQ fill:#f55,color:#fff
+    style ACK fill:#5a5,color:#fff

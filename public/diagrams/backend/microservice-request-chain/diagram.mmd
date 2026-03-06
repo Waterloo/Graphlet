@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant C as Client
+    participant OS as Order Service
+    participant IS as Inventory Service
+    participant PS as Payment Service
+
+    C->>OS: POST /orders (trace-id: abc123)
+    OS->>IS: Reserve stock (trace-id: abc123)
+    alt Insufficient stock
+        IS-->>OS: 409 Insufficient inventory
+        OS-->>C: 409 Order cannot be fulfilled
+    else Stock reserved
+        IS-->>OS: 200 Reserved (reservation-id: r99)
+        OS->>PS: Authorize payment (trace-id: abc123)
+        alt Payment declined
+            PS-->>OS: 402 Payment failed
+            OS->>IS: Release reservation r99
+            IS-->>OS: 200 Released
+            OS-->>C: 402 Payment declined
+        else Payment authorized
+            PS-->>OS: 200 Authorized (charge-id: ch77)
+            OS->>OS: Commit order to database
+            OS-->>C: 201 Created (order-id: o55)
+        end
+    end

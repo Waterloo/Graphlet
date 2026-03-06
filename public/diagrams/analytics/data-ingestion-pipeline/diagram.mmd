@@ -1,0 +1,14 @@
+flowchart TD
+    DB[Transactional Databases\nPostgres, MySQL via CDC] --> Connectors[Connector Layer\nFivetran, Airbyte, custom]
+    SaaS[SaaS APIs\nCRM, Ad Platforms, Support] --> Connectors
+    Events[Event Streams\nKafka, Kinesis] --> Connectors
+    Files[Flat File Drops\nCSV, JSON, Parquet] --> Connectors
+    Connectors --> Scheduler[Scheduler\nBatch and streaming jobs]
+    Scheduler --> Staging[Staging Area\nRaw object store bucket]
+    Staging --> Validate[Validate and Normalize\nSchema checks, null constraints]
+    Validate -->|Pass| Transform[Transform Layer\nType casting, deduplication]
+    Validate -->|Fail| Quarantine[Quarantine Store\nFailed record log]
+    Transform --> Route[Route by destination]
+    Route --> Lake[Data Lake\nRaw and curated zones]
+    Route --> Warehouse[Data Warehouse\nAnalytics tables]
+    Warehouse --> BI[BI Tools and Reports]

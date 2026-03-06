@@ -1,0 +1,22 @@
+flowchart TD
+    A([User performs action]) --> B[Write to local store]
+    B --> C[Append operation to mutation queue]
+    C --> D{Network available?}
+    D -- No --> E[Wait for connectivity change]
+    E --> D
+    D -- Yes --> F[Dequeue next pending operation]
+    F --> G[POST operation to backend API]
+    G --> H{API response?}
+    H -- 200 OK --> I[Update local record with server response]
+    I --> J[Remove operation from queue]
+    J --> K{Queue empty?}
+    K -- No --> F
+    K -- Yes --> L([Sync complete])
+    H -- 409 Conflict --> M[Apply conflict resolution strategy]
+    M --> N{Resolution outcome}
+    N -- Server wins --> O[Overwrite local record with server version]
+    N -- Merge --> P[Merge fields and re-send merged record]
+    O --> J
+    P --> G
+    H -- 5xx / Timeout --> Q[Backoff and retry]
+    Q --> D

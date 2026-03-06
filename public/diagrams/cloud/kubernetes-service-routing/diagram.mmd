@@ -1,0 +1,15 @@
+flowchart LR
+    ExtClient([External Client]) --> LB[Cloud Load Balancer\ntype: LoadBalancer]
+    InternalPod([Internal Pod]) --> DNS[CoreDNS\nmy-svc.ns.svc.cluster.local]
+    DNS --> ClusterIP[Service ClusterIP\nvirtual IP]
+    LB --> NodePort[NodePort\n30080 on each Node]
+    NodePort --> ClusterIP
+    ClusterIP --> KubeProxy[kube-proxy\niptables / ipvs rules]
+    KubeProxy --> Endpoints[Endpoints Object\nlive pod IPs]
+    Endpoints --> PodA[Pod A\n10.0.1.5:8080]
+    Endpoints --> PodB[Pod B\n10.0.1.6:8080]
+    Endpoints --> PodC[Pod C\n10.0.1.7:8080]
+    PodA --> ReadyA{Readiness\nProbe Ready?}
+    PodB --> ReadyB{Readiness\nProbe Ready?}
+    ReadyA -->|Yes| ServeA([Serving traffic])
+    ReadyB -->|No| SkipB([Excluded from endpoints])

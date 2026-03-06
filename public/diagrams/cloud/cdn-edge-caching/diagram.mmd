@@ -1,0 +1,16 @@
+flowchart TD
+    User([User Request\nexample.com/image.png]) --> DNS[DNS / Anycast\nroutes to nearest PoP]
+    DNS --> EdgePoP[CDN Edge PoP\nnearest location]
+    EdgePoP --> CacheCheck{Cache Key\nMatch?}
+    CacheCheck -->|HIT, TTL valid| CacheHit([Serve from Edge Cache\nX-Cache: HIT, under 5ms])
+    CacheCheck -->|MISS or expired| OriginRequest[Forward to Origin\nLoad Balancer or S3]
+    OriginRequest --> Origin[Origin Server\napplication or object storage]
+    Origin --> CacheControl[Response with\nCache-Control headers]
+    CacheControl --> StorEdge[Store at Edge\nrespect max-age, public]
+    StorEdge --> ServeUser([Serve Response to User\nX-Cache: MISS])
+    StorEdge --> FutureHit([Future Requests: HIT])
+    EdgePoP --> VaryCheck{Vary Header\nor Cookie?}
+    VaryCheck -->|Yes| ShardKey[Extend Cache Key\nmore cache shards]
+    ShardKey --> CacheCheck
+    Purge([Purge API Call\nby URL or tag]) --> InvalidateEdge[Invalidate Edge Cache\nall PoPs]
+    InvalidateEdge --> ForceMiss([Force cache miss\nnext request fetches fresh])

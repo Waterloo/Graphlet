@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant User
+    participant Client as Browser
+    participant Server
+    participant AuthApp as Authenticator App
+
+    User->>Client: Submit username and password
+    Client->>Server: POST /auth/login with credentials
+    Server-->>Server: Verify password hash
+    alt Password invalid
+        Server-->>Client: 401 Unauthorized
+    else Password valid, 2FA enabled
+        Server-->>Server: Create partial session (2FA pending)
+        Server-->>Client: 200 - prompt for 2FA code
+        Client-->>User: Show 2FA code input
+        User->>AuthApp: Open authenticator app
+        AuthApp-->>AuthApp: Compute TOTP from shared secret + current time
+        AuthApp-->>User: Display 6-digit code
+        User->>Client: Enter 6-digit TOTP code
+        Client->>Server: POST /auth/verify-2fa with code
+        Server-->>Server: Compute expected TOTP
+        Server-->>Server: Check code not already used (anti-replay)
+        alt Code valid
+            Server-->>Server: Upgrade to full authenticated session
+            Server-->>Client: 200 OK - set session cookie
+            Client-->>User: Redirect to dashboard
+        else Code invalid or expired
+            Server-->>Client: 401 - invalid 2FA code
+        end
+    end

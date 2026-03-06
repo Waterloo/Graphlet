@@ -1,0 +1,18 @@
+flowchart LR
+    App[Application] --> Proxy[DB Proxy / Router]
+    Proxy --> QueryType{Query Type?}
+    QueryType -->|Write\nINSERT UPDATE DELETE| Primary[(Primary DB)]
+    QueryType -->|Read\nSELECT| LoadBalance{Load Balancer}
+    LoadBalance --> Replica1[(Replica 1)]
+    LoadBalance --> Replica2[(Replica 2)]
+    LoadBalance --> Replica3[(Replica 3)]
+    Primary --> ReplicationLog[Replication Log]
+    ReplicationLog --> Replica1
+    ReplicationLog --> Replica2
+    ReplicationLog --> Replica3
+    Primary --> WriteResponse[Write Response]
+    Replica1 --> ReadResponse[Read Response]
+    Replica2 --> ReadResponse
+    Replica3 --> ReadResponse
+    WriteResponse --> App
+    ReadResponse --> App

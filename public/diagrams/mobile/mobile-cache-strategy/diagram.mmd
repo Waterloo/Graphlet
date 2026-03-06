@@ -1,0 +1,24 @@
+flowchart TD
+    A([App requests data]) --> B{Cache entry exists?}
+    B -- No --> C[Fetch from network]
+    C --> D{Network response?}
+    D -- Success --> E[Store response in cache with TTL]
+    E --> F[Return data to UI]
+    D -- Failure --> G[Return error to UI]
+    B -- Yes --> H{Cache strategy?}
+    H -- Cache-first --> I{Entry within TTL?}
+    I -- Yes --> J[Return cached data immediately]
+    I -- No --> K[Fetch from network]
+    K --> L{Network response?}
+    L -- Success --> M[Update cache and return fresh data]
+    L -- Failure --> N[Return stale cached data as fallback]
+    H -- Network-first --> O[Fetch from network]
+    O --> P{Network response?}
+    P -- Success --> Q[Update cache and return fresh data]
+    P -- Failure --> R[Serve stale cache as fallback]
+    H -- Stale-while-revalidate --> S[Return stale cache immediately]
+    S --> T[Fire background network request]
+    T --> U{Network response?}
+    U -- Success --> V[Update cache]
+    V --> W[Push update to UI if data changed]
+    U -- Failure --> X[Keep existing cache entry]

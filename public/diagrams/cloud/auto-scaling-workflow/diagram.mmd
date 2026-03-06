@@ -1,0 +1,17 @@
+flowchart TD
+    Metrics[Metrics Collector\nCPU, Memory, Queue Depth] --> Evaluator{Scaling Policy\nEvaluator}
+    Evaluator -->|CPU > 70% for 2 min| ScaleOut[Trigger Scale-Out]
+    Evaluator -->|CPU < 30% for 10 min| ScaleIn[Trigger Scale-In]
+    Evaluator -->|Within bounds| NoAction[No Action\nCooldown timer active]
+    ScaleOut --> CheckMax{At maximum\ncapacity?}
+    CheckMax -->|No| Launch[Launch New Instance\nfrom Launch Template]
+    CheckMax -->|Yes| CapAlert[Emit Capacity Alert\nno scale possible]
+    Launch --> HealthCheck{Instance Health\nCheck Passed?}
+    HealthCheck -->|Pass| Register[Register with\nLoad Balancer]
+    HealthCheck -->|Fail| Terminate([Terminate Failed Instance])
+    Register --> ReceiveTraffic([Instance Serving Traffic])
+    ScaleIn --> Cooldown{Cooldown Period\nExpired?}
+    Cooldown -->|No| Wait[Wait and Re-evaluate]
+    Cooldown -->|Yes| Deregister[Deregister Instance\nfrom Load Balancer]
+    Deregister --> Drain[Drain Existing Connections]
+    Drain --> TerminateOld([Terminate Instance])

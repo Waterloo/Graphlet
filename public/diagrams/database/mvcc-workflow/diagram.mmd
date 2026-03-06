@@ -1,0 +1,31 @@
+sequenceDiagram
+    participant TxA as Transaction A (Reader)
+    participant Engine as DB Engine
+    participant Heap as Table Heap
+    participant TxB as Transaction B (Writer)
+
+    TxA->>Engine: BEGIN (snapshot at txid=100)
+    TxB->>Engine: BEGIN (txid=101)
+
+    TxA->>Engine: SELECT balance FROM accounts WHERE id=1
+    Engine->>Heap: Find row versions for id=1
+    Heap-->>Engine: Version v1 (xmin=50, xmax=null, balance=1000)
+    Engine->>Engine: Visibility check: xmin=50 committed, xmax null — visible to txid=100
+    Engine-->>TxA: balance = 1000
+
+    TxB->>Engine: UPDATE accounts SET balance=750 WHERE id=1
+    Engine->>Heap: Create new version v2 (xmin=101, xmax=null, balance=750)
+    Engine->>Heap: Mark old version v1 xmax=101
+    Engine-->>TxB: 1 row updated
+
+    TxB->>Engine: COMMIT
+    Engine->>Engine: Mark txid=101 committed in transaction log
+
+    TxA->>Engine: SELECT balance FROM accounts WHERE id=1
+    Engine->>Heap: Find row versions for id=1
+    Heap-->>Engine: v1 (xmin=50, xmax=101) and v2 (xmin=101, xmax=null)
+    Engine->>Engine: v1 xmax=101 committed after snapshot — still visible to A
+    Engine->>Engine: v2 xmin=101 newer than snapshot — not visible to A
+    Engine-->>TxA: balance = 1000 (repeatable read)
+
+    TxA->>Engine: COMMIT

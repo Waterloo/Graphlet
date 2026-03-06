@@ -1,0 +1,17 @@
+flowchart LR
+    NodeA[Worker Node A] -->|SETNX lock-key TTL=30s| LockSvc[(Lock Service\nRedis / etcd)]
+    NodeB[Worker Node B] -->|SETNX lock-key TTL=30s| LockSvc
+
+    LockSvc -->|Lock granted| NodeA
+    LockSvc -->|Lock denied - key exists| NodeB
+
+    NodeA --> Critical[Execute Critical Section\nProcess job / Update resource]
+    NodeB --> RetryWait[Wait & Retry\nafter backoff]
+
+    Critical --> Release[Release Lock\nDEL lock-key with token check]
+    Release --> LockSvc
+
+    RetryWait -->|Retry acquire| LockSvc
+
+    Critical -.->|Node crashes| TTLExpiry[TTL expires\nLock auto-released]
+    TTLExpiry --> LockSvc

@@ -1,0 +1,37 @@
+flowchart TD
+    A([Client Write Request\nkey=user:42 value=data]) --> B{Replication\nMode}
+
+    B -->|Single-Leader Sync| C[Primary Node\nappend to write-ahead log]
+    C --> D[Replicate to Replica 1]
+    C --> E[Replicate to Replica 2]
+    D --> F{Both replicas\nacknowledged?}
+    E --> F
+    F -->|Yes| G[Confirm write to client\ndurable — sync mode]
+    F -->|No — timeout| H[Return error\nwrite not durable]
+
+    B -->|Single-Leader Async| I[Primary Node\nwrite and confirm immediately]
+    I --> J([Client receives ACK])
+    I --> K[Async replicate to Replica 1]
+    I --> L[Async replicate to Replica 2]
+    K --> M[Replicas eventually\nconsistent]
+    L --> M
+
+    B -->|Quorum — N=3 W=2 R=2| N[Send write to all 3 nodes\nin parallel]
+    N --> O[Node A — accept]
+    N --> P[Node B — accept]
+    N --> Q[Node C — unreachable]
+    O --> R{W=2 acks\nreceived?}
+    P --> R
+    R -->|Yes| S[Confirm write to client\nW+R is greater than N — consistent reads]
+    R -->|No| T[Write failed — below quorum]
+
+    subgraph Conflict ["Conflict Resolution — Last Write Wins"]
+        CW1[Write at t=100 from Region A] --> CM[Merge — compare timestamps]
+        CW2[Write at t=105 from Region B] --> CM
+        CM --> CV[Keep t=105 value\ndiscard t=100]
+    end
+
+    style G fill:#d1fae5,stroke:#10b981
+    style S fill:#d1fae5,stroke:#10b981
+    style H fill:#fee2e2,stroke:#ef4444
+    style Conflict fill:#fef3c7,stroke:#f59e0b

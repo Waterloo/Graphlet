@@ -1,0 +1,16 @@
+flowchart TD
+    A[Server-Rendered HTML Displayed in Browser] --> B[JavaScript Bundle Downloaded]
+    B --> C[Deserialize Dehydrated State from Script Tag]
+    C --> D[Framework Starts Hydration Walk]
+    D --> E[Match DOM Nodes to Component Tree]
+    E --> F{DOM matches expected output?}
+    F -- No --> G[Log Hydration Mismatch Warning]
+    G --> H[Replace Mismatched Subtree]
+    F -- Yes --> I[Reuse Existing DOM Nodes]
+    H --> J[Attach Event Listeners to Nodes]
+    I --> J
+    J --> K[Restore Reactive State]
+    K --> L[Run Mounted and useEffect Callbacks]
+    L --> M[Page Fully Interactive]
+    style A fill:#3b82f6,color:#fff
+    style M fill:#22c55e,color:#fff

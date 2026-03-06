@@ -1,0 +1,17 @@
+flowchart TD
+    A([Client Request]) --> B[API Gateway receives request]
+    B --> C{Authenticate}
+    C -- Invalid credentials --> D[Return 401 Unauthorized]
+    C -- Valid --> E{Authorize}
+    E -- Forbidden --> F[Return 403 Forbidden]
+    E -- Allowed --> G{Rate limit check}
+    G -- Quota exceeded --> H[Return 429 Too Many Requests]
+    G -- Within quota --> I[Match route to upstream service]
+    I --> J{Route found?}
+    J -- No match --> K[Return 404 Not Found]
+    J -- Matched --> L[Transform request headers and payload]
+    L --> M[Proxy to upstream service]
+    M --> N{Upstream response}
+    N -- 5xx error --> O[Return 502 Bad Gateway]
+    N -- Success --> P[Transform response]
+    P --> Q([Return response to client])

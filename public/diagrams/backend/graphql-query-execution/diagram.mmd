@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant C as Client
+    participant GQL as GraphQL Server
+    participant R as Resolver Layer
+    participant DS as Data Source
+
+    C->>GQL: POST /graphql { query, variables }
+    GQL->>GQL: Parse query string to AST
+    alt Parse error
+        GQL-->>C: 400 Syntax Error
+    else Parse success
+        GQL->>GQL: Validate AST against schema
+        alt Validation error
+            GQL-->>C: 400 Validation Error
+        else Validation success
+            GQL->>GQL: Build execution plan
+            GQL->>R: Dispatch root field resolvers
+            R->>DS: Query database / call service
+            DS-->>R: Return raw data
+            R->>R: Resolve nested fields
+            R->>DS: Fetch related records
+            DS-->>R: Return related data
+            R-->>GQL: Resolver results map
+            GQL->>GQL: Merge results into response shape
+            GQL-->>C: 200 OK with data object and errors array
+        end
+    end

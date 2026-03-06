@@ -1,0 +1,23 @@
+flowchart TD
+    A([Scheduler tick]) --> B[Load jobs due for execution]
+    B --> C{Any due jobs?}
+    C -- No due jobs --> D([Sleep until next tick])
+    C -- Jobs found --> E[For each due job]
+    E --> F[Attempt distributed lock acquisition]
+    F --> G{Lock acquired?}
+    G -- Lock held by another instance --> H[Skip job this tick]
+    H --> D
+    G -- Lock acquired --> I[Mark job as running]
+    I --> J[Execute job logic]
+    J --> K{Execution result}
+    K -- Success --> L[Record success in job history]
+    L --> M[Compute next_run_at from cron expression]
+    M --> N[Store updated schedule]
+    N --> O[Release distributed lock]
+    O --> D
+    K -- Failure --> P[Record error and stack trace]
+    P --> Q{Retry allowed?}
+    Q -- Yes --> R[Schedule retry with backoff]
+    R --> O
+    Q -- No --> S[Emit alert]
+    S --> O

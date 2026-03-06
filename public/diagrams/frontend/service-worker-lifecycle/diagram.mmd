@@ -1,0 +1,22 @@
+stateDiagram-v2
+    [*] --> Registering : navigator.serviceWorker.register()
+    Registering --> Installing : Browser downloads SW script
+    Installing --> Installed : install event fires and cache populated
+    Installing --> Redundant : install event fails
+    Installed --> Waiting : Previous SW still controls open pages
+    state Waiting {
+        [*] --> HoldingForOldPages
+        HoldingForOldPages --> SkipWaitingCalled : skipWaiting() invoked
+        SkipWaitingCalled --> [*]
+    }
+    Waiting --> Activating : All old pages closed or skipWaiting
+    Activating --> Active : activate event fires and old caches cleaned
+    state Active {
+        [*] --> InterceptingFetch
+        InterceptingFetch --> ServingFromCache : Cache hit
+        InterceptingFetch --> FetchingNetwork : Cache miss
+        FetchingNetwork --> InterceptingFetch
+        ServingFromCache --> InterceptingFetch
+    }
+    Active --> Redundant : New SW registered and activated
+    Redundant --> [*]

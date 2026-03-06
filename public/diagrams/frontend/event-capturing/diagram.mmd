@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant Win as window
+    participant Doc as document
+    participant Body as body
+    participant Div as div.container
+    participant Button as button.target
+
+    Note over Win,Button: Capture phase — top-down propagation
+    Win->>Win: Run window capture listeners
+    Win->>Doc: Descend to document
+    Doc->>Doc: Run document capture listeners
+    Doc->>Body: Descend to body
+    Body->>Body: Run body capture listeners
+    Body->>Div: Descend to div.container
+    Div->>Div: Run div capture listeners
+    Div->>Button: Descend to target element
+    Note over Button: Target phase
+    Button->>Button: Run button capture listeners
+    Button->>Button: Run button bubble listeners
+    Note over Button,Win: Bubble phase — bottom-up propagation
+    Button->>Div: Bubble to div.container
+    Div->>Div: Run div bubble listeners
+    Div->>Body: Bubble to body
+    Body->>Body: Run body bubble listeners
+    Body->>Doc: Bubble to document
+    Doc->>Win: Bubble to window
+    alt stopPropagation in capture phase
+        Note over Win,Button: Event halted — never reaches target
+    end

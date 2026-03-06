@@ -1,0 +1,17 @@
+flowchart LR
+    Devices[IoT Devices\n100k+ endpoints] --> Broker[IoT Broker\nAWS IoT / Azure IoT Hub]
+    Broker --> Stream[Message stream\nKinesis / Kafka / Pub-Sub]
+    Stream --> SP[Stream processor\nFlink / Spark Streaming]
+    Stream --> RawStore[(Raw message archive\nS3 / GCS cold storage)]
+    SP --> Validate{Schema valid?}
+    Validate -->|No| DLQ[Dead-letter queue\nfor inspection]
+    Validate -->|Yes| Enrich[Enrich with device metadata\nfrom device registry]
+    Enrich --> Window[Windowed aggregation\n1-min / 5-min averages]
+    Window --> TSDB[(Time-series database\nInfluxDB / TimescaleDB)]
+    Window --> AnomalyCheck{Anomaly score\nhigh?}
+    AnomalyCheck -->|Yes| Alert[Alert service\nPagerDuty / SNS]
+    AnomalyCheck -->|No| TSDB
+    TSDB --> Dashboard[Grafana dashboard\nReal-time visualisation]
+    TSDB --> BatchETL[Nightly batch ETL]
+    BatchETL --> Warehouse[(Data warehouse\nBigQuery / Redshift)]
+    DevRegistry[(Device registry\nMetadata store)] --> Enrich

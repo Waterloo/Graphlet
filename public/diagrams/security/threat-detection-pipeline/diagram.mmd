@@ -1,0 +1,22 @@
+flowchart TD
+    A[Security event sources:\nFirewall, Auth, API Gateway,\nEndpoint agents, Cloud logs] --> B[Log collector agents\nFluentBit, Filebeat, CloudWatch]
+    B --> C[Streaming pipeline\nKafka or Kinesis]
+    C --> D[Normalization and enrichment\nParse to common schema\nEnrich with geo-IP and asset data]
+
+    D --> E[Rule-based detection engine\nMatch against known attack signatures]
+    D --> F[Anomaly detection\nBaseline deviation for user and entity]
+    D --> G[Threat intelligence matching\nCheck IPs and hashes against IOC feeds]
+
+    E --> H[Detection hits\nBrute force, SQLi, privilege escalation]
+    F --> H
+    G --> H
+
+    H --> I[Correlation engine\nJoin related events across sources\nwithin time window]
+    I --> J[Build attack chain\nSequence of related events]
+    J --> K[Score and prioritize\nSeverity x confidence x asset criticality]
+    K --> L{Priority level}
+    L -- Critical --> M[Page on-call responder\nPagerDuty or OpsGenie]
+    L -- High --> N[Create incident ticket\nJira or ServiceNow]
+    L -- Medium or Low --> O[Queue for analyst review]
+    M --> P[Trigger incident response workflow]
+    N --> P

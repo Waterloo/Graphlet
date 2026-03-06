@@ -1,0 +1,17 @@
+flowchart TD
+    SearchSvc[Search service] --> EmitEvents[Emit structured events\nquery, latency, results, clicks]
+    EmitEvents --> Queue[Message queue\nKafka topic]
+    Queue --> StreamProc[Stream processor\nFlink or Spark Streaming]
+    StreamProc --> Enrich[Enrich events\njoin session and user dimensions]
+    Enrich --> BotFilter[Filter bot traffic\nuser-agent and behavioral rules]
+    BotFilter --> RealTimeAgg[Real-time aggregation\nquery volume, latency P95, cache hit rate]
+    BotFilter --> BatchLand[Land to data warehouse\nfor batch aggregation]
+    RealTimeAgg --> MetricsStore[Time-series metrics store\nPrometheus or InfluxDB]
+    BatchLand --> BatchAgg[Batch aggregation\ntop queries, CTR, zero-result rate]
+    BatchAgg --> Warehouse[Data warehouse\nBigQuery or Redshift]
+    MetricsStore --> Dashboard[Operational dashboards\nand alerting]
+    Warehouse --> RelevanceTraining[Feed relevance\ntraining data pipeline]
+    Warehouse --> ReportingDash[Reporting dashboards\nbusiness and product metrics]
+    Dashboard --> Alert{Anomaly\ndetected?}
+    Alert -->|Yes| Oncall[Page on-call engineer]
+    Alert -->|No| Monitor[Continue monitoring]

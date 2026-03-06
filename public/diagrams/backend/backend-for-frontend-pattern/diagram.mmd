@@ -1,0 +1,22 @@
+flowchart LR
+    WA([Web App]) --> WBFF[Web BFF]
+    MA([Mobile App]) --> MBFF[Mobile BFF]
+    TP([Third-Party Consumer]) --> ABFF[API BFF]
+
+    WBFF --> US[User Service]
+    WBFF --> PS[Product Service]
+    WBFF --> OS[Order Service]
+
+    MBFF --> US
+    MBFF --> PS
+
+    ABFF --> PS
+    ABFF --> OS
+
+    US --> DB1[(User DB)]
+    PS --> DB2[(Product DB)]
+    OS --> DB3[(Order DB)]
+
+    WBFF --> WA
+    MBFF --> MA
+    ABFF --> TP

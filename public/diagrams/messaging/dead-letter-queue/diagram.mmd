@@ -1,0 +1,23 @@
+flowchart TD
+    P[Producer] -->|publish message| MQ[Main Queue]
+    MQ -->|deliver| C[Consumer]
+
+    C -->|success| ACK[Message Acknowledged\nand Deleted]
+    C -->|failure| RC{Retry\nCount}
+
+    RC -->|attempt < max| WQ[Wait / Backoff\nDelay Queue]
+    WQ -->|re-enqueue| MQ
+
+    RC -->|attempt >= max| DLQ[Dead Letter Queue]
+    MQ -->|TTL expired| DLQ
+    MQ -->|queue full| DLQ
+
+    DLQ --> META[Preserve Metadata\nreason, timestamp, error]
+    DLQ --> ALERT[Send Alert\nto On-Call]
+
+    META --> INSPECT[Engineer Inspects\nRoot Cause]
+    INSPECT -->|bug fixed| REPLAY[Replay to\nMain Queue]
+    REPLAY --> MQ
+
+    style DLQ fill:#e44,color:#fff
+    style ACK fill:#4a4,color:#fff

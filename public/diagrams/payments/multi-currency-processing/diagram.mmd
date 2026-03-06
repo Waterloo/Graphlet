@@ -1,0 +1,24 @@
+flowchart TD
+    A([Customer proceeds to checkout]) --> B[Detect customer locale and currency]
+    B --> C{Merchant supports local currency?}
+    C -->|No| D[Charge in merchant base currency]
+    D --> E[Standard authorization flow]
+    C -->|Yes| F[Display price in customer local currency]
+    F --> G{Dynamic Currency Conversion offered?}
+    G -->|Yes DCC| H[Show EUR amount and USD equivalent to customer]
+    H --> I{Customer accepts DCC rate?}
+    I -->|Yes| J[Charge in merchant currency at gateway rate]
+    I -->|No| K[Charge in customer local currency]
+    G -->|No| K
+    K --> L[Gateway authorizes charge in presentment currency]
+    L --> M[Acquirer settles transaction in presentment currency]
+    M --> N{Merchant has local currency account?}
+    N -->|Yes| O[Settle into local currency bank account]
+    O --> P[No FX conversion required]
+    N -->|No| Q[Acquirer converts to merchant base currency]
+    Q --> R[Apply FX conversion fee]
+    R --> S[Credit net amount to merchant base currency account]
+    P --> T[Record presentment currency, settlement currency, rate]
+    S --> T
+    J --> T
+    T --> U([Settlement report with FX details])

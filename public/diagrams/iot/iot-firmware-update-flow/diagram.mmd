@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Operator as Operator
+    participant Platform as IoT Platform
+    participant HSM as Signing HSM
+    participant Device as IoT Device
+    participant Bootloader as Bootloader
+
+    Operator->>Platform: Upload firmware binary v2.1.0
+    Platform->>HSM: Request signature over binary hash
+    HSM->>Platform: Return signed hash
+    Platform->>Platform: Store artifact + signature in S3
+
+    Platform->>Device: Publish OTA job notification\n(version, download URL, signature)
+    Device->>Platform: Acknowledge job received
+    Device->>Platform: Download firmware chunks (HTTPS range requests)
+    Device->>Device: Reassemble binary in partition B
+    Device->>Device: Verify SHA-256 hash
+    Device->>Device: Verify cryptographic signature\nusing embedded public key
+    alt Verification failed
+        Device->>Platform: Report job failed — invalid signature
+    else Verification passed
+        Device->>Device: Write pending-boot flag for partition B
+        Device->>Platform: Report status: rebooting
+        Device->>Bootloader: Request reboot
+        Bootloader->>Bootloader: Detect pending-boot flag, boot partition B
+        Bootloader->>Device: Launch new firmware
+        Device->>Device: Run self-tests + watchdog check
+        alt Self-tests failed or watchdog timeout
+            Bootloader->>Bootloader: Rollback to partition A
+            Device->>Platform: Report rollback event
+        else Self-tests passed
+            Device->>Device: Write confirmed flag for partition B
+            Device->>Platform: Report job succeeded — running v2.1.0
+        end
+    end

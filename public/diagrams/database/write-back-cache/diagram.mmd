@@ -1,0 +1,20 @@
+flowchart TD
+    App[Application Write] --> CacheUpdate[Update cache entry]
+    CacheUpdate --> MarkDirty[Mark entry as dirty]
+    MarkDirty --> ImmediateAck[Immediate write ACK to app]
+
+    MarkDirty --> DirtyQueue[Dirty entry queue]
+    DirtyQueue --> FlushTrigger{Flush trigger}
+    FlushTrigger -->|Timer elapsed| FlushDB[(Flush dirty entries\nto database)]
+    FlushTrigger -->|Dirty threshold reached| FlushDB
+    FlushTrigger -->|Entry evicted| FlushDB
+    FlushDB --> MarkClean[Mark entries clean]
+
+    App --> ReadReq[Read Request]
+    ReadReq --> CacheHit{Cache Hit?}
+    CacheHit -->|Yes| ReturnCache[Return from cache\nlatest value]
+    CacheHit -->|No| ReadDB[(Read from database)]
+    ReadDB --> PopulateCache[Populate cache]
+    PopulateCache --> ReturnCache
+
+    CacheCrash([Cache failure]) --> DataLoss[Dirty entries lost\nbefore flush]

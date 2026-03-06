@@ -1,0 +1,12 @@
+flowchart TD
+    Sources[Data Sources\nDatabases, APIs, Files] --> Extract[Extract raw data\nFull or incremental load]
+    Extract --> Validate[Validate schema and types\nNull checks, type conformance]
+    Validate -->|Pass| Clean[Clean and deduplicate\nNormalize, strip whitespace]
+    Validate -->|Fail| Quarantine[Quarantine failed records\nAlert and log]
+    Clean --> Transform[Apply business transformations\nType casting, categorization]
+    Transform --> Enrich[Enrich with lookup data\nGeo tables, reference data]
+    Enrich --> Format[Format for target schema\nColumn mapping, partitioning]
+    Format --> Load[Load into target store\nData warehouse or data lake]
+    Load --> Verify[Post-load verification\nRow counts, metric checks]
+    Verify -->|Pass| Done[Data available for queries]
+    Verify -->|Fail| Rollback[Rollback and alert]

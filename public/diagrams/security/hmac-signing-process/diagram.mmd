@@ -1,0 +1,14 @@
+flowchart TD
+    A[Message to authenticate] --> B[Signing: combine message\nwith shared secret key]
+    B --> C[Apply HMAC-SHA256\nalgorithm]
+    C --> D[Produce HMAC signature\n32-byte hex or base64]
+    D --> E[Attach signature to message\nX-Signature header or query param]
+    E --> F[Transmit message + signature\nto recipient]
+
+    F --> G[Recipient receives message + signature]
+    G --> H[Retrieve shared secret key\nfrom secure storage]
+    H --> I[Independently compute HMAC-SHA256\nover received message]
+    I --> J[Constant-time comparison\ncomputed HMAC vs received HMAC]
+    J --> K{HMACs match?}
+    K -- Yes --> L[Message authentic and unmodified\nProceed with processing]
+    K -- No --> M[Reject request\n401 Unauthorized]

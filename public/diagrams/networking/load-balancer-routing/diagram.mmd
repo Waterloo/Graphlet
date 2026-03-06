@@ -1,0 +1,21 @@
+flowchart TD
+    Client([Incoming Request]) --> LB[Load Balancer\nL4 or L7]
+
+    LB --> HC{Health Check\nAll Backends}
+    HC -->|Unhealthy| Remove[Remove from pool\nuntil recovery]
+    HC -->|Healthy| Algo{Routing\nAlgorithm}
+
+    Algo -->|Round Robin| B1[Backend Server 1]
+    Algo -->|Round Robin| B2[Backend Server 2]
+    Algo -->|Round Robin| B3[Backend Server 3]
+    Algo -->|Least Connections| LCB[Backend with\nfewest active connections]
+    Algo -->|IP Hash| StickyB[Consistent backend\nfor this client IP]
+
+    B1 --> Resp([Response to client])
+    B2 --> Resp
+    B3 --> Resp
+    LCB --> Resp
+    StickyB --> Resp
+
+    LB --> TLS[TLS Termination\ncertificate at LB]
+    TLS --> BackendHTTP[Forward plain HTTP\nto backend pool]

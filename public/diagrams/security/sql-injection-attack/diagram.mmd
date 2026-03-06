@@ -1,0 +1,16 @@
+flowchart TD
+    subgraph Vulnerable Code Path
+        A[User input: username field\nValue: admin or 1 equals 1 --] --> B[App concatenates input\ninto SQL string directly]
+        B --> C["Resulting query:\nSELECT * FROM users\nWHERE username = 'admin' OR 1=1 --'"]
+        C --> D[Database executes\nmanipulated query]
+        D --> E[1=1 always true\nReturns all users]
+        E --> F[Attacker bypasses login\nor dumps entire table]
+    end
+
+    subgraph Secure Code Path
+        G[User input: username field\nValue: admin or 1 equals 1 --] --> H[App uses parameterized query\nSELECT * FROM users WHERE username = ?]
+        H --> I[Input passed as\nbind parameter not SQL]
+        I --> J[Database treats input\nas literal string data]
+        J --> K[Query finds no user\nnamed that exact string]
+        K --> L[Login fails safely\nNo injection possible]
+    end

@@ -1,0 +1,17 @@
+flowchart TD
+    Query[Current partial query] --> Classify[Classify query intent\nnavigational, informational, transactional]
+    Classify --> CoQuery[Co-query mining\nsession log patterns]
+    Classify --> Semantic[Semantic similarity\nembedding nearest-neighbor lookup]
+    Classify --> Trending[Trending queries\nfrom log processing pipeline]
+    CoQuery --> Candidates[Merge suggestion candidates]
+    Semantic --> Candidates
+    Trending --> Candidates
+    Candidates --> Rank[Score by predicted\nclick probability]
+    Rank --> Diversity[Apply diversity\nremove duplicates and near-duplicates]
+    Diversity --> Safety[Safety and policy filter]
+    Safety --> TopN[Top N suggestions]
+    TopN --> Render[Render as related queries\nor did-you-mean cards]
+    Render --> UserInteract{User clicks\na suggestion?}
+    UserInteract -->|Yes| FeedbackLoop[Record interaction\nfor relevance feedback]
+    UserInteract -->|No| End[Session continues]
+    FeedbackLoop --> End

@@ -1,0 +1,17 @@
+flowchart TD
+    RootCA["Root CA Certificate\n(Self-signed, in browser trust store)\nStored offline in HSM"]
+    IntermCA1["Intermediate CA Certificate\n(Signed by Root CA)\nOnline, issues end-entity certs"]
+    IntermCA2["Intermediate CA Certificate\n(Signed by Root CA)\nAlternate intermediate"]
+    Leaf1["End-Entity Certificate\nDomain: example.com\n(Signed by Intermediate CA)"]
+    Leaf2["End-Entity Certificate\nDomain: api.example.com\n(Signed by Intermediate CA)"]
+    Browser["Browser / Client\nVerifies chain signature-by-signature"]
+    TrustStore["OS / Browser Trust Store\nContains pre-installed root CA certs"]
+
+    RootCA -->|Signs| IntermCA1
+    RootCA -->|Signs| IntermCA2
+    IntermCA1 -->|Signs| Leaf1
+    IntermCA1 -->|Signs| Leaf2
+    TrustStore -->|Contains| RootCA
+    Browser -->|1. Receives| Leaf1
+    Browser -->|2. Fetches / server-sends| IntermCA1
+    Browser -->|3. Validates against| TrustStore

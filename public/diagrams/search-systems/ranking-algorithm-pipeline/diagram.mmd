@@ -1,0 +1,15 @@
+flowchart TD
+    Candidates[Candidate documents\nfrom index shards] --> BM25[First-stage scoring\nBM25 lexical relevance]
+    BM25 --> Features[Feature extraction\nterm overlap, freshness, CTR]
+    Features --> Authority[Domain authority\nand PageRank signals]
+    Authority --> Embedding[Dense vector similarity\nsemantic score]
+    Embedding --> LTR[Learning-to-rank model\nLambdaMART or neural scorer]
+    LTR --> Score[Combined relevance score\nper document]
+    Score --> Personalize[Apply personalization\nuser preference boost]
+    Personalize --> BusinessRules[Apply business rules\npromoted listings, safe search]
+    BusinessRules --> Diversity[Diversity penalty\nde-duplicate similar URLs]
+    Diversity --> FinalList[Final ranked result list]
+    FinalList --> Eval{Meets quality\nthreshold?}
+    Eval -->|No| Relax[Relax query\nbroaden candidates]
+    Relax --> Candidates
+    Eval -->|Yes| Return[Return to query pipeline]

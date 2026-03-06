@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant AS as Application Server
+    participant DB as Database
+
+    C->>GW: HTTP GET /users/42
+    GW->>GW: Validate auth token
+    alt Token invalid
+        GW-->>C: 401 Unauthorized
+    else Token valid
+        GW->>GW: Check rate limit
+        alt Rate limit exceeded
+            GW-->>C: 429 Too Many Requests
+        else Within limit
+            GW->>AS: Forward request
+            AS->>AS: Route to handler
+            AS->>DB: SELECT * FROM users WHERE id=42
+            DB-->>AS: Row data
+            AS->>AS: Serialize JSON response
+            AS-->>GW: 200 OK + JSON body
+            GW-->>C: 200 OK + JSON body
+        end
+    end

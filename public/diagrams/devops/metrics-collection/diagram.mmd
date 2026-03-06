@@ -1,0 +1,18 @@
+flowchart TD
+    AppCode[Instrumented application code] --> AppMetrics[Expose metrics endpoint]
+    Infra[Infrastructure exporters] --> InfraMetrics[Expose host and platform metrics]
+    AppMetrics --> Collector[Metrics collector or scraper]
+    InfraMetrics --> Collector
+    Collector --> AttachLabels[Attach dimensional labels]
+    AttachLabels --> Model{Collection model}
+    Model -->|Pull| Scrape[Scraper polls metrics endpoint]
+    Model -->|Push| Aggregator[Push to aggregation daemon]
+    Scrape --> Process[Process and normalize metrics]
+    Aggregator --> Process
+    Process --> WriteTSDB[Write to time-series database]
+    WriteTSDB --> Retention[Apply retention and downsampling policy]
+    WriteTSDB --> Dashboards[Render in visualization dashboards]
+    WriteTSDB --> AlertEngine[Evaluate alerting rules]
+    AlertEngine --> Alert{Threshold breached?}
+    Alert -->|Yes| FireAlert[Fire alert]
+    Alert -->|No| Continue[Continue collection cycle]

@@ -1,0 +1,16 @@
+flowchart TD
+    Trigger[Rollback triggered by alert or engineer] --> IdentifyStable[Identify last stable artifact version]
+    IdentifyStable --> FetchArtifact[Fetch previous artifact from registry]
+    FetchArtifact --> Strategy{Deployment strategy?}
+    Strategy -->|Blue/Green| SwitchRoute[Switch load balancer to previous environment]
+    Strategy -->|Canary| ZeroCanary[Reduce canary traffic weight to zero]
+    Strategy -->|Rolling| RollingReplace[Replace pods with previous version]
+    SwitchRoute --> HealthCheck[Run health checks]
+    ZeroCanary --> HealthCheck
+    RollingReplace --> HealthCheck
+    HealthCheck --> Recovered{Error rate back to baseline?}
+    Recovered -->|No| Escalate[Escalate to incident commander]
+    Recovered -->|Yes| ConfirmStable[Confirm service stability]
+    ConfirmStable --> MarkUnstable[Mark failed artifact as unstable]
+    MarkUnstable --> OpenIncident[Open incident for root cause analysis]
+    OpenIncident --> Done[Rollback complete]

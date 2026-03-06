@@ -1,0 +1,23 @@
+flowchart LR
+    Client([Client]) --> TLS[TLS Termination\nat Reverse Proxy]
+    TLS --> RProxy[Reverse Proxy\nNginx / Caddy / Envoy]
+
+    RProxy --> HostRoute{Route by\nHost header}
+    HostRoute -->|api.example.com| PathRoute{Route by\nURL path}
+    HostRoute -->|www.example.com| WebUpstream[Web Frontend\nUpstream Pool]
+
+    PathRoute -->|/api/v1/| APIService[API Service\nUpstream]
+    PathRoute -->|/auth/| AuthService[Auth Service\nUpstream]
+    PathRoute -->|/static/| StaticStore[Object Storage\nor CDN]
+
+    APIService --> CacheCheck{Cacheable\nresponse?}
+    CacheCheck -->|Yes, Cache-Control: public| CacheStore[Store in\nproxy cache]
+    CacheStore --> Resp([Return response\nto client])
+    CacheCheck -->|No| Resp
+
+    WebUpstream --> Resp
+    AuthService --> Resp
+    StaticStore --> Resp
+
+    RProxy --> Security[Rate limiting\nWAF rules\nBot detection]
+    Security -->|Blocked| Block([429 / 403 Response])

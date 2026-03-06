@@ -1,0 +1,15 @@
+flowchart TD
+    SearchNodes[Search service nodes] --> LogEmit[Emit raw log lines\ntimestamp, query, results, latency]
+    LogEmit --> Kafka[Kafka topic\nsearch-access-logs]
+    Kafka --> Parser[Log parser\nextract structured fields]
+    Parser --> Validate{Valid\nlog entry?}
+    Validate -->|No| DLQ[Dead-letter queue\nfor inspection]
+    Validate -->|Yes| Anonymize[Anonymize PII\nhash IPs, strip personal queries]
+    Anonymize --> SessionStitch[Session stitching\ngroup events by session ID]
+    SessionStitch --> CoQueryBuild[Build co-query graph\nsequential query pairs]
+    SessionStitch --> FreqCount[Count query frequency\nrolling time window]
+    FreqCount --> TrieUpdate[Update autocomplete\ntrie weights]
+    CoQueryBuild --> SuggestionGraph[Update suggestion\nco-query graph]
+    TrieUpdate --> AutocompleteService[Autocomplete service\nnew completions available]
+    SuggestionGraph --> SuggestionService[Suggestion engine\nupdated co-queries]
+    FreqCount --> AnalyticsPipeline[Analytics pipeline\naggregate metrics]

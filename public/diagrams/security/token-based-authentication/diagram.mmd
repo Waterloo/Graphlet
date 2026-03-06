@@ -1,0 +1,20 @@
+flowchart TD
+    A[User submits credentials\nusername and password] --> B[Server validates credentials\nagainst user database]
+    B --> C{Valid credentials?}
+    C -- No --> D[Return 401 Unauthorized]
+    C -- Yes --> E[Generate signed JWT access token\nexp: 15 min, includes user ID and roles]
+    E --> F[Generate opaque refresh token\nexp: 7 days, stored in DB]
+    F --> G[Return access token + refresh token\nto client]
+
+    G --> H[Client stores access token\nin memory or localStorage]
+    H --> I[Client makes API request\nAuthorization: Bearer access-token]
+    I --> J[Server verifies JWT signature]
+    J --> K{Token valid\nand not expired?}
+    K -- No, expired --> L[Client sends refresh token\nto /auth/refresh endpoint]
+    L --> M{Refresh token valid\nand not revoked?}
+    M -- Yes --> N[Issue new access token\nRotate refresh token]
+    N --> I
+    M -- No --> O[Force re-login]
+    K -- Yes --> P[Extract claims\nuser ID and roles from JWT]
+    P --> Q[Authorize request\nbased on role claims]
+    Q --> R[Return protected response]

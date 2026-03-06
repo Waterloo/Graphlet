@@ -1,0 +1,21 @@
+flowchart TD
+    A([Service instance starts]) --> B[Register IP and port with Service Registry]
+    B --> C[Registry stores instance metadata]
+    C --> D{Health check passes?}
+    D -- Fails --> E[Registry marks instance unhealthy]
+    E --> F[Remove from available pool]
+    D -- Passes --> G[Instance remains in healthy pool]
+
+    H([Caller needs to reach Service B]) --> I[Query Service Registry for Service B]
+    I --> J{Healthy instances found?}
+    J -- None --> K[Return service unavailable error]
+    J -- Found --> L[Apply load balancing strategy]
+    L --> M[Select target instance]
+    M --> N[Send request to instance address]
+    N --> O{Request succeeded?}
+    O -- Yes --> P([Return response to caller])
+    O -- No --> Q[Mark instance suspect]
+    Q --> D
+
+    R([Service instance shuts down]) --> S[Deregister from Service Registry]
+    S --> F

@@ -1,0 +1,28 @@
+flowchart LR
+    subgraph ProducerSide
+        E1[Event: user-A order-created]
+        E2[Event: user-A order-updated]
+        E3[Event: user-A order-shipped]
+        E4[Event: user-B order-created]
+    end
+
+    PART[Partitioner\nhash partition key]
+
+    E1 -->|key=user-A| PART
+    E2 -->|key=user-A| PART
+    E3 -->|key=user-A| PART
+    E4 -->|key=user-B| PART
+
+    PART -->|hash user-A → P0| P0[Partition 0\nordered log]
+    PART -->|hash user-B → P1| P1[Partition 1\nordered log]
+
+    P0 -->|sequential read| C0[Consumer 0\nprocesses user-A in order]
+    P1 -->|sequential read| C1[Consumer 1\nprocesses user-B in order]
+
+    subgraph Violation[Ordering Violation - Avoid]
+        BAD[Two consumers\nreading same partition\nconcurrently]
+    end
+
+    style Violation fill:#f55,color:#fff
+    style P0 fill:#4af,color:#000
+    style P1 fill:#4af,color:#000

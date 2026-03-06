@@ -1,0 +1,18 @@
+flowchart LR
+    WebApp([Web App]) --> GW
+    MobileApp([Mobile App]) --> GW
+    ThirdParty([Third-Party Client]) --> GW
+
+    subgraph GW[API Gateway]
+        Auth[Auth & JWT\nValidation]
+        RL[Rate Limiter]
+        Router[Request Router]
+        Auth --> RL --> Router
+    end
+
+    Router --> UserSvc[User Service]
+    Router --> ProductSvc[Product Service]
+    Router --> OrderSvc[Order Service]
+    Router --> AnalyticsSvc[Analytics Service]
+    Router --> CacheLayer[(Cache Layer\nRedis)]
+    GW --> Logging[Logging &\nMonitoring]

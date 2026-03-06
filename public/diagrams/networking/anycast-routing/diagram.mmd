@@ -1,0 +1,19 @@
+flowchart TD
+    IP([Anycast IP: 203.0.113.1\nAdvertised from all PoPs])
+
+    IP --> BGP{BGP routing\ndetermines nearest PoP}
+
+    BGP --> PoPUS[PoP: US-East\nAdvertises 203.0.113.0/24]
+    BGP --> PoPEU[PoP: EU-West\nAdvertises 203.0.113.0/24]
+    BGP --> PoPAP[PoP: Asia-Pacific\nAdvertises 203.0.113.0/24]
+
+    ClientUS([User in New York]) -->|Routes to nearest| PoPUS
+    ClientEU([User in London]) -->|Routes to nearest| PoPEU
+    ClientAP([User in Tokyo]) -->|Routes to nearest| PoPAP
+
+    PoPUS --> Serve1[Serve request\nfrom US-East]
+    PoPEU --> Serve2[Serve request\nfrom EU-West]
+    PoPAP --> Serve3[Serve request\nfrom Asia-Pacific]
+
+    PoPUS -->|PoP failure| Withdraw[Withdraw BGP prefix]
+    Withdraw --> Reroute[Traffic reroutes to\nnext-nearest PoP]

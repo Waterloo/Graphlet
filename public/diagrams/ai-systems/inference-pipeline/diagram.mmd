@@ -1,0 +1,17 @@
+flowchart TD
+    A([Prediction request: entity IDs]) --> B[Validate request schema]
+    B --> C{Valid?}
+    C -- No --> D([Return 400 Bad Request])
+    C -- Yes --> E[Fetch features from online feature store]
+    E --> F{All features found?}
+    F -- Missing --> G[Compute missing features in real time]
+    G --> H[Assemble feature vector]
+    F -- Found --> H
+    H --> I[Look up active model version from registry]
+    I --> J[Model forward pass]
+    J --> K[Post-process: calibration and decoding]
+    K --> L{Cache eligible?}
+    L -- Yes --> M[Write prediction to cache with TTL]
+    M --> N[Log features + model version + prediction]
+    L -- No --> N
+    N --> O([Return prediction response])

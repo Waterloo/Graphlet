@@ -1,0 +1,21 @@
+flowchart TD
+    A([Charge attempt]) --> B[Submit to payment gateway]
+    B --> C{Gateway response}
+    C -->|Success| D[Mark invoice paid]
+    D --> E([End — subscription renewed])
+    C -->|Decline| F[Parse decline code]
+    F --> G{Decline type}
+    G -->|Hard decline: stolen card, closed account| H[Do not retry]
+    H --> I[Suspend subscription immediately]
+    I --> J[Notify customer of permanent failure]
+    G -->|Soft decline: insufficient funds, try again| K[Schedule retry with backoff]
+    K --> L{Retry count < max attempts?}
+    L -->|Yes| M[Wait backoff interval]
+    M --> N{Customer updated payment method?}
+    N -->|Yes| B
+    N -->|No| B
+    L -->|No — all retries exhausted| O[Mark subscription past_due]
+    O --> P[Send final dunning notification]
+    P --> Q[Suspend or cancel subscription]
+    J --> R([End])
+    Q --> R

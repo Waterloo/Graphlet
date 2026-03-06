@@ -1,0 +1,23 @@
+flowchart TD
+    U([User]) --> SP1[Service Provider 1\nCRM App]
+    U --> SP2[Service Provider 2\nHR Portal]
+    U --> SP3[Service Provider 3\nDev Tools]
+
+    SP1 -- No local session\nRedirect to IdP --> IDP
+    SP2 -- No local session\nRedirect to IdP --> IDP
+    SP3 -- No local session\nRedirect to IdP --> IDP
+
+    IDP[Identity Provider\nOkta / Azure AD / Keycloak]
+
+    IDP --> SESSION{Active SSO\nsession?}
+    SESSION -- Yes --> ISSUE[Issue token / assertion\nfor requested SP]
+    SESSION -- No --> LOGIN[Show login screen]
+    LOGIN --> AUTHN[Authenticate user]
+    AUTHN --> SSO_CREATE[Create SSO session]
+    SSO_CREATE --> ISSUE
+
+    ISSUE --> SP1_GRANT[SP1 grants access]
+    ISSUE --> SP2_GRANT[SP2 grants access]
+    ISSUE --> SP3_GRANT[SP3 grants access]
+
+    IDP --> USERSTORE[(User Directory\nLDAP / AD / DB)]

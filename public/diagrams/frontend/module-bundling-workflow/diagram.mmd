@@ -1,0 +1,20 @@
+flowchart TD
+    A[Entry Point — src/main.js] --> B[Parse into AST]
+    B --> C[Find All Imports and Requires]
+    C --> D[Resolve Module Paths]
+    D --> E{All dependencies loaded?}
+    E -- No --> F[Load Next Module File]
+    F --> B
+    E -- Yes --> G[Full Dependency Graph Built]
+    G --> H[Run Loaders and Plugins]
+    H --> I[TypeScript and JSX Transform]
+    I --> J[CSS and Asset Processing]
+    J --> K[Tree Shaking — Remove Unused Exports]
+    K --> L{Code splitting configured?}
+    L -- Yes --> M[Split into Multiple Chunks]
+    L -- No --> N[Single Output Bundle]
+    M --> O[Concatenate and Minify Each Chunk]
+    N --> O
+    O --> P[Generate Hashed Filenames]
+    P --> Q[Write Output Files and Source Maps]
+    style Q fill:#22c55e,color:#fff

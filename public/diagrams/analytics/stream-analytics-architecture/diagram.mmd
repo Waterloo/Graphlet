@@ -1,0 +1,13 @@
+flowchart LR
+    Producers[Event Producers\nApps, sensors, microservices] --> Platform[Streaming Platform\nKafka / Kinesis topics]
+    Platform --> Engine[Stream Processing Engine\nFlink, Spark Streaming, Kafka Streams]
+    Engine --> Stateless[Stateless Transforms\nFilter, project, type coerce]
+    Stateless --> Windowed[Windowed Aggregations\nTumbling, sliding, session windows]
+    Windowed --> StateStore[State Store\nRocksDB or managed state backend]
+    Engine --> DeadLetter[Dead-Letter Topic\nFailed record capture]
+    Windowed --> Sinks[Output Sinks]
+    Sinks --> TSDB[Time-Series DB\nInfluxDB, Prometheus]
+    Sinks --> KVStore[Key-Value Store\nRedis feature cache]
+    Sinks --> ObjectStore[Object Store\nParquet for batch jobs]
+    TSDB --> Dashboard[Operational Dashboard]
+    KVStore --> APILayer[Feature Serving API]

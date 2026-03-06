@@ -1,0 +1,17 @@
+flowchart TD
+    Sensors[Sensor array\nVibration / Temp / Pressure] --> Local[Local protocol\nMQTT / OPC-UA / Modbus]
+    Local --> Buffer[Ingestion buffer\nEdge node memory]
+    Buffer --> PreProcess[Pre-processing pipeline\nUnit conversion / band-pass filter]
+    PreProcess --> Inference[Local ML inference\nTFLite / ONNX Runtime]
+    Inference --> Score{Anomaly score\nabove threshold?}
+    Score -->|No| Summarise[Aggregate to summary metric]
+    Score -->|Yes| RawStore[Store raw event window\nEdge NVMe SSD]
+    RawStore --> Alert[Send immediate alert\nto cloud platform]
+    Summarise --> Batch[Batch summary records]
+    Batch --> Upload[Periodic cloud upload\nHTTPS / MQTT-TLS]
+    Alert --> Cloud[Cloud IoT Platform]
+    Upload --> Cloud
+    Cloud --> ModelRegistry[Model registry\nNew model available?]
+    ModelRegistry -->|Yes| Download[Download and validate\nnew model artifact]
+    Download --> HotSwap[Hot-swap model\non edge node]
+    HotSwap --> Inference

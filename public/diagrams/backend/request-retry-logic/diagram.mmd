@@ -1,0 +1,17 @@
+flowchart TD
+    A([Send request]) --> B{Response received?}
+    B -- No response / timeout --> C[Classify as retriable error]
+    B -- Response received --> D{HTTP status code}
+
+    D -- 2xx Success --> E([Return success to caller])
+    D -- 4xx Client Error --> F([Return error - do not retry])
+    D -- 429 Too Many Requests --> C
+    D -- 5xx Server Error --> C
+
+    C --> G{Retry budget remaining?}
+    G -- No retries left --> H([Return final error to caller])
+    G -- Retries available --> I[Increment attempt counter]
+    I --> J[Compute exponential backoff with jitter]
+    J --> K[Wait backoff duration]
+    K --> L[Re-send request]
+    L --> B

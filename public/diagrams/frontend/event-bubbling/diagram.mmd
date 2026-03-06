@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant User
+    participant Button as button.submit
+    participant Div as div.form-wrapper
+    participant Main as main
+    participant Body as body
+    participant Doc as document
+
+    User->>Button: Click
+    Note over Button: Target phase — event fires on target
+    Button->>Button: Run button click listeners
+    Note over Button,Doc: Bubble phase — event propagates upward
+    Button->>Div: Event bubbles to div.form-wrapper
+    Div->>Div: Run div listeners (if any)
+    Div->>Main: Event bubbles to main
+    Main->>Main: Run main listeners (if any)
+    Main->>Body: Event bubbles to body
+    Body->>Body: Run body listeners (if any)
+    Body->>Doc: Event bubbles to document
+    Doc->>Doc: Run document listeners (event delegation here)
+    alt stopPropagation called at any level
+        Note over Button,Doc: Propagation halted — no further bubbling
+    end

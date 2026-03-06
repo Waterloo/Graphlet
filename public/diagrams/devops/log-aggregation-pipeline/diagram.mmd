@@ -1,0 +1,15 @@
+flowchart TD
+    AppLogs[Application stdout and stderr] --> Shipper[Log shipper agent]
+    SysLogs[OS and infrastructure logs] --> Shipper
+    PlatformLogs[Cloud platform audit logs] --> Shipper
+    Shipper --> Parse[Parse log lines into structured fields]
+    Parse --> Enrich[Enrich with pod and environment metadata]
+    Enrich --> Filter[Filter noisy or low-value entries]
+    Filter --> Batch[Batch log events for transmission]
+    Batch --> Backend[Ship to log aggregation backend]
+    Backend --> Index[Index logs for full-text search]
+    Index --> Search[Engineer queries logs via UI]
+    Index --> RetentionPolicy{Apply retention policy}
+    RetentionPolicy -->|Audit logs| LongRetain[Retain for 1 year or more]
+    RetentionPolicy -->|Debug and info logs| ShortRetain[Retain for 30 days]
+    ShortRetain --> Expire[Expire old log data]

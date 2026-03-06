@@ -1,0 +1,19 @@
+flowchart TD
+    A[Alert triggered or\nincident reported] --> B[Triage: Validate alert\nTrue positive or false positive?]
+    B --> C{Confirmed incident?}
+    C -- No, false positive --> D[Document and close\nTune detection rule]
+    C -- Yes --> E[Classify severity\nCritical, High, Medium, Low]
+    E --> F[Assemble incident response team\nNotify stakeholders]
+
+    F --> G[Containment: Short-term\nBlock attacker IP, revoke credentials,\nisolate affected systems]
+    G --> H[Preserve forensic evidence\nLog snapshots, memory dumps,\nnetwork captures]
+    H --> I[Investigation: Determine scope\nWhat systems and data were accessed?]
+    I --> J[Identify root cause\nHow did attacker gain entry?]
+
+    J --> K[Eradication\nRemove malware, close attack vector,\nrotate all compromised secrets]
+    K --> L[Recovery\nRestore from clean backups,\nvalidate system integrity]
+    L --> M[Monitor for recurrence\nEnhanced logging and alerting]
+
+    M --> N[Post-Incident Review\nTimeline, impact, and lessons learned]
+    N --> O[Update runbooks\nImprove detection rules\nHarden affected systems]
+    N --> P[Regulatory notification\nif required by GDPR, HIPAA, etc.]

@@ -1,0 +1,18 @@
+flowchart TD
+    PushBranch[Push feature branch to remote] --> OpenPR[Open pull request with description]
+    OpenPR --> CITrigger[CI checks triggered automatically]
+    CITrigger --> CIGate{CI checks passed?}
+    CIGate -->|No| FixCI[Push fixes to branch]
+    FixCI --> CITrigger
+    CIGate -->|Yes| AssignReviewer[Assign reviewers]
+    AssignReviewer --> Review[Reviewer inspects diff]
+    Review --> ReviewGate{Changes requested?}
+    ReviewGate -->|Yes| AddressComments[Author addresses comments]
+    AddressComments --> CITrigger
+    ReviewGate -->|No| Approval[Reviewer approves PR]
+    Approval --> AllApproved{All required approvals?}
+    AllApproved -->|No| WaitApproval[Wait for additional approvals]
+    WaitApproval --> AllApproved
+    AllApproved -->|Yes| Merge[Squash merge into target branch]
+    Merge --> DeleteBranch[Delete feature branch]
+    DeleteBranch --> Notify[Notify team of merge]

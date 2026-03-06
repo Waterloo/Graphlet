@@ -1,0 +1,23 @@
+flowchart TD
+    A([Raw user input]) --> B[Input sanitization]
+    B --> C[Load system prompt template]
+    C --> D[Inject user metadata into template]
+    D --> E{RAG enabled?}
+    E -- Yes --> F[Query vector store for relevant chunks]
+    F --> G[Insert retrieved context into prompt]
+    E -- No --> H[Skip retrieval]
+    G --> I[Inject conversation history]
+    H --> I
+    I --> J[Tokenize assembled prompt]
+    J --> K{Within token budget?}
+    K -- Over budget --> L[Truncate oldest history turns]
+    L --> J
+    K -- Within budget --> M[Compute cache key hash]
+    M --> N{Cache hit?}
+    N -- Hit --> O([Return cached response])
+    N -- Miss --> P[Dispatch to LLM]
+    P --> Q[Receive raw model output]
+    Q --> R[Parse and format response]
+    R --> S{Pass moderation check?}
+    S -- Fail --> T([Return policy refusal])
+    S -- Pass --> U([Return response to caller])

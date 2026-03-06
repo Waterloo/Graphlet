@@ -1,0 +1,13 @@
+flowchart TD
+    Sources[Data Sources\nDatabases, streams, APIs, files] --> Ingest[Ingestion Layer\nBatch loaders and stream connectors]
+    Ingest --> RawZone[Raw Zone\nNative format, append-only\nJSON, CSV, Avro, logs]
+    RawZone --> Transform1[Transformation Job\nSpark, dbt, Glue]
+    Transform1 --> CuratedZone[Curated Zone\nCleaned, validated, conformed\nParquet, partitioned by date]
+    CuratedZone --> Transform2[Aggregation Job\nPurpose-built models]
+    Transform2 --> ServingZone[Serving Zone\nDomain aggregates\nML features, finance rollups]
+    ServingZone --> Warehouse[Data Warehouse\nSQL analytics engine]
+    ServingZone --> MLPlatform[ML Platform\nFeature store, training data]
+    ServingZone --> BI[BI Tools and Dashboards]
+    RawZone --> Catalog[Data Catalog\nLineage, ownership, access policies]
+    CuratedZone --> Catalog
+    ServingZone --> Catalog

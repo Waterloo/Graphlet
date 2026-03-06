@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant SenderApp as Sender App
+    participant Server as Messaging Server
+    participant DB as Message DB
+    participant RecipientApp as Recipient App
+
+    SenderApp->>Server: WebSocket upgrade + auth token
+    Server-->>Server: Validate token, map connection to user ID
+    Server-->>SenderApp: Connection acknowledged
+    RecipientApp->>Server: WebSocket upgrade + auth token
+    Server-->>RecipientApp: Connection acknowledged
+
+    SenderApp->>Server: subscribe {conversation_id}
+    RecipientApp->>Server: subscribe {conversation_id}
+
+    SenderApp->>Server: message:send {client_id, conversation_id, text}
+    Server->>DB: Persist message with server_id and timestamp
+    DB-->>Server: Stored
+    Server-->>SenderApp: message:ack {server_id, timestamp}
+    Server->>RecipientApp: message:incoming {server_id, text, sender, timestamp}
+    RecipientApp-->>RecipientApp: Display message in conversation thread
+    RecipientApp->>Server: message:delivered {server_id}
+    Server->>SenderApp: message:delivered {server_id}
+    SenderApp-->>SenderApp: Show delivery receipt indicator
+
+    Note over SenderApp,Server: Network interruption
+    SenderApp->>Server: Reconnect WebSocket with backoff
+    SenderApp->>Server: GET /messages?since=last_timestamp
+    Server-->>SenderApp: Missed messages during disconnection

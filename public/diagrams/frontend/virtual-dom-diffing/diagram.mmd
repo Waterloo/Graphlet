@@ -1,0 +1,19 @@
+flowchart TD
+    A[State or Props Change] --> B[Call Component Render Function]
+    B --> C[Produce New Virtual DOM Tree]
+    C --> D[Compare Against Previous Virtual DOM]
+    D --> E{Same element type?}
+    E -- No --> F[Unmount Old Subtree]
+    F --> G[Mount New Subtree to Real DOM]
+    E -- Yes --> H{Props or children changed?}
+    H -- No --> I[Skip — No DOM mutation]
+    H -- Yes --> J[Compute Attribute and Child Diffs]
+    J --> K{List with keys?}
+    K -- Yes --> L[Match Nodes by Key]
+    K -- No --> M[Match Nodes by Position]
+    L --> N[Generate Minimal Patch List]
+    M --> N
+    N --> O[Apply Patches to Real DOM]
+    G --> P[Frame Updated]
+    O --> P
+    style P fill:#22c55e,color:#fff

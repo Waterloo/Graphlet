@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: TLS 1.3 Handshake (1 RTT)
+    Client->>Server: ClientHello\n(TLS 1.3, cipher suites, key_share, client_random)
+
+    Server-->>Client: ServerHello\n(selected cipher, key_share, server_random)
+    Note over Client,Server: Both derive Handshake Traffic Keys
+    Server-->>Client: EncryptedExtensions
+    Server-->>Client: Certificate (X.509 chain)
+    Server-->>Client: CertificateVerify (signature with private key)
+    Server-->>Client: Finished (HMAC over handshake)
+
+    Note over Client: Verify certificate chain\nVerify CertificateVerify signature\nVerify Finished MAC
+    Client->>Server: Finished (HMAC over handshake) [encrypted]
+
+    Note over Client,Server: Both derive Application Traffic Keys
+    Client->>Server: Application Data [encrypted with AES-GCM]
+    Server-->>Client: Application Data [encrypted with AES-GCM]
+
+    Note over Client,Server: Session ticket for 0-RTT resumption
+    Server-->>Client: NewSessionTicket

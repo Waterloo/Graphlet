@@ -1,0 +1,13 @@
+flowchart TD
+    BuildArtifact[Receive build artifact] --> GenerateVersion[Generate version label SHA plus semver]
+    GenerateVersion --> Upload[Upload artifact to registry]
+    Upload --> WriteMetadata[Write build metadata to artifact]
+    WriteMetadata --> ComputeDigest[Compute SHA-256 digest]
+    ComputeDigest --> StoreInventory[Record artifact in release inventory]
+    StoreInventory --> PromoteGate{Promoted to production?}
+    PromoteGate -->|Yes| RetainLong[Apply long-term retention policy]
+    PromoteGate -->|No| RetainShort[Apply short-term retention policy]
+    RetainLong --> Done[Artifact available for deployment]
+    RetainShort --> GCCheck{Retention window expired?}
+    GCCheck -->|No| Done
+    GCCheck -->|Yes| GarbageCollect[Delete stale artifact]

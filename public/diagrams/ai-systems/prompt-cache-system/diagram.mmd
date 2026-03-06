@@ -1,0 +1,15 @@
+flowchart TD
+    A([Assembled prompt]) --> B{Caching enabled and temperature = 0?}
+    B -- No --> Z[Dispatch directly to LLM]
+    Z --> ZR([Return response])
+    B -- Yes --> C[Compute cache key: SHA-256 of prompt + model + params]
+    C --> D{L1 in-memory cache hit?}
+    D -- Hit --> E([Return cached response: latency < 1ms])
+    D -- Miss --> F{L2 distributed cache hit?}
+    F -- Hit --> G[Populate L1 cache with response]
+    G --> H([Return cached response])
+    F -- Miss --> I[Forward prompt to LLM serving layer]
+    I --> J[Receive LLM response]
+    J --> K[Write response to L2 cache with TTL]
+    K --> L[Write response to L1 cache]
+    L --> M([Return response with cache:miss header])

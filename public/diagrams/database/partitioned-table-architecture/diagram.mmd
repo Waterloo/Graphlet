@@ -1,0 +1,19 @@
+flowchart TD
+    Query[Incoming Query\nSELECT FROM logs WHERE month=Jan] --> ParentTable[Parent Table: logs\npartitioned by month]
+    ParentTable --> Pruning[Partition Pruning\nidentify target partitions]
+
+    Pruning -->|Range match| P1[(Partition: logs_2024_01\nJanuary data)]
+    Pruning -->|Skipped| P2[(Partition: logs_2024_02\nFebruary data)]
+    Pruning -->|Skipped| P3[(Partition: logs_2024_03\nMarch data)]
+    Pruning -->|Skipped| P4[(Partition: logs_2024_04\nApril data)]
+
+    P1 --> IndexScan[Index scan on\nlogs_2024_01]
+    IndexScan --> Result[Return matching rows]
+
+    subgraph PartitionStrategies
+        Range[Range Partitioning\ne.g. by date]
+        List[List Partitioning\ne.g. by region]
+        Hash[Hash Partitioning\ne.g. by user_id hash]
+    end
+
+    OldPartition[Old partition\nlogs_2023_01] --> DropPartition[DROP PARTITION\ninstant metadata operation]

@@ -1,0 +1,16 @@
+flowchart TD
+    Start([Node detects\nleader timeout]) --> BecomeCandidate[Increment term\nBecome Candidate]
+    BecomeCandidate --> RequestVotes[Broadcast RequestVote\nRPCs to all peers]
+    RequestVotes --> VoteCount{Received majority\nvotes?}
+    VoteCount -->|No - lost election| Follower[Revert to Follower\nawait new election]
+    VoteCount -->|Yes| BecomeLeader[Become Leader\nSend heartbeats]
+
+    BecomeLeader --> ClientWrite[Client sends\nwrite request]
+    ClientWrite --> AppendLocal[Leader appends entry\nto local log]
+    AppendLocal --> AppendEntries[Broadcast AppendEntries\nRPCs to all followers]
+    AppendEntries --> MajorityAck{Majority of nodes\nacknowledged?}
+    MajorityAck -->|No - node failures| WaitRetry[Retry unreachable\nnodes]
+    MajorityAck -->|Yes| CommitEntry[Commit log entry\nApply to state machine]
+    CommitEntry --> RespondClient[Respond success\nto client]
+    RespondClient --> NotifyFollowers[Notify followers\nto commit entry]
+    NotifyFollowers --> FollowersApply[Followers apply entry\nto their state machines]

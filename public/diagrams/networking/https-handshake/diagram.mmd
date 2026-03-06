@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Browser
+    participant DNS as DNS Resolver
+    participant Server
+
+    Browser->>DNS: Resolve secure.example.com
+    DNS-->>Browser: IP: 203.0.113.55
+
+    Note over Browser,Server: TCP Handshake
+    Browser->>Server: SYN
+    Server-->>Browser: SYN-ACK
+    Browser->>Server: ACK
+
+    Note over Browser,Server: TLS 1.3 Handshake
+    Browser->>Server: ClientHello (TLS 1.3, cipher suites, key share)
+    Server-->>Browser: ServerHello (selected cipher, key share)
+    Server-->>Browser: Certificate + CertificateVerify
+    Server-->>Browser: Finished
+    Note over Browser: Validate certificate chain\nagainst trusted CAs
+    Browser->>Server: Finished (encrypted)
+
+    Note over Browser,Server: Encrypted HTTP Exchange
+    Browser->>Server: GET /dashboard HTTP/1.1 [encrypted]
+    Server-->>Browser: HTTP/1.1 200 OK + HTML body [encrypted]
+
+    Note over Browser,Server: Subsequent requests reuse TLS session

@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VPN Tunnel Setup: Mermaid Sequence Diagram | Graphlet</title>
+  <meta name="description" content="See VPN tunnel setup in this free Mermaid sequence diagram. IKEv2 authentication, IPsec SA negotiation, ESP encapsulation, and split tunneling shown. Edit.">
+  <link rel="canonical" href="https://graphlet.xyz/diagrams/networking/vpn-tunnel-setup">
+
+  <meta property="og:title"       content="VPN Tunnel Setup: Mermaid Sequence Diagram | Graphlet">
+  <meta property="og:description" content="See VPN tunnel setup in this free Mermaid sequence diagram. IKEv2 authentication, IPsec SA negotiation, ESP encapsulation, and split tunneling shown. Edit.">
+  <meta property="og:image"       content="https://graphlet.xyz/diagrams/networking/vpn-tunnel-setup/preview.png">
+  <meta property="og:url"         content="https://graphlet.xyz/diagrams/networking/vpn-tunnel-setup">
+  <meta property="og:type"        content="article">
+  <meta name="twitter:card"       content="summary_large_image">
+
+  <script defer data-domain="graphlet.xyz" src="https://plausible.io/js/script.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:           #080b0f;
+      --ink-2:         #0e1117;
+      --ink-3:         #141820;
+      --ink-4:         #1c2230;
+      --rule:          rgba(255,255,255,0.055);
+      --rule-hi:       rgba(255,255,255,0.10);
+      --chalk:         #e8ead6;
+      --chalk-dim:     #8a9090;
+      --chalk-ghost:   #3a4040;
+      --gold:          #e8a23a;
+      --gold-dim:      rgba(232,162,58,0.12);
+      --gold-glow:     rgba(232,162,58,0.28);
+      --gold-hi:       #f0bb62;
+      --teal:          #3ad8c8;
+      --teal-dim:      rgba(58,216,200,0.10);
+      --mono:          'DM Mono', monospace;
+      --sans:          'DM Sans', sans-serif;
+      --display:       'Fraunces', serif;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: var(--chalk);
+      font-family: var(--sans);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      /* dot grid background */
+      background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    /* page-load animation */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim { animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+    .anim-1 { animation-delay: 0.05s; }
+    .anim-2 { animation-delay: 0.12s; }
+    .anim-3 { animation-delay: 0.19s; }
+    .anim-4 { animation-delay: 0.26s; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--ink); }
+    ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 3px; }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      height: 52px;
+      background: rgba(8,11,15,0.88);
+      backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center;
+      padding: 0 32px; gap: 0;
+    }
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 17px; font-weight: 700; font-style: italic;
+      letter-spacing: -0.01em;
+      color: var(--chalk); text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-logo-mark {
+      width: 22px; height: 22px; border-radius: 5px;
+      background: var(--gold); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+    .nav-logo-mark svg { width: 12px; height: 12px; }
+    .nav-sep { flex: 1; }
+    .nav-link {
+      font-family: var(--mono); font-size: 11px; font-weight: 400;
+      color: var(--chalk-dim); text-decoration: none;
+      padding: 4px 10px; border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .nav-link:hover { color: var(--chalk); background: var(--rule); }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+      padding: 18px 32px 0;
+      max-width: 1240px; margin: 0 auto;
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 11px; color: var(--chalk-ghost);
+    }
+    .breadcrumb a {
+      color: var(--chalk-dim); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .breadcrumb a:hover { color: var(--gold); }
+    .breadcrumb-sep { opacity: 0.35; }
+
+    /* ── Layout ── */
+    .layout {
+      max-width: 1240px; margin: 0 auto;
+      padding: 28px 32px 100px;
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 0 52px;
+      align-items: start;
+    }
+    .main { min-width: 0; }
+    .sidebar { position: sticky; top: 68px; }
+
+    /* ── Page header ── */
+    .page-header { margin-bottom: 36px; }
+
+    .category-tag {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 10px; font-weight: 500;
+      color: var(--gold); background: var(--gold-dim);
+      border: 1px solid rgba(232,162,58,0.22);
+      border-radius: 3px; padding: 3px 9px;
+      margin-bottom: 18px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      text-decoration: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .category-tag:hover {
+      background: rgba(232,162,58,0.2);
+      border-color: rgba(232,162,58,0.4);
+    }
+    .category-tag::before {
+      content: '';
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--gold-glow);
+    }
+
+    .page-title {
+      font-family: var(--display);
+      font-size: clamp(28px, 3.5vw, 48px);
+      font-weight: 700;
+      font-optical-sizing: auto;
+      letter-spacing: -0.025em; line-height: 1.08;
+      color: var(--chalk); margin-bottom: 14px;
+    }
+    .page-lead {
+      font-size: 15px; color: var(--chalk-dim);
+      max-width: 620px; line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* ── Diagram viewer ── */
+    .diagram-wrap {
+      border: 1px solid var(--rule-hi);
+      border-radius: 10px; overflow: hidden;
+      margin-bottom: 40px;
+      background: var(--ink-2);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset,
+                  0 20px 60px rgba(0,0,0,0.5);
+    }
+    .diagram-toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-bottom: 1px solid var(--rule);
+      background: var(--ink-3);
+    }
+    .toolbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .toolbar-dot-r { background: #ff5f57; opacity: 0.9; }
+    .toolbar-dot-y { background: #febc2e; opacity: 0.9; }
+    .toolbar-dot-g { background: #28c840; opacity: 0.9; }
+    .toolbar-title {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--chalk-ghost); margin-left: 8px; flex: 1;
+      letter-spacing: 0.03em;
+    }
+    .toolbar-actions { display: flex; gap: 6px; }
+
+    .diagram-img-wrap { background: var(--ink-2); }
+    .diagram-img { display: block; width: 100%; height: auto; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 11px; font-weight: 400;
+      padding: 5px 11px; border-radius: 5px;
+      border: 1px solid var(--rule-hi);
+      background: transparent; color: var(--chalk-dim);
+      cursor: pointer; text-decoration: none;
+      transition: all 0.15s; white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+    .btn:hover {
+      background: var(--rule); color: var(--chalk);
+      border-color: rgba(255,255,255,0.18);
+    }
+    .btn-gold {
+      background: var(--gold); border-color: var(--gold);
+      color: var(--ink); font-weight: 500;
+    }
+    .btn-gold:hover {
+      background: var(--gold-hi); border-color: var(--gold-hi);
+      color: var(--ink);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; border-bottom: 1px solid var(--rule);
+      margin-bottom: 32px; gap: 0;
+    }
+    .tab {
+      font-family: var(--mono); font-size: 12px;
+      padding: 10px 20px; color: var(--chalk-ghost);
+      background: none; text-decoration: none;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: all 0.15s; letter-spacing: 0.03em;
+    }
+    .tab:hover { color: var(--chalk-dim); }
+
+    /* Default state: about visible, source hidden */
+    .tab-panel { display: none; }
+    #tab-about { display: block; }
+
+    /* When #tab-source is targeted, flip visibility */
+    #tab-source:target { display: block; }
+    #tab-source:target ~ * #tab-about,
+    body:has(#tab-source:target) #tab-about { display: none; }
+
+    /* Active tab highlight via :target */
+    a.tab[href="#tab-about"] { color: var(--gold); border-bottom-color: var(--gold); }
+    body:has(#tab-source:target) a.tab[href="#tab-about"] { color: var(--chalk-ghost); border-bottom-color: transparent; }
+    body:has(#tab-source:target) a.tab[href="#tab-source"] { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* ── Source ── */
+    .source-block {
+      background: var(--ink-2); border: 1px solid var(--rule);
+      border-radius: 8px; overflow: hidden; margin-bottom: 40px;
+    }
+    .source-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px; border-bottom: 1px solid var(--rule);
+      background: var(--ink-3);
+    }
+    .source-lang {
+      font-family: var(--mono); font-size: 10px;
+      color: var(--chalk-ghost); letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .source-code {
+      padding: 22px; overflow-x: auto;
+      font-family: var(--mono); font-size: 12.5px;
+      line-height: 1.75; color: var(--chalk);
+      white-space: pre;
+    }
+    .source-code .kw   { color: #c8a0e0; }
+    .source-code .str  { color: var(--teal); }
+    .source-code .cmt  { color: var(--chalk-ghost); font-style: italic; }
+    .source-code .lbl  { color: #89b4fa; }
+    .source-code .note { color: var(--gold); }
+    .source-code .op   { color: var(--chalk-ghost); }
+
+    /* ── Article ── */
+    .article {
+      margin-bottom: 40px; color: var(--chalk-dim);
+      font-size: 14.5px; line-height: 1.8; font-weight: 300;
+    }
+    .article p { margin-bottom: 18px; }
+    .article p:last-child { margin-bottom: 0; }
+    .article strong { color: var(--chalk); font-weight: 500; }
+    .article a {
+      color: var(--gold); text-decoration: none;
+      border-bottom: 1px solid rgba(232,162,58,0.25);
+      transition: border-color 0.15s;
+    }
+    .article a:hover { border-color: var(--gold); }
+    .article code {
+      font-family: var(--mono); font-size: 12px;
+      background: var(--ink-3); border: 1px solid var(--rule);
+      border-radius: 3px; padding: 1px 6px; color: var(--teal);
+    }
+
+    /* ── CTA banner ── */
+    .cta-banner {
+      position: relative; overflow: hidden;
+      background: var(--ink-3);
+      border: 1px solid rgba(232,162,58,0.2);
+      border-radius: 10px;
+      padding: 26px 28px;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 24px;
+      margin-bottom: 40px;
+    }
+    .cta-banner::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--gold), transparent);
+    }
+    .cta-banner::after {
+      content: '';
+      position: absolute; top: -40px; right: -20px;
+      width: 180px; height: 180px; border-radius: 50%;
+      background: radial-gradient(circle, var(--gold-dim) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-eyebrow {
+      font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 5px;
+    }
+    .cta-heading {
+      font-family: var(--display); font-size: 19px; font-weight: 600;
+      color: var(--chalk); margin-bottom: 5px; letter-spacing: -0.02em;
+    }
+    .cta-sub { font-size: 13px; color: var(--chalk-dim); font-weight: 300; }
+
+    /* ── FAQ ── */
+    .faq { margin-bottom: 40px; }
+    .faq-title {
+      font-family: var(--display); font-size: 19px; font-weight: 600;
+      letter-spacing: -0.02em; color: var(--chalk); margin-bottom: 16px;
+    }
+    .faq-item {
+      border: 1px solid var(--rule); border-radius: 7px;
+      margin-bottom: 6px; overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .faq-item.open { border-color: rgba(232,162,58,0.2); }
+    .faq-q {
+      width: 100%; text-align: left; padding: 13px 16px;
+      background: var(--ink-2); border: none; color: var(--chalk);
+      font-family: var(--sans); font-size: 13.5px; font-weight: 400;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+      transition: background 0.15s;
+    }
+    .faq-q:hover { background: var(--ink-3); }
+    .faq-chevron {
+      width: 16px; height: 16px; flex-shrink: 0;
+      border: 1px solid var(--rule-hi); border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; color: var(--chalk-ghost);
+      transition: transform 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .faq-item.open .faq-chevron {
+      transform: rotate(180deg);
+      border-color: rgba(232,162,58,0.3);
+      color: var(--gold);
+    }
+    .faq-a {
+      display: none; padding: 13px 16px;
+      background: var(--ink-2); color: var(--chalk-dim);
+      font-size: 13.5px; line-height: 1.75;
+      border-top: 1px solid var(--rule);
+      font-weight: 300;
+    }
+    .faq-item.open .faq-a { display: block; }
+
+    /* ── Sidebar ── */
+    .sidebar-card {
+      background: var(--ink-2); border: 1px solid var(--rule);
+      border-radius: 8px; overflow: hidden; margin-bottom: 14px;
+    }
+    .sidebar-card-head {
+      padding: 10px 14px; border-bottom: 1px solid var(--rule);
+      font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--chalk-ghost);
+    }
+    .sidebar-card-body { padding: 12px 14px; }
+
+    .meta-row {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 8px; padding: 5px 0;
+      border-bottom: 1px solid var(--rule);
+      font-size: 12.5px;
+    }
+    .meta-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .meta-row:first-child { padding-top: 0; }
+    .meta-label { color: var(--chalk-ghost); font-family: var(--mono); font-size: 10.5px; }
+    .meta-value { color: var(--chalk-dim); }
+    .meta-badge {
+      font-family: var(--mono); font-size: 10px;
+      background: var(--ink-3); border: 1px solid var(--rule);
+      border-radius: 3px; padding: 2px 7px; color: var(--chalk-dim);
+    }
+
+    .related-link {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 0; text-decoration: none;
+      color: var(--chalk-dim); font-size: 13px;
+      border-bottom: 1px solid var(--rule);
+      transition: color 0.15s; font-weight: 300;
+    }
+    .related-link:last-child { border-bottom: none; padding-bottom: 0; }
+    .related-link:first-child { padding-top: 0; }
+    .related-link:hover { color: var(--gold); }
+    .related-link-arrow {
+      margin-left: auto; font-size: 11px; color: var(--chalk-ghost);
+      transition: color 0.15s, transform 0.15s;
+    }
+    .related-link:hover .related-link-arrow {
+      color: var(--gold); transform: translateX(2px);
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--rule); padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--mono); font-size: 11px; color: var(--chalk-ghost);
+    }
+    footer a { color: var(--chalk-dim); text-decoration: none; transition: color 0.15s; }
+    footer a:hover { color: var(--gold); }
+    .footer-links { display: flex; gap: 24px; }
+
+    /* ── Toast ── */
+    .copy-feedback {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(10px);
+      background: var(--ink-3); border: 1px solid rgba(232,162,58,0.3);
+      border-radius: 6px; padding: 8px 18px;
+      font-family: var(--mono); font-size: 11px;
+      color: var(--gold);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s; z-index: 200;
+    }
+    .copy-feedback.show {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; padding: 24px 20px 80px; }
+      .sidebar { position: static; }
+      .cta-banner { flex-direction: column; }
+      .nav { padding: 0 20px; }
+      .breadcrumb { padding: 14px 20px 0; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-mark">
+      <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="3" cy="3" r="1.5" fill="#080b0f"/>
+        <circle cx="9" cy="3" r="1.5" fill="#080b0f"/>
+        <circle cx="6" cy="9" r="1.5" fill="#080b0f"/>
+        <line x1="3" y1="3" x2="9" y2="3" stroke="#080b0f" stroke-width="1"/>
+        <line x1="3" y1="3" x2="6" y2="9" stroke="#080b0f" stroke-width="1"/>
+        <line x1="9" y1="3" x2="6" y2="9" stroke="#080b0f" stroke-width="1"/>
+      </svg>
+    </span>
+    graphlet
+  </a>
+  <span class="nav-sep"></span>
+  <a href="/diagrams" class="nav-link">diagrams</a>
+</header>
+
+<nav class="breadcrumb anim anim-1" aria-label="Breadcrumb">
+  <a href="/">graphlet.xyz</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="/diagrams">diagrams</a>
+  <span class="breadcrumb-sep">/</span>
+  <a href="/diagrams/networking">networking</a>
+  <span class="breadcrumb-sep">/</span>
+  <span>vpn-tunnel-setup</span>
+</nav>
+
+<div class="layout">
+  <main class="main">
+
+    <div class="page-header anim anim-2">
+      <a href="/diagrams/networking" class="category-tag">Networking</a>
+      <h1 class="page-title">VPN Tunnel Setup</h1>
+      <p class="page-lead">A VPN (Virtual Private Network) tunnel is an encrypted, authenticated network connection that creates a private communications channel over a public network, allowing a client to securely access resources as if directly connected to a private network.</p>
+    </div>
+
+    <div class="diagram-wrap anim anim-3">
+      <div class="diagram-toolbar">
+        <span class="toolbar-dot toolbar-dot-r"></span>
+        <span class="toolbar-dot toolbar-dot-y"></span>
+        <span class="toolbar-dot toolbar-dot-g"></span>
+        <span class="toolbar-title">diagram.mmd &mdash; sequence</span>
+        <div class="toolbar-actions">
+          <button class="btn" onclick="copySource()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="4" y="4" width="7" height="7" rx="1.5"/>
+              <path d="M4 4V2.5A1.5 1.5 0 0 0 2.5 1H1.5A1.5 1.5 0 0 0 0 2.5v6A1.5 1.5 0 0 0 1.5 10H4"/>
+            </svg>
+            Copy
+          </button>
+          <a class="btn btn-gold" href="https://graphlet.xyz/?mmd=https://graphlet.xyz/diagrams/networking/vpn-tunnel-setup/diagram.mmd" target="_blank" rel="noopener">
+            Edit in Graphlet &rarr;
+          </a>
+        </div>
+      </div>
+      <div class="diagram-img-wrap">
+        <img
+          class="diagram-img"
+          src="/diagrams/networking/vpn-tunnel-setup/preview.png"
+          alt="VPN Tunnel Setup sequence diagram"
+          loading="eager"
+        >
+      </div>
+    </div>
+
+    <div class="tabs anim anim-4" role="tablist">
+      <a class="tab active" href="#tab-about" role="tab">About</a>
+      <a class="tab" href="#tab-source" role="tab">Source</a>
+    </div>
+
+    <div id="tab-about" class="tab-panel anim anim-4">
+      <div class="article"><p>A VPN (Virtual Private Network) tunnel is an encrypted, authenticated network connection that creates a private communications channel over a public network, allowing a client to securely access resources as if directly connected to a private network.</p>
+<p>VPNs serve two primary use cases: <strong>remote access</strong> (employees connecting to corporate networks) and <strong>site-to-site</strong> (connecting two networks, e.g., branch offices or cloud VPCs to on-premises).</p>
+<p><strong>IKEv2/IPsec</strong> is the most common enterprise VPN protocol stack. <strong>WireGuard</strong> is a modern alternative with a significantly simpler codebase and faster performance. <strong>OpenVPN</strong> uses TLS-based tunneling.</p>
+<p><strong>IKE Phase 1 (SA Negotiation)</strong>: The client and VPN gateway negotiate a secure channel (the IKE Security Association) for key exchange. They authenticate each other using certificates or pre-shared keys and agree on encryption parameters (cipher, hash algorithm, DH group).</p>
+<p><strong>IKE Phase 2 (IPsec Tunnel)</strong>: Using the Phase 1 channel, the two sides negotiate the <strong>IPsec Security Associations (SAs)</strong> — one for each direction of traffic. The SAs define how traffic is encrypted (ESP: Encapsulating Security Payload) and authenticated.</p>
+<p><strong>Traffic Flow</strong>: Once the tunnel is established, traffic from the client destined for the corporate network is encapsulated in ESP packets. The ESP header includes a Security Parameter Index (SPI) that identifies the SA, and the payload (the original IP packet) is encrypted.</p>
+<p><strong>Split Tunneling</strong>: Many VPN configurations use split tunneling, where only traffic to corporate subnets goes through the VPN; internet traffic goes directly. Full-tunnel VPNs route all traffic through the VPN gateway.</p>
+<p><strong>NAT Traversal</strong>: IPsec has issues traversing <a href="/diagrams/networking/nat-translation-flow">NAT</a> because NAT changes the IP header that IPsec integrity-protects. NAT-T (RFC 3947) addresses this by encapsulating ESP inside UDP port 4500.</p></div>
+
+      <div class="cta-banner">
+        <div>
+          <div class="cta-eyebrow">Free online editor</div>
+          <div class="cta-heading">Edit this diagram in Graphlet</div>
+          <div class="cta-sub">Fork, modify, and export to SVG or PNG. No sign-up required.</div>
+        </div>
+        <a class="btn btn-gold" style="font-size:12px; padding: 9px 18px; flex-shrink:0;"
+           href="https://graphlet.xyz/?mmd=https://graphlet.xyz/diagrams/networking/vpn-tunnel-setup/diagram.mmd" target="_blank" rel="noopener">
+          Open in Graphlet &rarr;
+        </a>
+      </div>
+
+      <div class="faq">
+<h2 class="faq-title">Frequently asked questions</h2>
+
+    <div class="faq-item open">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What is a VPN tunnel and what does it do?
+        <span class="faq-chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">A VPN (Virtual Private Network) tunnel creates an encrypted, authenticated network connection over a public network, allowing a client to securely access resources as if directly connected to a private network. Traffic is encapsulated inside the tunnel protocol, hiding both the content and often the original source and destination addresses from anyone observing the public network.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How does an IKEv2/IPsec VPN tunnel get established?
+        <span class="faq-chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">IKE Phase 1 negotiates a secure channel (the IKE SA) between client and gateway using certificates or pre-shared keys, agreeing on encryption parameters and authenticating both parties. IKE Phase 2 uses that secure channel to negotiate the IPsec Security Associations (SAs) — one per direction — that define how data traffic is encrypted using ESP (Encapsulating Security Payload). Once both phases complete, traffic flows through the encrypted tunnel.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What is split tunneling in a VPN?
+        <span class="faq-chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">Split tunneling routes only traffic destined for the corporate network through the VPN, while internet-bound traffic goes directly from the client. Full-tunnel VPNs route all traffic through the VPN gateway, providing greater visibility and control for enterprise security but adding latency to all internet traffic and increasing gateway load.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What is the difference between IKEv2/IPsec, WireGuard, and OpenVPN?
+        <span class="faq-chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">IKEv2/IPsec is the enterprise standard — mature, widely supported by hardware appliances, and operates at the IP layer. WireGuard is a modern alternative with a significantly smaller codebase, faster handshake, and better performance on mobile (it uses connection IDs similar to QUIC). OpenVPN uses TLS-based tunneling over UDP or TCP, making it firewall-friendly but with higher overhead than the other two.</div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        How does a VPN handle NAT traversal?
+        <span class="faq-chevron">&#9660;</span>
+      </button>
+      <div class="faq-a">IPsec integrity-protects the IP header, but NAT rewrites it, breaking verification. NAT-T (RFC 3947) solves this by wrapping ESP packets in UDP port 4500, which NAT can forward without modifying the protected payload. The receiving gateway strips the UDP wrapper before processing the ESP packet. Most modern VPN clients detect NAT automatically and enable NAT-T without user configuration.</div>
+    </div>
+</div>
+    </div>
+
+    <div id="tab-source" class="tab-panel">
+      <div class="source-block">
+        <div class="source-header">
+          <span class="source-lang">mermaid</span>
+          <button class="btn" onclick="copySource()">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2">
+              <rect x="4" y="4" width="7" height="7" rx="1.5"/>
+              <path d="M4 4V2.5A1.5 1.5 0 0 0 2.5 1H1.5A1.5 1.5 0 0 0 0 2.5v6A1.5 1.5 0 0 0 1.5 10H4"/>
+            </svg>
+            Copy
+          </button>
+        </div>
+        <div class="source-code"><span class="kw">sequenceDiagram</span>
+    <span class="kw">participant</span> Client <span class="kw">as</span> VPN Client
+    <span class="kw">participant</span> Gateway <span class="kw">as</span> VPN Gateway
+
+    <span class="<span class="kw">note</span>"><span class="kw">Note</span> <span class="kw">over</span></span> Client,Gateway: <span class="str">IKEv2 Phase 1 — IKE SA Setup</span>
+    Client<span class="op">-&gt;&</span>gt;Gateway: <span class="str">IKE_SA_INIT\n(DH key exchange, nonce, proposed algos)</span>
+    Gateway<span class="op">--&gt;&</span>gt;Client: <span class="str">IKE_SA_INIT response\n(DH key share, nonce, selected algo)</span>
+
+    <span class="<span class="kw">note</span>"><span class="kw">Note</span> <span class="kw">over</span></span> Client,Gateway: <span class="str">Both derive IKE encryption keys</span>
+    Client<span class="op">-&gt;&</span>gt;Gateway: <span class="str">IKE_AUTH\n(identity, certificate, AUTH payload) [encrypted]</span>
+    Gateway<span class="op">--&gt;&</span>gt;Client: <span class="str">IKE_AUTH response\n(identity, certificate, AUTH payload) [encrypted]</span>
+
+    <span class="<span class="kw">note</span>"><span class="kw">Note</span> <span class="kw">over</span></span> Client,Gateway: <span class="str">Mutual authentication complete\nIKE SA established</span>
+
+    <span class="<span class="kw">note</span>"><span class="kw">Note</span> <span class="kw">over</span></span> Client,Gateway: <span class="str">IKEv2 Phase 2 — IPsec Child SA</span>
+    Client<span class="op">-&gt;&</span>gt;Gateway: <span class="str">CREATE_CHILD_SA\n(traffic selectors, ESP proposal)</span>
+    Gateway<span class="op">--&gt;&</span>gt;Client: <span class="str">CREATE_CHILD_SA response\n(SPI values, keying material)</span>
+
+    <span class="<span class="kw">note</span>"><span class="kw">Note</span> <span class="kw">over</span></span> Client,Gateway: <span class="str">IPsec tunnel established\nESP SAs in both directions</span>
+
+    <span class="<span class="kw">note</span>"><span class="kw">Note</span> <span class="kw">over</span></span> Client,Gateway: <span class="str">Encrypted traffic flow</span>
+    Client<span class="op">-&gt;&</span>gt;Gateway: <span class="str">ESP packet\n(encrypted original IP packet\ndst: 10.0.0.0/8 corporate subnet)</span>
+    Gateway<span class="op">--&gt;&</span>gt;Client: <span class="str">ESP packet\n(encrypted response from server)</span>
+
+    <span class="<span class="kw">note</span>"><span class="kw">Note</span> <span class="kw">over</span></span> Client,Gateway: <span class="str">IKE keepalives maintain tunnel</span>
+    Client<span class="op">-&gt;&</span>gt;Gateway: <span class="str">IKE_INFORMATIONAL (DPD)</span>
+    Gateway<span class="op">--&gt;&</span>gt;Client: <span class="str">IKE_INFORMATIONAL response</span>
+</div>
+      </div>
+    </div>
+
+  </main>
+
+  <aside class="sidebar anim anim-4">
+    <div class="sidebar-card">
+      <div class="sidebar-card-head">Diagram info</div>
+      <div class="sidebar-card-body">
+        <div class="meta-row">
+          <span class="meta-label">type</span>
+          <span class="meta-badge">sequence</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">category</span>
+          <span class="meta-value">Networking</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">theme</span>
+          <span class="meta-badge">midnight</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-card">
+      <div class="sidebar-card-head">Related diagrams</div>
+      <div class="sidebar-card-body">
+        <a href="/diagrams/networking/tls-handshake" class="related-link">Tls Handshake</a>
+<a href="/diagrams/networking/nat-translation-flow" class="related-link">Nat Translation Flow</a>
+<a href="/diagrams/networking/firewall-packet-filtering" class="related-link">Firewall Packet Filtering</a>
+<a href="/diagrams/networking/https-handshake" class="related-link">Https Handshake</a>
+<a href="/diagrams/security/tls-certificate-validation" class="related-link">Tls Certificate Validation</a>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  <span>&copy; Graphlet</span>
+  <div class="footer-links">
+    <a href="/">graphlet.xyz</a>
+    <a href="/diagrams">All diagrams</a>
+    <a href="https://github.com/graphlet-xyz/graphlet-content">GitHub</a>
+  </div>
+</footer>
+
+<div class="copy-feedback" id="copy-feedback">Copied to clipboard</div>
+
+<script>
+const SOURCE = "sequenceDiagram\n    participant Client as VPN Client\n    participant Gateway as VPN Gateway\n\n    Note over Client,Gateway: IKEv2 Phase 1 — IKE SA Setup\n    Client->>Gateway: IKE_SA_INIT\\n(DH key exchange, nonce, proposed algos)\n    Gateway-->>Client: IKE_SA_INIT response\\n(DH key share, nonce, selected algo)\n\n    Note over Client,Gateway: Both derive IKE encryption keys\n    Client->>Gateway: IKE_AUTH\\n(identity, certificate, AUTH payload) [encrypted]\n    Gateway-->>Client: IKE_AUTH response\\n(identity, certificate, AUTH payload) [encrypted]\n\n    Note over Client,Gateway: Mutual authentication complete\\nIKE SA established\n\n    Note over Client,Gateway: IKEv2 Phase 2 — IPsec Child SA\n    Client->>Gateway: CREATE_CHILD_SA\\n(traffic selectors, ESP proposal)\n    Gateway-->>Client: CREATE_CHILD_SA response\\n(SPI values, keying material)\n\n    Note over Client,Gateway: IPsec tunnel established\\nESP SAs in both directions\n\n    Note over Client,Gateway: Encrypted traffic flow\n    Client->>Gateway: ESP packet\\n(encrypted original IP packet\\ndst: 10.0.0.0/8 corporate subnet)\n    Gateway-->>Client: ESP packet\\n(encrypted response from server)\n\n    Note over Client,Gateway: IKE keepalives maintain tunnel\n    Client->>Gateway: IKE_INFORMATIONAL (DPD)\n    Gateway-->>Client: IKE_INFORMATIONAL response\n";
+
+function copySource() {
+  navigator.clipboard.writeText(SOURCE).then(() => {
+    const el = document.getElementById('copy-feedback');
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+  });
+}
+
+function toggleFaq(btn) {
+  btn.closest('.faq-item').classList.toggle('open');
+}
+
+// related links: inject arrow span
+document.querySelectorAll('.related-link').forEach(a => {
+  const arrow = document.createElement('span');
+  arrow.className = 'related-link-arrow';
+  arrow.textContent = '→';
+  a.appendChild(arrow);
+});
+</script>
+
+</body>
+</html>

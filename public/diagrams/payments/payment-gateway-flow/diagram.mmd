@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Customer
+    participant Merchant as Merchant Website
+    participant Gateway as Payment Gateway
+    participant Processor as Card Processor
+    participant Bank as Issuing Bank
+
+    Customer->>Merchant: Submit payment form
+    Merchant->>Gateway: Send tokenized card details
+    Gateway->>Gateway: Validate request, check fraud rules
+    Gateway->>Processor: Authorization request
+    Processor->>Bank: Route authorization to issuing bank
+    Bank->>Bank: Check funds, CVV, fraud signals
+    Bank-->>Processor: Approved / Declined + reason code
+    Processor-->>Gateway: Authorization response
+    Gateway->>Gateway: Log transaction, emit webhook
+    Gateway-->>Merchant: Payment result + auth code
+    Merchant-->>Customer: Order confirmation or failure message

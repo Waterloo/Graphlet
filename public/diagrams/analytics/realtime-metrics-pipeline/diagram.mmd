@@ -1,0 +1,14 @@
+flowchart LR
+    Emitters[Event Emitters\nServices, infra agents, apps] --> Platform[Streaming Platform\nKafka topics]
+    Platform --> Engine[Metrics Computation Engine\nFlink or Kafka Streams]
+    Engine --> Windows[Windowed Aggregations\n10s, 1min, 5min tumbling windows]
+    Windows --> Counts[Request counts\nError rates, throughput]
+    Windows --> Latency[Latency Percentiles\np50, p95, p99]
+    Windows --> Revenue[Business Metrics\nRevenue, signups, conversions]
+    Counts --> TSDB[Time-Series Database\nInfluxDB, Prometheus, TimescaleDB]
+    Latency --> TSDB
+    Revenue --> TSDB
+    TSDB --> Dashboard[Live Dashboard\nAuto-refresh every 5-30s]
+    TSDB --> Alerting[Alerting Engine\nThreshold evaluation]
+    Alerting --> Notify[Notifications\nPagerDuty, Slack, email]
+    Engine --> DeadLetter[Dead-Letter Topic\nFailed event capture]

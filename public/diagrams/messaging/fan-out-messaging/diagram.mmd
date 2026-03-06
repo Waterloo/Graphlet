@@ -1,0 +1,14 @@
+flowchart LR
+    P[Producer\nOrder Service] -->|OrderPlaced event| FO[Fan-Out\nSNS Topic / Fanout Exchange]
+
+    FO -->|copy| Q1[Queue: Email Notifications]
+    FO -->|copy| Q2[Queue: Inventory Updates]
+    FO -->|copy| Q3[Queue: Analytics Events]
+    FO -->|copy| Q4[Queue: Fraud Detection]
+    FO -->|copy| Q5[Queue: Search Index Update]
+
+    Q1 --> C1[Email Service\n2 workers]
+    Q2 --> C2[Inventory Service\n5 workers]
+    Q3 --> C3[Analytics Service\n1 worker]
+    Q4 --> C4[Fraud Engine\n10 workers]
+    Q5 --> C5[Search Indexer\n3 workers]

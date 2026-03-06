@@ -1,0 +1,24 @@
+flowchart TD
+    subgraph Sender ["Sender — Encapsulation (top to bottom)"]
+        L7S[Layer 7 Application\nHTTP GET /page — Application data]
+        L6S[Layer 6 Presentation\nTLS encryption + encoding]
+        L5S[Layer 5 Session\nSession context]
+        L4S[Layer 4 Transport\nTCP segment: src/dst port + seq numbers]
+        L3S[Layer 3 Network\nIP packet: src/dst IP + TTL]
+        L2S[Layer 2 Data Link\nEthernet frame: src/dst MAC + FCS]
+        L1S[Layer 1 Physical\nBits transmitted over wire or radio]
+    end
+
+    subgraph Receiver ["Receiver — Decapsulation (bottom to top)"]
+        L1R[Layer 1 Physical\nBits received]
+        L2R[Layer 2 Data Link\nEthernet frame — verify FCS, strip MAC header]
+        L3R[Layer 3 Network\nIP packet — check TTL, strip IP header]
+        L4R[Layer 4 Transport\nTCP segment — reassemble, strip TCP header]
+        L5R[Layer 5 Session\nSession management]
+        L6R[Layer 6 Presentation\nTLS decryption]
+        L7R[Layer 7 Application\nHTTP response delivered to app]
+    end
+
+    L7S --> L6S --> L5S --> L4S --> L3S --> L2S --> L1S
+    L1S -->|Physical medium\nnetwork transit| L1R
+    L1R --> L2R --> L3R --> L4R --> L5R --> L6R --> L7R
