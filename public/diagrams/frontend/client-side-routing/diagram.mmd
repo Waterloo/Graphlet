@@ -1,0 +1,21 @@
+flowchart TD
+    A[URL Change Event] --> B{Source of change?}
+    B -- User click on link --> C[Intercept Click Event]
+    B -- router.push called --> D[Programmatic Navigation]
+    B -- Browser back/forward --> E[popstate Event Fired]
+    C --> F[Call History.pushState]
+    D --> F
+    E --> G[Read Current Location]
+    F --> G
+    G --> H[Run Route Matching Algorithm]
+    H --> I{Match found?}
+    I -- No --> J[Render 404 Component]
+    I -- Yes --> K[Extract URL Parameters]
+    K --> L[Run Route Guards and Loaders]
+    L --> M{Guard passes?}
+    M -- No --> N[Redirect to Guard Target]
+    M -- Yes --> O{Component chunk loaded?}
+    O -- No --> P[Dynamic Import Chunk]
+    P --> Q[Render Matched Component]
+    O -- Yes --> Q
+    style Q fill:#22c55e,color:#fff

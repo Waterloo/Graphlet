@@ -1,0 +1,27 @@
+flowchart TD
+    REQ([Incoming login request]) --> RESOLVE{Resolve tenant}
+    RESOLVE -- Subdomain: acme.app.com --> T1[Tenant: Acme Corp]
+    RESOLVE -- Email domain: user@beta.io --> T2[Tenant: Beta Inc]
+    RESOLVE -- URL path: /org/gamma --> T3[Tenant: Gamma LLC]
+
+    T1 --> T1_CONFIG[Load Tenant A auth config]
+    T2 --> T2_CONFIG[Load Tenant B auth config]
+    T3 --> T3_CONFIG[Load Tenant C auth config]
+
+    T1_CONFIG --> T1_TYPE{Auth method}
+    T1_TYPE -- SAML SSO --> SAML[Redirect to Acme IdP]
+    T1_TYPE -- OIDC SSO --> OIDC[Redirect to Acme OIDC Provider]
+
+    T2_CONFIG --> T2_TYPE{Auth method}
+    T2_TYPE -- Built-in password --> LOCAL[Username + password login]
+
+    T3_CONFIG --> T3_TYPE{Auth method}
+    T3_TYPE -- Social login --> SOCIAL[OAuth2 provider redirect]
+
+    SAML --> TOKEN[Issue JWT with tenant_id claim]
+    OIDC --> TOKEN
+    LOCAL --> TOKEN
+    SOCIAL --> TOKEN
+
+    TOKEN --> ENFORCE[Middleware enforces tenant isolation]
+    ENFORCE --> ACCESS([Access scoped to tenant data only])

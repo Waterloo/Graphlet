@@ -1,0 +1,11 @@
+flowchart TD
+    Upload([Object Created\nDay 0]) --> Standard[Standard Storage\nHot Tier\nFull replication, low latency]
+    Standard -->|Day 30: Lifecycle rule| IA[Infrequent Access\nWarm Tier\nReduced cost, per-retrieval fee]
+    IA -->|Day 90: Lifecycle rule| Glacier[Glacier / Archive\nCold Tier\nMinutes–hours retrieval]
+    Glacier -->|Day 180: Lifecycle rule| Deep[Deep Archive\nLowest cost\nHours retrieval]
+    Deep -->|Day 365: Expiry rule| Delete([Object Deleted])
+    Standard -->|Tag: temp=true| EarlyDelete([Delete after 7 days])
+    IA -->|Version: non-current| VersionExpire([Expire old versions\nafter 60 days])
+    Standard -->|Incomplete multipart| CleanUp([Abort after 3 days])
+    Glacier -->|Restore request| Restore[Temporary Standard Copy\nExpires after restore window]
+    Restore --> AccessData([Data Accessed])

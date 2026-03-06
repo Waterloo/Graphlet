@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant User
+    participant SP as Service Provider
+    participant Browser as User Browser
+    participant IdP as Identity Provider
+
+    User->>SP: Access protected resource
+    SP-->>SP: Detect unauthenticated user
+    SP-->>SP: Build SAML AuthnRequest XML
+    SP->>Browser: Redirect to IdP SSO URL with AuthnRequest
+    Browser->>IdP: GET SSO URL with encoded AuthnRequest
+    IdP-->>IdP: Parse and validate AuthnRequest
+    IdP->>User: Show corporate login page
+    User->>IdP: Submit username and password
+    IdP-->>IdP: Validate credentials
+    IdP-->>IdP: Build SAML Assertion with user attributes
+    IdP-->>IdP: Sign assertion with IdP private key
+    IdP->>Browser: HTML auto-submit form with SAMLResponse
+    Browser->>SP: POST /acs with SAMLResponse (base64 XML)
+    SP-->>SP: Decode and parse SAMLResponse
+    SP-->>SP: Validate signature with IdP public key
+    SP-->>SP: Check audience, conditions, and expiry
+    SP-->>SP: Extract user attributes (email, roles)
+    SP-->>SP: Create application session
+    SP->>Browser: Redirect to original resource
+    Browser-->>User: Access granted

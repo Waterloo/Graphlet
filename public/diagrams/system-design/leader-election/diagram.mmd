@@ -1,0 +1,34 @@
+sequenceDiagram
+    participant N1 as Node 1
+    participant N2 as Node 2
+    participant N3 as Node 3
+    participant CS as Coordination Service
+
+    Note over N1,CS: Election round starts (startup or leader failure)
+
+    N1->>CS: PUT /election/node1 TTL=10s
+    N2->>CS: PUT /election/node2 TTL=10s
+    N3->>CS: PUT /election/node3 TTL=10s
+
+    CS-->>N1: Election won - you are Leader
+    CS-->>N2: Election lost - follow Node 1
+    CS-->>N3: Election lost - follow Node 1
+
+    Note over N1: Becomes Leader
+    Note over N2,N3: Enter Follower state
+
+    loop Every 5s (heartbeat)
+        N1->>CS: RENEW /election/node1 TTL=10s
+        CS-->>N1: Lease renewed
+    end
+
+    Note over N1: Node 1 crashes - heartbeat stops
+
+    CS->>N2: LeadershipLost event (TTL expired)
+    CS->>N3: LeadershipLost event (TTL expired)
+
+    Note over N2,N3: New election round begins
+    N2->>CS: PUT /election/node2 TTL=10s
+    N3->>CS: PUT /election/node3 TTL=10s
+    CS-->>N2: Election won - you are new Leader
+    CS-->>N3: Election lost - follow Node 2

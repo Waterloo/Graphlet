@@ -1,0 +1,15 @@
+flowchart LR
+    Commit([Git Push\nor PR Merge]) --> CI[CI System\nGitHub Actions / Jenkins]
+    CI --> Build[Docker Build\nmulti-stage Dockerfile]
+    Build --> Tag[Tag Image\nSHA + build number]
+    Tag --> Scan{Security Scan\nTrivy / Snyk}
+    Scan -->|CVE found\nhigh severity| Block([Block Pipeline\nNotify team])
+    Scan -->|Clean| Registry[Push to Container Registry\nECR / GCR / GHCR]
+    Registry --> UpdateManifest[Update Kubernetes Manifest\nnew image tag]
+    UpdateManifest --> Apply[kubectl apply\nor Helm upgrade]
+    Apply --> RollingUpdate[Kubernetes Rolling Update\nnew pods created]
+    RollingUpdate --> ReadinessProbe{Readiness Probe\nPassing?}
+    ReadinessProbe -->|Pass| ShiftTraffic[Shift Traffic to New Pods]
+    ReadinessProbe -->|Fail| Rollback[Automatic Rollback\nrestore previous ReplicaSet]
+    ShiftTraffic --> TerminateOld[Terminate Old Pods]
+    TerminateOld --> Done([Deployment Complete])

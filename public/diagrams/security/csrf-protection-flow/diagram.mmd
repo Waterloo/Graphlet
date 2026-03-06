@@ -1,0 +1,18 @@
+flowchart TD
+    A[User visits legitimate app\nand is authenticated] --> B[Server generates random CSRF token\ntied to user session]
+    B --> C[Embed token in HTML form\nas hidden field\nOR set as readable cookie for AJAX]
+    C --> D[User submits form or AJAX request\nCSRF token included in body/header]
+
+    D --> E[Server receives request]
+    E --> F[Extract CSRF token\nfrom request body or header]
+    F --> G[Retrieve expected CSRF token\nfrom user session]
+    G --> H{Tokens match?}
+    H -- Yes --> I[Process legitimate request]
+    H -- No or missing --> J[Reject: 403 Forbidden]
+
+    subgraph CSRF Attack Attempt
+        K[Attacker page triggers\ncross-origin POST to bank.com] --> L[Browser sends session cookie\nautomatically]
+        L --> M[But attacker cannot read\nCSRF token from bank.com HTML\nblocked by same-origin policy]
+        M --> N[Request missing valid CSRF token]
+        N --> J
+    end

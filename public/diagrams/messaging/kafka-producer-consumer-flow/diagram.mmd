@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Producer as Producer App
+    participant Broker as Kafka Broker (Leader)
+    participant Replica as Kafka Broker (Follower)
+    participant CG as Consumer Group
+    participant Consumer as Consumer App
+
+    Producer->>Broker: Send record (topic=orders, key=user-123)
+    Note over Broker: Assign to partition by hash(key)
+    Broker->>Broker: Write record to partition log (offset 42)
+    Broker->>Replica: Replicate record to follower
+    Replica-->>Broker: Ack: replication complete
+    Broker-->>Producer: Ack: offset 42 committed (acks=all)
+
+    Consumer->>CG: Join consumer group
+    CG-->>Consumer: Assign partition 0
+    Consumer->>Broker: Fetch records from offset 42
+    Broker-->>Consumer: Return batch (offsets 42-49)
+    Consumer->>Consumer: Process records
+    Consumer->>Broker: Commit offset 50
+    Broker-->>Consumer: Offset committed

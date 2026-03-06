@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Customer
+    participant WalletApp as Digital Wallet (Apple/Google Pay)
+    participant Merchant as Merchant App/Website
+    participant Gateway as Payment Gateway
+    participant Network as Card Network
+    participant Issuer as Issuing Bank
+
+    Customer->>Merchant: Tap "Pay with Wallet"
+    Merchant->>WalletApp: Request payment token (amount, merchant ID)
+    WalletApp->>Customer: Prompt biometric authentication
+    Customer->>WalletApp: Face ID / Touch ID / PIN
+    WalletApp->>WalletApp: Generate one-time cryptogram with device token
+    WalletApp-->>Merchant: Payment token (encrypted cryptogram)
+    Merchant->>Gateway: Forward payment token
+    Gateway->>Gateway: Decrypt and validate cryptogram
+    Gateway->>Network: Authorization request with device account number
+    Network->>Issuer: Route authorization (marked as wallet payment)
+    Issuer->>Issuer: Validate token, apply lower fraud risk score
+    Issuer-->>Network: Approval + authorization code
+    Network-->>Gateway: Authorization response
+    Gateway-->>Merchant: Payment approved
+    Merchant-->>Customer: Order confirmation

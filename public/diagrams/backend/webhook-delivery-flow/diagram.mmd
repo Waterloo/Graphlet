@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant SS as Source System
+    participant WD as Webhook Dispatcher
+    participant SG as Signing Service
+    participant CE as Consumer Endpoint
+
+    SS->>SS: Business event occurs
+    SS->>SS: Persist event to outbox table
+    WD->>SS: Poll outbox for pending events
+    SS-->>WD: Event payload (event-id, type, data)
+    WD->>SG: Sign payload with consumer secret
+    SG->>SG: Compute HMAC-SHA256 signature
+    SG-->>WD: Signature string
+    WD->>CE: POST /webhook (X-Webhook-Signature: sig, JSON body)
+    CE->>CE: Recompute HMAC and compare signature
+    alt Signature invalid
+        CE-->>WD: 401 Unauthorized
+        WD->>WD: Mark delivery failed - do not retry (bad config)
+    else Signature valid
+        CE->>CE: Process event idempotently
+        alt Processing succeeds
+            CE-->>WD: 200 OK
+            WD->>SS: Mark event delivered in outbox
+        else Processing fails or timeout
+            CE-->>WD: 500 or no response
+            WD->>WD: Schedule retry with backoff
+        end
+    end

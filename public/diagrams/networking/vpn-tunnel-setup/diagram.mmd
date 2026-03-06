@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant Client as VPN Client
+    participant Gateway as VPN Gateway
+
+    Note over Client,Gateway: IKEv2 Phase 1 — IKE SA Setup
+    Client->>Gateway: IKE_SA_INIT\n(DH key exchange, nonce, proposed algos)
+    Gateway-->>Client: IKE_SA_INIT response\n(DH key share, nonce, selected algo)
+
+    Note over Client,Gateway: Both derive IKE encryption keys
+    Client->>Gateway: IKE_AUTH\n(identity, certificate, AUTH payload) [encrypted]
+    Gateway-->>Client: IKE_AUTH response\n(identity, certificate, AUTH payload) [encrypted]
+
+    Note over Client,Gateway: Mutual authentication complete\nIKE SA established
+
+    Note over Client,Gateway: IKEv2 Phase 2 — IPsec Child SA
+    Client->>Gateway: CREATE_CHILD_SA\n(traffic selectors, ESP proposal)
+    Gateway-->>Client: CREATE_CHILD_SA response\n(SPI values, keying material)
+
+    Note over Client,Gateway: IPsec tunnel established\nESP SAs in both directions
+
+    Note over Client,Gateway: Encrypted traffic flow
+    Client->>Gateway: ESP packet\n(encrypted original IP packet\ndst: 10.0.0.0/8 corporate subnet)
+    Gateway-->>Client: ESP packet\n(encrypted response from server)
+
+    Note over Client,Gateway: IKE keepalives maintain tunnel
+    Client->>Gateway: IKE_INFORMATIONAL (DPD)
+    Gateway-->>Client: IKE_INFORMATIONAL response

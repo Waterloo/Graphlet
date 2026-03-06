@@ -1,0 +1,17 @@
+flowchart LR
+    U1([User: alice]) --> R1[Role: editor]
+    U2([User: bob]) --> R1
+    U3([User: carol]) --> R2[Role: admin]
+    U3 --> R1
+
+    R1 --> P1[Permission: posts:read]
+    R1 --> P2[Permission: posts:write]
+    R2 --> P1
+    R2 --> P2
+    R2 --> P3[Permission: users:manage]
+    R2 --> P4[Permission: settings:configure]
+
+    P1 --> RES1[(Resource: Blog Posts)]
+    P2 --> RES1
+    P3 --> RES2[(Resource: User Accounts)]
+    P4 --> RES3[(Resource: App Settings)]

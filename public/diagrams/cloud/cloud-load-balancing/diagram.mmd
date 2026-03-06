@@ -1,0 +1,16 @@
+flowchart TD
+    Client([Client Request]) --> GLB[Global Load Balancer\nAnycast IP, geo-routing]
+    GLB -->|Region: us-east| ALB1[Application Load Balancer\nus-east-1]
+    GLB -->|Region: eu-west| ALB2[Application Load Balancer\neu-west-1]
+    ALB1 --> PathRouter{URL Path\nRouting Rules}
+    PathRouter -->|/api/*| TG_API[Target Group: API\n3 instances]
+    PathRouter -->|/static/*| TG_Static[Target Group: Static\n2 instances]
+    PathRouter -->|/ws/*| TG_WS[Target Group: WebSocket\n2 instances]
+    TG_API --> HC1{Health Check\nPassing?}
+    HC1 -->|Healthy| Inst1[Instance A]
+    HC1 -->|Healthy| Inst2[Instance B]
+    HC1 -->|Unhealthy| Remove1[Removed from rotation]
+    TG_Static --> Inst3[Instance C]
+    TG_Static --> Inst4[Instance D]
+    TG_WS --> NLB[Network Load Balancer\nLayer 4, TCP]
+    NLB --> WSInst[WebSocket Instance]

@@ -1,0 +1,29 @@
+flowchart TD
+    A([Inbound Request to Service A]) --> B[Route to dependency type]
+
+    B --> C{Payment Service call}
+    B --> D{Inventory Service call}
+    B --> E{Notification Service call}
+
+    C --> F[Payment thread pool\nMax: 10 threads]
+    D --> G[Inventory thread pool\nMax: 20 threads]
+    E --> H[Notification thread pool\nMax: 5 threads]
+
+    F --> I{Pool slot available?}
+    G --> J{Pool slot available?}
+    H --> K{Pool slot available?}
+
+    I -- Pool exhausted --> L[Fail fast: Payment unavailable]
+    I -- Slot acquired --> M[Call Payment Service]
+    M --> N[Release thread slot]
+    N --> O([Payment response returned])
+
+    J -- Pool exhausted --> P[Fail fast: Inventory unavailable]
+    J -- Slot acquired --> Q[Call Inventory Service]
+    Q --> R[Release thread slot]
+    R --> S([Inventory response returned])
+
+    K -- Pool exhausted --> T[Fail fast: Notification unavailable]
+    K -- Slot acquired --> U[Call Notification Service]
+    U --> V[Release thread slot]
+    V --> W([Notification response returned])

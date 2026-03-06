@@ -1,0 +1,17 @@
+flowchart TD
+    Clone[Clone or fetch remote repo] --> Sync[Sync local main branch]
+    Sync --> Branch[Create feature branch]
+    Branch --> Code[Write code and commit locally]
+    Code --> Push[Push branch to remote]
+    Push --> PR[Open pull request]
+    PR --> CICheck[Automated CI checks run]
+    CICheck --> CIGate{CI passed?}
+    CIGate -->|No| FixCode[Fix failing checks]
+    FixCode --> Push
+    CIGate -->|Yes| Review[Request code review]
+    Review --> ReviewGate{Reviewer approved?}
+    ReviewGate -->|No| AddressComments[Address review comments]
+    AddressComments --> Push
+    ReviewGate -->|Yes| Merge[Merge branch into main]
+    Merge --> DeleteBranch[Delete feature branch]
+    DeleteBranch --> Done[Feature shipped]

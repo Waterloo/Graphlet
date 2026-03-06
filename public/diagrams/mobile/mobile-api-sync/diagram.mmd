@@ -1,0 +1,38 @@
+sequenceDiagram
+    participant UI as UI Layer
+    participant Client as HTTP Client
+    participant Cache as Local Cache
+    participant Auth as Auth Interceptor
+    participant API as Backend API
+
+    UI->>Client: Request data for screen
+    Client->>Cache: Check cache for URL
+    alt Cache hit and fresh
+        Cache-->>Client: Return cached response
+        Client-->>UI: Render cached data
+    else Cache miss or stale
+        Cache-->>Client: Cache miss
+        Client->>Auth: Attach Authorization header
+        Auth-->>Client: Bearer access_token added
+        Client->>API: GET /api/resource
+        alt 200 OK
+            API-->>Client: Response payload
+            Client->>Cache: Write response with TTL
+            Client-->>UI: Return fresh data
+        else 401 Unauthorized
+            API-->>Client: 401 token expired
+            Client->>Auth: Trigger token refresh
+            Auth->>API: POST /token with refresh_token
+            API-->>Auth: New access_token
+            Auth-->>Client: Retry original request
+            Client->>API: GET /api/resource with new token
+            API-->>Client: 200 OK with payload
+            Client-->>UI: Return fresh data
+        else 5xx or timeout
+            API-->>Client: Error response
+            Client-->>Client: Exponential backoff retry
+            Client->>API: Retry GET /api/resource
+            API-->>Client: 200 OK
+            Client-->>UI: Return data
+        end
+    end

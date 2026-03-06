@@ -1,0 +1,17 @@
+flowchart LR
+    SecretOwner([Security Team\nSecret Owner]) --> Store[Secrets Store\nAWS Secrets Manager / Vault]
+    Store --> Encrypt[Encrypt at Rest\nKMS customer-managed key]
+    Store --> AccessPolicy[IAM Access Policies\nrole-based read grants]
+    AccessPolicy --> WorkloadRole[Workload IAM Role\ne.g. Lambda execution role]
+    WorkloadRole --> GetSecret[GetSecretValue API Call]
+    GetSecret --> IAMCheck{IAM Policy\nAllows Access?}
+    IAMCheck -->|Denied| AccessDenied([403 Access Denied])
+    IAMCheck -->|Allowed| ReturnSecret[Return Decrypted Secret\nover TLS]
+    ReturnSecret --> App([Application Uses Secret\nDB password / API key])
+    GetSecret --> AuditLog[Audit Log\nCloudTrail / Vault Audit]
+    Store --> Rotation[Automatic Rotation\nscheduled Lambda]
+    Rotation --> UpdateSecret[Update Secret Value\nin store]
+    UpdateSecret --> UpdateDB[Update Credential\nin target database]
+    UpdateDB --> Notify[Notify Dependent Apps\ncache invalidation]
+    Store --> K8sCSI[K8s Secrets Store CSI\nor Vault Agent sidecar]
+    K8sCSI --> MountEnv[Mount as env var\nor file in pod]

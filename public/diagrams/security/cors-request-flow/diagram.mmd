@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Browser
+    participant Origin as Frontend Origin (app.example.com)
+    participant API as API Server (api.other.com)
+
+    Note over Browser: Preflight for non-simple request
+    Browser->>API: OPTIONS /data HTTP/1.1\nOrigin: app.example.com\nAccess-Control-Request-Method: POST\nAccess-Control-Request-Headers: Content-Type, Authorization
+    API-->>Browser: 200 OK\nAccess-Control-Allow-Origin: app.example.com\nAccess-Control-Allow-Methods: GET, POST, PUT\nAccess-Control-Allow-Headers: Content-Type, Authorization\nAccess-Control-Max-Age: 86400
+
+    Note over Browser: Preflight approved\nSend actual request
+    Browser->>API: POST /data HTTP/1.1\nOrigin: app.example.com\nAuthorization: Bearer token\nContent-Type: application/json
+    API-->>Browser: 200 OK\nAccess-Control-Allow-Origin: app.example.com\n{"result": "data"}
+    Note over Browser: CORS check passed\nJavaScript can read response
+
+    Note over Browser: Blocked cross-origin attempt
+    Browser->>API: GET /private\nOrigin: attacker.com
+    API-->>Browser: 200 OK\n(no CORS headers for attacker.com)
+    Note over Browser: Browser blocks JS from\nreading response — CORS violation

@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant Client as Client App
+    participant GW as API Gateway
+    participant Auth as Auth & Rate Limiter
+    participant Router as Model Router
+    participant Serving as Model Serving
+    participant Model as LLM (GPU)
+    participant Logger as Logging & Metering
+
+    Client->>GW: POST /v1/chat/completions {model, messages, params}
+    GW->>Auth: Validate API key + check quota
+    Auth-->>GW: 401 Unauthorized (if invalid)
+    Auth-->>GW: 429 Too Many Requests (if quota exceeded)
+    Auth-->>GW: OK (valid, within quota)
+    GW->>Router: Route to model cluster
+    Router->>Serving: Forward request to serving replica
+    Serving->>Serving: Tokenize prompt
+    Serving->>Serving: KV cache lookup (prefix match)
+    Serving->>Model: Forward pass (cached prefix skipped)
+    Model-->>Serving: Logits for next token
+    Serving->>Serving: Sample / decode next token
+    Serving->>Model: Continue until EOS or max_tokens
+    Model-->>Serving: Final token sequence
+    Serving->>Serving: Detokenize output tokens
+    Serving->>Logger: Record token counts + latency
+    Logger-->>Serving: Ack
+    Serving-->>GW: Response {id, choices, usage}
+    GW-->>Client: HTTP 200 response with generated text

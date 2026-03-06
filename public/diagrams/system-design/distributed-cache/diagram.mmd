@@ -1,0 +1,21 @@
+flowchart LR
+    AppServer1[App Server 1] --> HashRing[Consistent\nHash Ring]
+    AppServer2[App Server 2] --> HashRing
+    AppServer3[App Server 3] --> HashRing
+
+    subgraph CacheCluster[Cache Cluster]
+        HashRing --> CacheNode1[(Cache Node 1\nKeys: A-H)]
+        HashRing --> CacheNode2[(Cache Node 2\nKeys: I-P)]
+        HashRing --> CacheNode3[(Cache Node 3\nKeys: Q-Z)]
+    end
+
+    CacheNode1 --> CacheHit{Cache\nHit?}
+    CacheHit -->|Yes| ReturnValue[Return cached\nvalue to app]
+    CacheHit -->|No - Miss| QueryDB[Query Primary\nDatabase]
+    QueryDB --> DB[(Primary Database)]
+    DB --> WriteCache[Write result\nto cache node + TTL]
+    WriteCache --> ReturnValue
+
+    AppServer1 -->|Write / Update| InvalidateCache[Invalidate\ncache key]
+    InvalidateCache --> CacheCluster
+    AppServer1 -->|Write / Update| DB

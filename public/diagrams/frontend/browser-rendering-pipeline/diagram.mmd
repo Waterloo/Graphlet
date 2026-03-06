@@ -1,0 +1,16 @@
+flowchart TD
+    A[Receive HTML Bytes] --> B[HTML Tokenizer]
+    B --> C[Build DOM Tree]
+    A --> D[Parse CSS]
+    D --> E[Build CSSOM Tree]
+    C --> F{JavaScript encountered?}
+    F -- Yes, no async/defer --> G[Fetch and Execute JS]
+    G --> C
+    F -- No or async/defer --> H[Combine DOM + CSSOM]
+    E --> H
+    H --> I[Build Render Tree]
+    I --> J[Layout / Reflow]
+    J --> K[Paint — Record Draw Commands]
+    K --> L[Composite Layers]
+    L --> M[Display Frame on Screen]
+    style M fill:#22c55e,color:#fff

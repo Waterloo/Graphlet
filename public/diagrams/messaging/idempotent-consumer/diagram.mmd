@@ -1,0 +1,21 @@
+flowchart TD
+    MQ[Message Queue] -->|deliver message\nevent_id=uuid-789| C[Consumer]
+
+    C -->|extract event_id| CHK{Check\nProcessed Store}
+
+    CHK -->|event_id NOT found\nnew message| PROC[Process Message\nExecute business logic]
+    CHK -->|event_id FOUND\nduplicate delivery| SKIP[Skip — already processed\nno side effects]
+
+    PROC --> DB[(Write to Database\nconditional INSERT\nON CONFLICT DO NOTHING)]
+    DB -->|success or conflict\nboth safe| MARK[Mark event_id\nas processed]
+    MARK --> ACK[Acknowledge message]
+    SKIP --> ACK
+
+    subgraph ProcessedStore[Processed Event Store - Redis]
+        CHK
+        MARK
+        TTL2[TTL: 48 hours per key]
+    end
+
+    style SKIP fill:#fa0,color:#000
+    style ACK fill:#4a4,color:#fff

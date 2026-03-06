@@ -1,0 +1,18 @@
+flowchart TD
+    Engineer([Engineer writes\n.tf config files]) --> PR[Pull Request\nto main branch]
+    PR --> CI[CI Pipeline\nGitHub Actions / Atlantis]
+    CI --> Init[terraform init\ndownload providers, init state]
+    Init --> Plan[terraform plan\ndiff desired vs actual state]
+    Plan --> PlanOutput[Plan Output\ncreate / update / destroy]
+    PlanOutput --> PolicyCheck{OPA Policy\nChecks Pass?}
+    PolicyCheck -->|Fail| BlockPR([Block PR\npolicy violation])
+    PolicyCheck -->|Pass| CostEstimate[Cost Estimation\nInfracost]
+    CostEstimate --> Destructive{Destructive\nChanges?}
+    Destructive -->|Yes| ApprovalGate[Manual Approval\nrequired]
+    Destructive -->|No| Apply[terraform apply]
+    ApprovalGate -->|Approved| Apply
+    ApprovalGate -->|Rejected| Reject([Pipeline Rejected])
+    Apply --> CloudAPI[Cloud Provider API\nAWS / GCP / Azure]
+    CloudAPI --> Resources([Resources Created\nor Updated])
+    Apply --> StateUpdate[Update State File\nS3 / GCS backend]
+    Apply -->|Error| PipelineFail([Pipeline Failure\nalert team])

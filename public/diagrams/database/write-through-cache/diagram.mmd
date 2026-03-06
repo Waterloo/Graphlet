@@ -1,0 +1,17 @@
+flowchart LR
+    App[Application] --> CacheWrite[Write to Cache]
+    CacheWrite --> DBWrite[(Write to Database)]
+    DBWrite --> WriteAck[Write Acknowledged]
+    WriteAck --> App
+
+    App --> ReadReq[Read Request]
+    ReadReq --> CacheHit{Cache Hit?}
+    CacheHit -->|Yes| CacheReturn[Return from cache\nalways up-to-date]
+    CacheHit -->|No| DBRead[(Read from Database)]
+    DBRead --> PopulateCache[Populate cache]
+    PopulateCache --> CacheReturn
+    CacheReturn --> App
+
+    CacheWrite --> CacheFail{Cache write\nfailed?}
+    CacheFail -->|Yes| RollbackDB[Rollback DB write\nreturn error]
+    CacheFail -->|No| DBWrite

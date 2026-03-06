@@ -1,0 +1,18 @@
+flowchart TD
+    subgraph Ingestion["Document Ingestion Path"]
+        A([Raw documents]) --> B[Split into chunks]
+        B --> C[Clean and normalize text]
+        C --> D[Add metadata: title, source, date]
+        D --> E[Embedding model]
+        E --> F[(Vector database: store vector + chunk + metadata)]
+    end
+
+    subgraph Query["Query Path"]
+        G([User query]) --> H[Clean and normalize query]
+        H --> I[Embedding model]
+        I --> J[Nearest-neighbor search in vector DB]
+        J --> K[Return top-k results with scores]
+        K --> L([Ranked document chunks])
+    end
+
+    F -.->|indexed vectors| J

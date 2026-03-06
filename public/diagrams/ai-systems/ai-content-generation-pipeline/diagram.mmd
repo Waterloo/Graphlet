@@ -1,0 +1,22 @@
+flowchart TD
+    A([Content brief: topic, tone, keywords, length]) --> B[Match brief to prompt template]
+    B --> C[Assemble prompt with brief parameters]
+    C --> D{Cache hit?}
+    D -- Hit --> K
+    D -- Miss --> E[LLM generation: produce draft]
+    E --> F[Automated quality checks: length, keywords, readability]
+    F --> G{Quality checks pass?}
+    G -- Fail --> H[Regenerate with corrective constraints]
+    H --> E
+    G -- Pass --> I[Moderation screening]
+    I --> J{Moderation pass?}
+    J -- Fail --> L([Return policy refusal to requester])
+    J -- Pass --> K[Route by content risk level]
+    K --> M{High-stakes content?}
+    M -- Yes --> N[Human review queue]
+    N --> O{Reviewer decision}
+    O -- Approve --> P[Publish to CMS or downstream system]
+    O -- Revise --> Q[Add reviewer notes to prompt]
+    Q --> E
+    M -- No --> P
+    P --> R([Content published])

@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Client as DHCP Client\n(no IP yet)
+    participant Server as DHCP Server
+
+    Note over Client: Joins network\nNo IP address assigned
+
+    Client->>Server: DHCPDISCOVER (broadcast)\nSrc: 0.0.0.0\nDst: 255.255.255.255\nClient MAC: aa:bb:cc:dd:ee:ff
+
+    Note over Server: Select available IP\nfrom address pool
+    Server-->>Client: DHCPOFFER (broadcast)\nOffered IP: 192.168.1.42\nSubnet: 255.255.255.0\nGateway: 192.168.1.1\nDNS: 8.8.8.8\nLease: 86400s
+
+    Client->>Server: DHCPREQUEST (broadcast)\nRequesting: 192.168.1.42\nServer ID: 192.168.1.254
+
+    Note over Server: Reserve IP in pool\nConfirm lease
+    Server-->>Client: DHCPACK\nIP: 192.168.1.42\nLease confirmed
+
+    Note over Client: Configure interface:\nIP 192.168.1.42/24\nGateway 192.168.1.1\nDNS 8.8.8.8
+
+    Note over Client: At 50% lease time: send\nDHCPREQUEST to renew
+    Client->>Server: DHCPREQUEST (unicast, renewal)
+    Server-->>Client: DHCPACK (lease extended)

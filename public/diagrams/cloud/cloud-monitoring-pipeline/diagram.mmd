@@ -1,0 +1,16 @@
+flowchart LR
+    Infra[Infrastructure Metrics\nCPU, memory, disk, network] --> Agent1[CloudWatch Agent\nor Node Exporter]
+    Containers[Container Metrics\ncAdvisor, kubelet] --> Agent2[Prometheus Scraper]
+    AppMetrics[Application Metrics\n/metrics endpoint] --> Agent2
+    Agent1 --> TSDB[(Time-Series Database\nPrometheus / CloudWatch\nTimestream)]
+    Agent2 --> TSDB
+    TSDB --> Dashboard[Dashboard\nGrafana / Datadog]
+    TSDB --> AlertRules[Alert Rule Evaluation\navg CPU > 80%]
+    AlertRules --> Breach{Threshold\nBreached?}
+    Breach -->|No| Continue([Continue Monitoring])
+    Breach -->|Yes| AlertRouter[Alert Router\nAlertmanager / PagerDuty]
+    AlertRouter --> Deduplicate[Deduplicate and Group\nrelated alerts]
+    Deduplicate --> Notify[Notify On-Call\nSlack / PagerDuty / Email]
+    AlertRules --> ScalingTrigger[Auto-Scaling Trigger\nCloudWatch Alarm]
+    ScalingTrigger --> ASG[Auto Scaling Group\nadd or remove instances]
+    Dashboard --> Operators([Developers and Operators])

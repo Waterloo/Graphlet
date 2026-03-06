@@ -1,0 +1,15 @@
+flowchart LR
+    A([Application]) --> B[Create UDP socket\nsocket SOCK_DGRAM]
+    B --> C[sendto: dest IP + port\n+ datagram payload]
+    C --> D[OS: Add UDP header\nSrc port, Dst port,\nLength, Checksum]
+    D --> E[OS: Add IP header\nSrc IP, Dst IP,\nTTL, Protocol=17]
+    E --> F{NAT Device?}
+    F -->|Yes| G[Rewrite src IP:port\nRecord mapping]
+    G --> H[Network Transit\nRoute via IP]
+    F -->|No| H
+    H --> I{Packet Lost?}
+    I -->|Yes| J([Datagram dropped\nNo retransmission])
+    I -->|No| K[Destination receives\nIP+UDP packet]
+    K --> L[Strip IP header\nVerify checksum]
+    L --> M[Deliver to app\nvia dest port]
+    M --> N([Application receives\ndatagram — no ACK sent])

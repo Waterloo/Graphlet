@@ -1,0 +1,15 @@
+flowchart TD
+    A[Sender has plaintext message] --> B[Obtain recipient's public key]
+    B --> C[Generate random symmetric session key]
+    C --> D[Encrypt message payload\nwith session key via AES]
+    C --> E[Encrypt session key\nwith recipient's public key via RSA/ECC]
+    D --> F[Bundle: encrypted payload\n+ encrypted session key]
+    E --> F
+    F --> G[Transmit to recipient]
+    G --> H[Recipient receives bundle]
+    H --> I[Decrypt session key\nwith private key]
+    I --> J{Private key valid?}
+    J -- Yes --> K[Recover symmetric session key]
+    J -- No --> L[Decryption fails]
+    K --> M[Decrypt payload\nwith session key]
+    M --> N[Plaintext message recovered]

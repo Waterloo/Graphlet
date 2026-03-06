@@ -1,0 +1,17 @@
+flowchart LR
+    Producer -->|key=user-A| Partitioner
+    Producer -->|key=user-B| Partitioner
+    Producer -->|no key| Partitioner
+
+    Partitioner -->|hash user-A → P0| P0[Partition 0\nLeader: Broker 1]
+    Partitioner -->|hash user-B → P1| P1[Partition 1\nLeader: Broker 2]
+    Partitioner -->|round-robin → P2| P2[Partition 2\nLeader: Broker 3]
+
+    P0 -->|replicate| R0A[Partition 0 Replica\nBroker 2]
+    P0 -->|replicate| R0B[Partition 0 Replica\nBroker 3]
+
+    P1 -->|replicate| R1A[Partition 1 Replica\nBroker 1]
+    P1 -->|replicate| R1B[Partition 1 Replica\nBroker 3]
+
+    P2 -->|replicate| R2A[Partition 2 Replica\nBroker 1]
+    P2 -->|replicate| R2B[Partition 2 Replica\nBroker 2]

@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: TCP + TLS already established
+    Client->>Server: GET /chat HTTP/1.1\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZQ==\nSec-WebSocket-Version: 13
+
+    Server-->>Client: HTTP/1.1 101 Switching Protocols\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+
+    Note over Client,Server: HTTP protocol replaced by WebSocket framing
+
+    Server-->>Client: Text frame: {"type":"connected","id":"abc"}
+    Client->>Server: Text frame: {"type":"message","text":"Hello"}
+    Server-->>Client: Text frame: {"type":"message","text":"Hello","from":"user1"}
+    Server-->>Client: Text frame: {"type":"message","text":"World","from":"user2"}
+
+    Note over Client,Server: Keep-alive
+    Client->>Server: Ping frame
+    Server-->>Client: Pong frame
+
+    Note over Client,Server: Close handshake
+    Client->>Server: Close frame (1000 Normal Closure)
+    Server-->>Client: Close frame (1000 Normal Closure)

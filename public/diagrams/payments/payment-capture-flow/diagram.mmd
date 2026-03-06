@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant Merchant
+    participant Gateway as Payment Gateway
+    participant Acquirer as Acquirer Bank
+    participant Network as Card Network
+    participant Issuer as Issuing Bank
+
+    Merchant->>Gateway: Capture request (auth code, amount)
+    Gateway->>Gateway: Validate auth code is active
+    Gateway->>Acquirer: Submit capture instruction
+    Acquirer->>Acquirer: Add to settlement batch
+    Acquirer->>Network: Submit batch at end of day
+    Network->>Issuer: Debit cardholder account
+    Issuer-->>Network: Funds transferred
+    Network-->>Acquirer: Settlement confirmed
+    Acquirer->>Acquirer: Calculate net amount (minus interchange)
+    Acquirer-->>Merchant: Deposit net funds (T+1 or T+2)
+    Gateway-->>Merchant: Capture confirmation event

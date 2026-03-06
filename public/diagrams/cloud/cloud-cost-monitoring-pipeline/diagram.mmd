@@ -1,0 +1,17 @@
+flowchart LR
+    BillingAPI[Cloud Billing API\nAWS CUR / GCP Export / Azure CM] --> Ingest[Billing Data Ingest\nhourly or daily]
+    Ingest --> Warehouse[(Data Warehouse\nBigQuery / Redshift / Snowflake)]
+    Tags[Resource Tags\nteam, env, project, cost-center] --> Enrich[Enrich Cost Records\nwith ownership metadata]
+    Warehouse --> Enrich
+    Enrich --> Allocate[Cost Allocation\nby team and service]
+    Allocate --> Dashboard[Cost Dashboard\nCloudHealth / Cost Explorer]
+    Allocate --> AnomalyDetect[Anomaly Detection\nML baseline comparison]
+    AnomalyDetect --> Spike{Spend Spike\nDetected?}
+    Spike -->|Yes| Alert[Alert Engineering Team\nSlack / PagerDuty]
+    Spike -->|No| Continue([Monitor next period])
+    Allocate --> BudgetCheck{Budget Threshold\nExceeded?}
+    BudgetCheck -->|80% warning| WarnAlert[Budget Warning\nnotify team lead]
+    BudgetCheck -->|100% hard stop| HardStop[Restrict Dev Account\nsuspend non-critical resources]
+    Warehouse --> Rightsizing[Rightsizing Engine\nanalyse utilisation vs provisioned]
+    Rightsizing --> Recommendations([Recommendations\ndownsize or switch to Reserved])
+    Dashboard --> Finance([Finance and Engineering\nshared visibility])

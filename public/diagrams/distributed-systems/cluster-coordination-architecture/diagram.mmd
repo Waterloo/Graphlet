@@ -1,0 +1,43 @@
+flowchart TD
+    subgraph CoordCluster ["Coordination Cluster — etcd — 3 nodes — Raft consensus"]
+        E1[etcd Leader]
+        E2[etcd Follower 1]
+        E3[etcd Follower 2]
+        E1 <-->|Raft replication| E2
+        E1 <-->|Raft replication| E3
+    end
+
+    subgraph AppLayer ["Application Services"]
+        A1[Service A — Instance 1]
+        A2[Service A — Instance 2]
+        A3[Service B — Worker]
+        A4[Service B — Worker]
+    end
+
+    subgraph UseCases ["Coordination Use Cases"]
+        UC1["Distributed Lock\n- acquire lease with TTL\n- fencing token prevents stale writes"]
+        UC2["Service Discovery\n- register address + health\n- watch prefix for changes"]
+        UC3["Leader Election\n- compete to create key\n- winner is app leader"]
+        UC4["Config Management\n- store feature flags\n- push updates to all watchers"]
+    end
+
+    A1 -->|gRPC watch| E1
+    A2 -->|gRPC watch| E1
+    A3 -->|gRPC watch| E2
+    A4 -->|gRPC watch| E3
+
+    E1 --> UC1
+    E1 --> UC2
+    E1 --> UC3
+    E1 --> UC4
+
+    subgraph HealthCheck ["Health and Membership"]
+        H1[Worker registers health key\nwith TTL=30s] --> H2[Worker refreshes TTL\nevery 10s]
+        H2 --> H3{TTL expires\nno refresh?}
+        H3 -->|Yes — worker dead| H4[Key deleted — watchers\nnotified of departure]
+        H3 -->|No| H2
+    end
+
+    style CoordCluster fill:#eff6ff,stroke:#3b82f6
+    style UseCases fill:#f0fdf4,stroke:#22c55e
+    style HealthCheck fill:#fef3c7,stroke:#f59e0b

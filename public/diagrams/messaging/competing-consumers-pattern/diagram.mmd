@@ -1,0 +1,28 @@
+flowchart LR
+    subgraph Producers
+        P1[Producer A]
+        P2[Producer B]
+        P3[Producer C]
+    end
+
+    Q[Shared Work Queue\n12 pending messages]
+
+    subgraph Consumers[Consumer Pool - 3 instances]
+        C1[Consumer 1\nprocessing msg-3]
+        C2[Consumer 2\nprocessing msg-7]
+        C3[Consumer 3\nidle - waiting]
+    end
+
+    P1 -->|enqueue| Q
+    P2 -->|enqueue| Q
+    P3 -->|enqueue| Q
+
+    Q -->|msg-3 locked| C1
+    Q -->|msg-7 locked| C2
+    Q -->|next available msg| C3
+
+    C1 -->|ack on success| Q
+    C2 -->|ack on success| Q
+
+    C1 -->|fail - visibility timeout| Q
+    Q -->|re-enqueue after timeout| Q

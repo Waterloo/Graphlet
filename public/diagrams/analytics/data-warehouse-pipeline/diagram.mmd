@@ -1,0 +1,14 @@
+flowchart TD
+    OpDB[Operational Databases\nPostgres, MySQL, Oracle] --> Extract[Extract Layer\nCDC or scheduled dump]
+    SaaS[SaaS Connectors\nCRM, ERP, Ad Platforms] --> Extract
+    Extract --> Staging[Staging Schema\nRaw mirror of source tables]
+    Staging --> Audit[Audit Log\nRow counts, checksums]
+    Staging --> Transform[Transformation Layer\ndbt models and SQL logic]
+    Transform --> Clean[Clean and Deduplicate\nNull handling, dedup keys]
+    Clean --> Dimensions[Dimension Tables\nCustomers, Products, Campaigns]
+    Clean --> Facts[Fact Tables\nOrders, Events, Sessions]
+    Dimensions --> Warehouse[Data Warehouse Serving Layer\nSnowflake, BigQuery, Redshift]
+    Facts --> Warehouse
+    Warehouse --> Catalog[Data Catalog\nLineage, definitions, ownership]
+    Warehouse --> BI[BI Tools\nTableau, Looker, Metabase]
+    Warehouse --> Notebooks[Analyst Notebooks\nJupyter, Observable]

@@ -1,0 +1,24 @@
+flowchart TD
+    A([User taps deep link URL]) --> B{Link type?}
+    B -- URI scheme: myapp:// --> C{App registered for scheme?}
+    B -- Universal Link / App Link --> D[OS fetches apple-app-site-association or assetlinks.json]
+    D --> E{Domain verified?}
+    E -- No --> F[Open in browser as regular URL]
+    E -- Yes --> C
+    C -- No --> G[Redirect to App Store / Play Store]
+    C -- Yes --> H{App currently running?}
+    H -- Yes: foreground --> I[Pass URL to app via openURL callback]
+    H -- No: cold start --> J[Launch app process]
+    J --> K[Initialize core app state]
+    K --> I
+    I --> L[Deep link router parses URL path and params]
+    L --> M{Route recognized?}
+    M -- No --> N[Navigate to home screen]
+    M -- Yes --> O{User authenticated?}
+    O -- No --> P[Save destination URL]
+    P --> Q[Navigate to login screen]
+    Q --> R[User completes authentication]
+    R --> S[Restore saved destination URL]
+    S --> T[Navigate to target screen]
+    O -- Yes --> T
+    T --> U([User arrives at destination screen])

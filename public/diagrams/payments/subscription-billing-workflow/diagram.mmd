@@ -1,0 +1,28 @@
+flowchart TD
+    A([Customer Signs Up]) --> B[Create subscription record]
+    B --> C{Free trial?}
+    C -->|Yes| D[Set trial end as first billing date]
+    C -->|No| E[Set billing date to today]
+    D --> F[Activate subscription]
+    E --> F
+    F --> G([Billing date reached])
+    G --> H[Generate invoice]
+    H --> I[Attempt charge on stored payment method]
+    I --> J{Charge successful?}
+    J -->|Yes| K[Mark invoice paid]
+    K --> L[Advance next billing date]
+    L --> M[Send receipt to customer]
+    M --> F
+    J -->|No| N[Enter dunning process]
+    N --> O[Send payment failure notification]
+    O --> P{Retry attempts exhausted?}
+    P -->|No| Q[Wait retry interval]
+    Q --> R{Customer updated payment method?}
+    R -->|Yes| I
+    R -->|No| P
+    P -->|Yes| S{Cancellation policy}
+    S -->|Suspend| T[Suspend access]
+    S -->|Cancel| U[Cancel subscription]
+    T --> V{Customer pays outstanding balance?}
+    V -->|Yes| F
+    V -->|No| U

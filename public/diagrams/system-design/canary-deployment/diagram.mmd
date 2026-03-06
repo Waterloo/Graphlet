@@ -1,0 +1,9 @@
+flowchart TD
+    LB[Load Balancer] -->|95% traffic| V1[v1.0 Stable\nProduction]
+    LB -->|5% traffic| V2[v2.0 Canary]
+    V2 --> Monitor[Monitoring & Metrics\nError Rate / Latency / KPIs]
+    Monitor -->|Metrics healthy| Increase[Increase canary traffic\n5% → 25% → 50% → 100%]
+    Monitor -->|Metrics degraded| Rollback[Rollback to 100% v1.0]
+    Increase --> FullRollout{100% shifted\nto v2.0?}
+    FullRollout -->|Yes| Decommission[Decommission v1.0]
+    FullRollout -->|No| Monitor

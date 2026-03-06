@@ -1,0 +1,25 @@
+flowchart TD
+    A([User sends message]) --> B[API layer: authenticate session token]
+    B --> C{Auth valid?}
+    C -- No --> D([Return 401 Unauthorized])
+    C -- Yes --> E[Load session: history and context from session store]
+    E --> F[Assemble prompt: system prompt + history + user message]
+    F --> G{RAG enabled?}
+    G -- Yes --> H[Retrieve relevant chunks from knowledge base]
+    H --> I[Inject chunks into prompt context]
+    G -- No --> I
+    I --> J[Input moderation screening]
+    J --> K{Moderation pass?}
+    K -- Fail --> L([Return policy refusal])
+    K -- Pass --> M{Prompt cache hit?}
+    M -- Hit --> N([Stream cached response to client])
+    M -- Miss --> O[Dispatch to LLM with streaming enabled]
+    O --> P[Stream tokens to client via SSE]
+    P --> Q[Collect complete response]
+    Q --> R[Output moderation screening]
+    R --> S{Output pass?}
+    S -- Fail --> T([Replace with fallback response])
+    S -- Pass --> U[Append assistant message to session store]
+    T --> U
+    U --> V[Log turn: tokens, latency, model version]
+    V --> W([Turn complete])

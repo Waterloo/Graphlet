@@ -1,0 +1,18 @@
+flowchart LR
+    IoT([IoT Sensors\nand Devices]) --> EdgeNode[Edge Node\nK3s / MicroK8s]
+    MobileUser([Mobile Users]) --> CDNEdge[CDN Edge PoP\nCloudflare / Lambda@Edge]
+    BranchOffice([Branch Office\nClients]) --> EdgeNode
+    EdgeNode --> LocalProcess[Local Processing\nML inference, filtering]
+    CDNEdge --> EdgeFunction[Edge Function\nauth, personalisation, A/B]
+    LocalProcess --> LocalStore[(Local Edge Storage\nbuffer when offline)]
+    LocalStore --> Sync{WAN Available?}
+    Sync -->|Yes| CloudSync[Sync to Cloud\naggregated results]
+    Sync -->|No| OfflineMode[Offline Autonomous\noperation continues]
+    EdgeFunction --> CacheHit{Cached\nResponse?}
+    CacheHit -->|Hit| ReturnCached([Return from edge cache\nsub-10ms])
+    CacheHit -->|Miss| OriginFetch[Fetch from Origin\nCloud Region]
+    OriginFetch --> UpdateCache[Update Edge Cache]
+    UpdateCache --> ReturnFetched([Return to User])
+    CloudSync --> CloudRegion[Cloud Data Centre\nprocessing and storage]
+    CloudRegion --> ModelUpdate[Updated ML Models\nor Config]
+    ModelUpdate --> EdgeNode

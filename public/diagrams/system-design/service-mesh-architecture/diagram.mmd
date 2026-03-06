@@ -1,0 +1,20 @@
+flowchart TD
+    subgraph ControlPlane[Control Plane]
+        CP[Mesh Control Plane\nIstio / Linkerd / Consul]
+        OB[Observability Backend\nMetrics / Traces / Logs]
+    end
+
+    subgraph DataPlane[Data Plane]
+        SPA[Sidecar Proxy A\nEnvoy] --- SvcA[Service A]
+        SPB[Sidecar Proxy B\nEnvoy] --- SvcB[Service B]
+        SPC[Sidecar Proxy C\nEnvoy] --- SvcC[Service C]
+    end
+
+    CP -->|Push policy & config| SPA
+    CP -->|Push policy & config| SPB
+    CP -->|Push policy & config| SPC
+    SPA -->|mTLS traffic| SPB
+    SPB -->|mTLS traffic| SPC
+    SPA -->|Telemetry| OB
+    SPB -->|Telemetry| OB
+    SPC -->|Telemetry| OB

@@ -1,0 +1,27 @@
+flowchart TD
+    A([Client Request]) --> B[Leader receives command]
+    B --> C[Append entry to leader log\nterm=T, index=N]
+    C --> D{Send AppendEntries RPC\nto all followers}
+    D --> E[Follower 1 appends entry]
+    D --> F[Follower 2 appends entry]
+    D --> G[Follower 3 appends entry]
+    D --> H[Follower 4 — unreachable]
+    E --> I{Majority\nacknowledged?}
+    F --> I
+    G --> I
+    I -->|No — wait| D
+    I -->|Yes — quorum reached| J[Leader commits entry\nadvances commitIndex]
+    J --> K[Apply to state machine]
+    K --> L([Respond to client])
+    J --> M[Broadcast commit via\nnext AppendEntries heartbeat]
+    M --> N[Followers apply committed entry]
+
+    subgraph Election ["Leader Election"]
+        O[Follower timeout] --> P[Become Candidate\nincrement term]
+        P --> Q[Broadcast RequestVote]
+        Q --> R{Majority\nvotes received?}
+        R -->|Yes| S[Transition to Leader\nsend heartbeats]
+        R -->|No — split vote| T[Wait random timeout\nretry election]
+    end
+
+    style Election fill:#f0f4ff,stroke:#6366f1

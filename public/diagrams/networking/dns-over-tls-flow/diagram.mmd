@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Client as DNS Client\n(stub resolver)
+    participant DoTResolver as DoT Resolver\n(port 853)
+
+    Note over Client: Traditional plaintext DNS\nreplaced by DoT
+
+    Note over Client,DoTResolver: TCP connection to port 853
+    Client->>DoTResolver: TCP SYN to port 853
+    DoTResolver-->>Client: TCP SYN-ACK
+    Client->>DoTResolver: TCP ACK
+
+    Note over Client,DoTResolver: TLS Handshake
+    Client->>DoTResolver: ClientHello (TLS 1.3)
+    DoTResolver-->>Client: ServerHello + Certificate
+    Note over Client: Validate resolver certificate\n(strict mode — reject on failure)
+    Client->>DoTResolver: Finished [encrypted]
+    DoTResolver-->>Client: Finished
+
+    Note over Client,DoTResolver: Encrypted DNS exchange
+    Client->>DoTResolver: DNS query (2-byte length prefix)\nQTYPE=A, QNAME=example.com [encrypted]
+    DoTResolver-->>Client: DNS response\nA 93.184.216.34 TTL 3600 [encrypted]
+
+    Note over Client,DoTResolver: Connection reuse for next query
+    Client->>DoTResolver: DNS query: api.example.com [encrypted]
+    DoTResolver-->>Client: DNS response: 203.0.113.42 [encrypted]

@@ -1,0 +1,19 @@
+flowchart TD
+    Query[SELECT query arrives] --> Planner[Query Planner]
+    Planner --> IndexExists{Index exists\nfor filter column?}
+
+    IndexExists -->|No| SeqScan[Sequential Scan]
+    SeqScan --> ReadAllPages[Read all heap pages]
+    ReadAllPages --> EvalPredicate[Evaluate predicate row-by-row]
+    EvalPredicate --> SlowResult[Return matching rows\nhigh I/O cost]
+
+    IndexExists -->|Yes| BTreeRoot[B-Tree Root Node]
+    BTreeRoot --> BTreeBranch[Traverse branch nodes]
+    BTreeBranch --> BTreeLeaf[Reach leaf node]
+    BTreeLeaf --> TID[Extract row TID\npage + offset pointer]
+
+    TID --> IndexOnlyCheck{All needed columns\nin index?}
+    IndexOnlyCheck -->|Yes| IndexOnly[Index-Only Scan\nno heap fetch needed]
+    IndexOnlyCheck -->|No| HeapFetch[Heap fetch\nread specific page]
+    HeapFetch --> FastResult[Return matching rows\nlow I/O cost]
+    IndexOnly --> FastResult

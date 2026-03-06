@@ -1,0 +1,18 @@
+flowchart TD
+    REQ([Incoming API request]) --> AUTH_CHECK{Token/session present?}
+    AUTH_CHECK -- No --> R401A([401 - Authentication required])
+    AUTH_CHECK -- Yes --> VALIDATE{Token signature\nand expiry valid?}
+    VALIDATE -- Invalid --> R401B([401 - Invalid or expired token])
+    VALIDATE -- Valid --> EXTRACT[Extract identity: user_id, roles, tenant_id]
+
+    EXTRACT --> TENANT_CHECK{Resource belongs\nto user tenant?}
+    TENANT_CHECK -- No --> R403A([403 - Cross-tenant access denied])
+    TENANT_CHECK -- Yes --> ROLE_CHECK{User role has\nrequired permission?}
+
+    ROLE_CHECK -- No --> R403B([403 - Insufficient permissions])
+    ROLE_CHECK -- Yes --> OWNERSHIP{Ownership check\nrequired?}
+
+    OWNERSHIP -- No --> ALLOW([Allow - pass to handler])
+    OWNERSHIP -- Yes --> OWN_CHECK{User owns\nthis resource?}
+    OWN_CHECK -- No --> R403C([403 - Resource not owned by user])
+    OWN_CHECK -- Yes --> ALLOW

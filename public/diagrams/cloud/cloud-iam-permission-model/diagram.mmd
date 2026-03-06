@@ -1,0 +1,15 @@
+flowchart TD
+    Request([API Request\nAction + Resource]) --> Auth[Authenticate Caller\nresolve credentials]
+    Auth --> Identity[Resolved Identity\nUser / Role / Service Account]
+    Identity --> Collect[Collect All Applicable Policies\nidentity + resource + boundary + SCP]
+    Collect --> ExplicitDeny{Explicit DENY\nin any policy?}
+    ExplicitDeny -->|Yes| Denied([ACCESS DENIED\nexplicit deny])
+    ExplicitDeny -->|No| SCP{SCP or Permission\nBoundary blocks action?}
+    SCP -->|Yes| Denied2([ACCESS DENIED\nboundary restriction])
+    SCP -->|No| ExplicitAllow{Explicit ALLOW\nin any policy?}
+    ExplicitAllow -->|No| ImplicitDeny([ACCESS DENIED\nimplicit deny - default])
+    ExplicitAllow -->|Yes| Conditions{Condition Keys\nall match?}
+    Conditions -->|No| CondDenied([ACCESS DENIED\ncondition mismatch])
+    Conditions -->|Yes| Granted([ACCESS GRANTED\naction permitted])
+    Granted --> Audit[Log to CloudTrail\nor Audit Log]
+    Denied --> Audit

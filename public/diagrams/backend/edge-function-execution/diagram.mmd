@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant C as Client
+    participant EN as CDN Edge Node
+    participant EF as Edge Function Runtime
+    participant OS as Origin Server
+
+    C->>EN: HTTP request (nearest PoP)
+    EN->>EF: Trigger edge function
+    EF->>EF: Inspect request headers and URL
+    EF->>EF: Check geolocation and user attributes
+
+    alt Short-circuit response at edge
+        EF-->>EN: Return edge-generated response
+        EN-->>C: HTTP response (no origin hit)
+    else Forward to origin with modifications
+        EF->>EF: Rewrite URL or inject request headers
+        EF->>OS: Forward modified request
+        OS->>OS: Process request
+        OS-->>EF: Origin response
+        EF->>EF: Manipulate response headers or body
+        EF-->>EN: Modified response
+        EN-->>C: HTTP response
+    end

@@ -1,0 +1,21 @@
+flowchart LR
+    PrivNet([Private Network\n192.168.1.0/24])
+
+    PrivNet --> HostA[Host A\n192.168.1.10:54321]
+    PrivNet --> HostB[Host B\n192.168.1.20:54322]
+
+    HostA --> NAT[NAT Router\nPublic IP: 203.0.113.5]
+    HostB --> NAT
+
+    NAT --> TableA[NAT Table Entry:\n192.168.1.10:54321\n→ 203.0.113.5:41000]
+    NAT --> TableB[NAT Table Entry:\n192.168.1.20:54322\n→ 203.0.113.5:41001]
+
+    TableA --> OutA[Outbound packet:\nSrc: 203.0.113.5:41000\nDst: 8.8.8.8:443]
+    TableB --> OutB[Outbound packet:\nSrc: 203.0.113.5:41001\nDst: 1.1.1.1:443]
+
+    OutA --> Internet([Internet])
+    OutB --> Internet
+
+    Internet --> ReturnTraffic[Return traffic:\nDst: 203.0.113.5:41000]
+    ReturnTraffic --> ReverseNAT{Reverse NAT\nlookup port 41000}
+    ReverseNAT --> DeliverA[Rewrite Dst:\n192.168.1.10:54321\nForward to Host A]

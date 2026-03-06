@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant Client
+    participant Server
+    participant IntermCA as Intermediate CA
+    participant RootCA as Root CA (Trust Store)
+    participant OCSP as OCSP Responder
+
+    Client->>Server: ClientHello (TLS handshake start)
+    Server-->>Client: ServerHello + Certificate chain
+    Note over Client: Parse certificate fields\n(subject, issuer, validity, SANs)
+    Client->>Client: Check hostname matches CN or SAN
+    Client->>Client: Check notBefore <= now <= notAfter
+    Client->>IntermCA: Verify server cert signature\nusing intermediate CA public key
+    IntermCA-->>Client: Signature valid
+    Client->>RootCA: Verify intermediate CA cert\nusing root CA public key
+    RootCA-->>Client: Root CA found in trust store
+    Client->>OCSP: Check revocation status\n(certificate serial number)
+    OCSP-->>Client: Certificate status: good
+    Note over Client: All checks passed\nProceed with key exchange
+    Client->>Server: Continue TLS handshake

@@ -1,0 +1,16 @@
+flowchart TD
+    Push[Developer pushes code] --> Trigger[CI triggered]
+    Trigger --> Checkout[Checkout source code]
+    Checkout --> Install[Install dependencies]
+    Install --> Lint[Run linter]
+    Install --> SecScan[Security dependency scan]
+    Lint --> Build[Build artifact]
+    SecScan --> Build
+    Build --> UnitTests[Run unit tests]
+    UnitTests --> Gate{Tests passed?}
+    Gate -->|No| NotifyFail[Notify developer of failure]
+    Gate -->|Yes| IntTests[Run integration tests]
+    IntTests --> IntGate{Integration passed?}
+    IntGate -->|No| NotifyFail
+    IntGate -->|Yes| Publish[Publish artifact to registry]
+    Publish --> Done[Pipeline complete]

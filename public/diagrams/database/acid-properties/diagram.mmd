@@ -1,0 +1,20 @@
+flowchart TD
+    ACID[ACID Properties] --> A[Atomicity]
+    ACID --> C[Consistency]
+    ACID --> I[Isolation]
+    ACID --> D[Durability]
+
+    A --> A1[All operations succeed\nor all are rolled back]
+    A --> A2[Undo log reverses\npartial changes on failure]
+
+    C --> C1[Constraints and rules\nalways satisfied]
+    C --> C2[Foreign keys, check\nconstraints enforced on write]
+
+    I --> I1{Isolation Level}
+    I1 -->|Weakest| IL1[Read Uncommitted\nDirty reads allowed]
+    I1 --> IL2[Read Committed\nOnly committed data visible]
+    I1 --> IL3[Repeatable Read\nSnapshot held for transaction]
+    I1 -->|Strongest| IL4[Serializable\nFull serial execution order]
+
+    D --> D1[WAL written and fsynced\nbefore COMMIT returns]
+    D --> D2[Changes survive crash\nand can be replayed]

@@ -1,0 +1,21 @@
+flowchart TD
+    A([User submits credentials]) --> B{Credentials valid?}
+    B -- No --> C([Return 401 login error])
+    B -- Yes --> D[Create session record in store]
+    D --> E[Generate random session ID]
+    E --> F[Set-Cookie: session_id=XXXX HttpOnly Secure SameSite]
+    F --> G([User receives session cookie])
+
+    G --> H([Browser sends request with cookie])
+    H --> I{Session ID in store?}
+    I -- Not found --> J([Redirect to login])
+    I -- Found --> K{Session expired?}
+    K -- Yes --> L[Delete session record]
+    L --> J
+    K -- No --> M[Load user data from session]
+    M --> N([Return protected resource])
+
+    N --> O([User clicks logout])
+    O --> P[Delete session record from store]
+    P --> Q[Clear session cookie]
+    Q --> J

@@ -1,0 +1,21 @@
+flowchart TD
+    User([Global User Traffic]) --> GLB[Global Load Balancer\nDNS latency routing / anycast]
+    GLB -->|Healthy| AWS[AWS Region\nus-east-1]
+    GLB -->|Healthy| GCP[GCP Region\nus-central1]
+    GLB -->|Failover| Azure[Azure Region\neastus]
+    AWS --> AWSApp[App Cluster\nEKS / ECS]
+    GCP --> GCPApp[App Cluster\nGKE]
+    Azure --> AzureApp[App Cluster\nAKS]
+    AWSApp --> AWSDB[(AWS RDS\nPostgres primary)]
+    GCPApp --> GCPSvc[GCP ML Services\nVertexAI / BigQuery]
+    AzureApp --> AzureDB[(Azure Cosmos DB\nNoSQL workloads)]
+    AWSDB -->|Cross-cloud replication| AzureDB
+    FederatedIDP[Federated Identity\nOkta / Auth0] --> AWS
+    FederatedIDP --> GCP
+    FederatedIDP --> Azure
+    IaC[Terraform\nmulti-provider config] --> AWS
+    IaC --> GCP
+    IaC --> Azure
+    Observability[Central Observability\nDatadog / Grafana] --> AWSApp
+    Observability --> GCPApp
+    Observability --> AzureApp

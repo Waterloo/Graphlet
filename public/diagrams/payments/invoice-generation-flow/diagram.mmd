@@ -1,0 +1,26 @@
+flowchart TD
+    A([Billing event triggered]) --> B[Retrieve subscription or order record]
+    B --> C[Calculate line items]
+    C --> D[Apply proration for mid-cycle changes]
+    D --> E[Calculate tax by jurisdiction]
+    E --> F[Apply account credits or coupons]
+    F --> G[Create invoice in draft status]
+    G --> H{Usage-based billing?}
+    H -->|Yes| I[Wait for metering window to close]
+    I --> J[Fetch final usage data]
+    J --> K[Finalize line items]
+    H -->|No| K
+    K --> L[Finalize invoice — status: open]
+    L --> M{Payment method on file?}
+    M -->|Yes — subscription auto-charge| N[Attempt charge immediately]
+    N --> O{Charge result}
+    O -->|Success| P[Mark invoice paid]
+    P --> Q[Generate PDF receipt]
+    Q --> R[Email receipt to customer]
+    O -->|Failure| S[Enter dunning retry workflow]
+    M -->|No — manual payment B2B| T[Email invoice with payment link]
+    T --> U{Paid before due date?}
+    U -->|Yes| P
+    U -->|No| V[Mark invoice overdue]
+    V --> W[Send overdue reminder]
+    W --> X[Escalate to collections workflow]

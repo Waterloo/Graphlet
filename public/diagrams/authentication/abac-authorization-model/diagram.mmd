@@ -1,0 +1,20 @@
+flowchart TD
+    REQ([Access Request]) --> PEP[Policy Enforcement Point]
+    PEP --> COLLECT[Collect attributes]
+
+    COLLECT --> SA[Subject Attributes\nuser.role, user.dept\nuser.clearance]
+    COLLECT --> RA[Resource Attributes\ndoc.owner, doc.classification\ndoc.status]
+    COLLECT --> AA[Action: read / write / delete]
+    COLLECT --> EA[Environment Attributes\ntime.hour, request.ip\nmfa_verified]
+
+    SA --> PDP[Policy Decision Point]
+    RA --> PDP
+    AA --> PDP
+    EA --> PDP
+
+    PDP --> PE[Evaluate applicable policies]
+    PE --> RESULT{Decision}
+    RESULT -- Permit --> ALLOW([Allow access to resource])
+    RESULT -- Deny --> DENY([403 Forbidden])
+    RESULT -- Not applicable --> DEFAULT{Default policy}
+    DEFAULT -- Deny by default --> DENY

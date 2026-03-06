@@ -1,0 +1,41 @@
+flowchart TD
+    A([Input Data — HDFS\n3 TB log files]) --> B[Master splits input\ninto 128 MB splits]
+    B --> S1[Split 1]
+    B --> S2[Split 2]
+    B --> S3[Split 3]
+    B --> S4[Split 4]
+    B --> S5[Split 5]
+
+    S1 --> M1[Map Worker 1\nparse and emit key-value pairs]
+    S2 --> M2[Map Worker 2\nparse and emit key-value pairs]
+    S3 --> M3[Map Worker 3\nparse and emit key-value pairs]
+    S4 --> M4[Map Worker 4\nparse and emit key-value pairs]
+    S5 --> M5[Map Worker 5\nparse and emit key-value pairs]
+
+    M1 --> SH[Shuffle and Sort Phase\npartition by hash key mod R\ngroup values per key]
+    M2 --> SH
+    M3 --> SH
+    M4 --> SH
+    M5 --> SH
+
+    SH --> R1[Reduce Worker 1\nkeys A–F]
+    SH --> R2[Reduce Worker 2\nkeys G–M]
+    SH --> R3[Reduce Worker 3\nkeys N–Z]
+
+    R1 --> O1[Output Part-00001]
+    R2 --> O2[Output Part-00002]
+    R3 --> O3[Output Part-00003]
+
+    O1 --> OUT([Final Output\nwritten to HDFS])
+    O2 --> OUT
+    O3 --> OUT
+
+    subgraph FaultTol ["Fault Tolerance"]
+        FT1[Master pings workers\nevery 10s] --> FT2{Worker\nresponsive?}
+        FT2 -->|Yes| FT1
+        FT2 -->|No — map worker| FT3[Re-assign all map tasks\nto another worker]
+        FT2 -->|No — reduce worker| FT4[Re-assign incomplete\nreduce tasks only]
+    end
+
+    style OUT fill:#d1fae5,stroke:#10b981
+    style FaultTol fill:#fef3c7,stroke:#f59e0b

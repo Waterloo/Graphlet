@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant User
+    participant App as Your Application
+    participant Provider as Identity Provider (Google/GitHub)
+    participant DB as Your Database
+
+    User->>App: Click "Sign in with Google"
+    App-->>App: Generate state nonce, store in session
+    App->>User: Redirect to provider /authorize with client_id, scope, state
+    User->>Provider: Authenticate (existing session or login prompt)
+    Provider->>User: Show consent screen
+    User->>Provider: Approve requested scopes
+    Provider->>App: Redirect to /callback with authorization code + state
+    App-->>App: Validate state matches stored nonce
+    App->>Provider: POST /token with code + client_secret
+    Provider-->>App: Access token + ID token (JWT)
+    App-->>App: Validate ID token signature via JWKS
+    App-->>App: Extract sub, email, name from claims
+    App->>DB: Look up user by provider + sub
+    alt Existing account found
+        DB-->>App: Return existing user record
+    else New user
+        App->>DB: Create new user linked to provider sub
+        DB-->>App: Return new user record
+    end
+    App-->>App: Create local session
+    App->>User: Redirect to dashboard with session cookie

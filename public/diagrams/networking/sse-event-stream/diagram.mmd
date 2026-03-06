@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant Client as Client (EventSource)
+    participant Server
+
+    Client->>Server: GET /events HTTP/1.1\nAccept: text/event-stream\nCache-Control: no-cache
+
+    Server-->>Client: HTTP/1.1 200 OK\nContent-Type: text/event-stream\nCache-Control: no-cache\nX-Accel-Buffering: no
+
+    Note over Client,Server: Connection held open — server pushes events
+
+    Server-->>Client: id: 1\ndata: {"status":"processing"}\n\n
+    Server-->>Client: id: 2\nevent: progress\ndata: {"percent":45}\n\n
+    Server-->>Client: id: 3\nevent: progress\ndata: {"percent":90}\n\n
+    Server-->>Client: id: 4\nevent: complete\ndata: {"result":"done"}\n\n
+
+    Note over Client,Server: Network interruption
+    Client-xServer: Connection dropped
+
+    Note over Client: Wait retry interval\n(default 3s or server-specified)
+    Client->>Server: GET /events HTTP/1.1\nLast-Event-ID: 4
+
+    Server-->>Client: HTTP/1.1 200 OK\nContent-Type: text/event-stream
+
+    Server-->>Client: id: 5\ndata: {"status":"next event"}\n\n

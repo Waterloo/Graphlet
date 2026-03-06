@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: QUIC runs over UDP port 443
+    Note over Client: Generate Connection ID\nGenerate key material
+
+    Client->>Server: Initial packet\n(TLS ClientHello, CRYPTO frame)
+    Note over Server: Derive initial secrets\nfrom Connection ID
+
+    Server-->>Client: Initial packet (TLS ServerHello)
+    Server-->>Client: Handshake packet\n(EncryptedExtensions, Certificate,\nCertificateVerify, Finished)
+
+    Note over Client: Verify certificate\nDerive handshake keys
+    Client->>Server: Handshake packet\n(TLS Finished) [1 RTT complete]
+
+    Note over Client,Server: Application data keys derived
+    Client->>Server: 1-RTT packet: HTTP/3 request [encrypted]
+    Server-->>Client: 1-RTT packet: HTTP/3 response [encrypted]
+
+    Note over Client,Server: Multiple streams multiplexed\nno head-of-line blocking
+
+    Note over Server: Session ticket for 0-RTT resumption
+    Server-->>Client: NEW_TOKEN frame

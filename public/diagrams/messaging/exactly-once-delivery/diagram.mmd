@@ -1,0 +1,23 @@
+flowchart TD
+    subgraph AtMostOnce[At-Most-Once]
+        P1[Producer] -->|send, no retry| B1[Broker]
+        B1 -->|maybe lost| C1[Consumer]
+    end
+
+    subgraph AtLeastOnce[At-Least-Once]
+        P2[Producer\nretries on timeout] -->|send + retry| B2[Broker]
+        B2 -->|possible duplicate| C2[Consumer]
+        C2 -->|commit offset after ack| B2
+    end
+
+    subgraph ExactlyOnce[Exactly-Once - Kafka EOS]
+        P3[Idempotent Producer\nenable.idempotence=true\nPID + sequence number] -->|send with seq=N| B3[Broker]
+        B3 -->|deduplicate retries by seq| B3
+        B3 --> TX[Kafka Transaction\ntransactional.id]
+        TX -->|atomic: read + process + write + commit offset| C3[Transactional Consumer]
+        C3 -->|commit or abort\nall-or-nothing| TX
+    end
+
+    style AtMostOnce fill:#faa,color:#000
+    style AtLeastOnce fill:#ffa,color:#000
+    style ExactlyOnce fill:#afa,color:#000

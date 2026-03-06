@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant RefClock as Reference Clock (Stratum 0)
+    participant NTPServer as NTP Server (Stratum 1)
+    participant Client as NTP Client
+
+    RefClock-->>NTPServer: Continuous time signal\n(GPS / atomic clock)
+    Note over NTPServer: Synchronized to UTC
+
+    Note over Client: Record T1 = client send time
+    Client->>NTPServer: NTP Request (UDP port 123)\nOriginTimestamp=T1
+
+    Note over NTPServer: Record T2 = server receive time
+    Note over NTPServer: Process request
+    Note over NTPServer: Record T3 = server send time
+
+    NTPServer-->>Client: NTP Response\nOriginTimestamp=T1\nReceiveTimestamp=T2\nTransmitTimestamp=T3
+
+    Note over Client: Record T4 = client receive time
+    Note over Client: Round-trip delay = (T4-T1)-(T3-T2)
+    Note over Client: Clock offset = ((T2-T1)+(T3-T4))/2
+    Note over Client: Adjust local clock gradually (slew)\nif offset < 128ms, else step
+
+    Note over Client: Repeat every 64-1024 seconds\n(poll interval adapts to stability)

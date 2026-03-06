@@ -1,0 +1,22 @@
+flowchart TD
+    A([User taps icon or notification]) --> B{Launch type?}
+    B -- Cold start: process not in memory --> C[OS creates new app process]
+    C --> D[Load binary and frameworks from disk]
+    D --> E[Run static initializers]
+    E --> F[Call didFinishLaunchingWithOptions / Application.onCreate]
+    B -- Warm start: app suspended in background --> G[OS resumes suspended process]
+    G --> H[Call applicationWillEnterForeground / onResume]
+    B -- Hot start: activity still in memory --> I[Bring window to foreground]
+    F --> J[Initialize dependency injection container]
+    J --> K[Read session token from Keychain / Keystore]
+    K --> L{Valid session found?}
+    L -- No --> M[Show onboarding or login screen]
+    L -- Yes --> N[Restore navigation stack]
+    N --> O[Load cached data from local store]
+    O --> P[Render screen with cached content]
+    P --> Q[Trigger background API refresh]
+    Q --> R[Update UI with fresh data]
+    H --> N
+    I --> P
+    M --> S([User sees first interactive screen])
+    R --> S

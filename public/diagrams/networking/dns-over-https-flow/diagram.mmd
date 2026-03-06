@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant App as Application/Browser
+    participant DoHClient as DoH Client
+    participant TLSLayer as TLS Layer (port 443)
+    participant DoHResolver as DoH Resolver\n(e.g. cloudflare-dns.com)
+
+    App->>DoHClient: Resolve: api.example.com
+
+    Note over DoHClient: Encode DNS query as\nRFC 8484 wire format
+
+    DoHClient->>TLSLayer: HTTPS POST /dns-query\nContent-Type: application/dns-message\nBody: [binary DNS query]
+
+    Note over TLSLayer: TLS 1.3 — query encrypted\nCertificate validates cloudflare-dns.com
+
+    TLSLayer->>DoHResolver: Encrypted HTTPS request
+    Note over DoHResolver: Decode DNS query\nPerform recursive resolution
+    DoHResolver-->>TLSLayer: HTTPS 200 OK\nContent-Type: application/dns-message\nBody: [binary DNS response]\nCache-Control: max-age=300
+
+    TLSLayer-->>DoHClient: Decrypted DNS response
+    DoHClient->>App: A record: 93.184.216.34
+
+    Note over App: No observer on network\ncan see hostname queried

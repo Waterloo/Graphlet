@@ -1,0 +1,16 @@
+flowchart TD
+    A([API request with key]) --> B{Key present in header?}
+    B -- No --> C([401 - API key required])
+    B -- Yes --> D[Hash incoming API key with SHA-256]
+    D --> E[Look up hash in database]
+    E --> F{Key found?}
+    F -- No --> G([401 - invalid API key])
+    F -- Yes --> H{Key active and not expired?}
+    H -- No --> I([401 - key revoked or expired])
+    H -- Yes --> J[Load associated account and permissions]
+    J --> K{Rate limit exceeded?}
+    K -- Yes --> L([429 - rate limit exceeded])
+    K -- No --> M{Key has required scope?}
+    M -- No --> N([403 - insufficient permissions])
+    M -- Yes --> O[Log usage event]
+    O --> P([Process request and return response])

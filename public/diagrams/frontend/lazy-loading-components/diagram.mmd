@@ -1,0 +1,19 @@
+flowchart TD
+    A[Initial Page Load] --> B[Download Initial JS Bundle Only]
+    B --> C[App Boots and Renders Visible Route]
+    C --> D{User navigates or component enters viewport?}
+    D -- No --> E[Idle — No extra downloads]
+    D -- Yes --> F[dynamic import called]
+    F --> G{Chunk already in browser cache?}
+    G -- Yes --> H[Load Chunk from Cache]
+    G -- No --> I[HTTP GET — Fetch JS Chunk from Server]
+    I --> J[Download Chunk]
+    J --> K[Parse and Execute Chunk]
+    H --> K
+    K --> L[Module Registered in Runtime]
+    L --> M{Suspense boundary present?}
+    M -- Yes --> N[Replace Fallback with Loaded Component]
+    M -- No --> O[Render Component Directly]
+    style C fill:#3b82f6,color:#fff
+    style N fill:#22c55e,color:#fff
+    style O fill:#22c55e,color:#fff

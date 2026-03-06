@@ -1,0 +1,29 @@
+sequenceDiagram
+    participant OrchestratorService as Order Orchestrator
+    participant PaymentService as Payment Service
+    participant InventoryService as Inventory Service
+    participant ShippingService as Shipping Service
+
+    OrchestratorService->>PaymentService: Reserve payment ($99)
+    PaymentService-->>OrchestratorService: Payment reserved
+
+    OrchestratorService->>InventoryService: Reserve inventory (item-42, qty 1)
+    InventoryService-->>OrchestratorService: Inventory reserved
+
+    OrchestratorService->>ShippingService: Schedule shipment
+    ShippingService-->>OrchestratorService: Shipment scheduled
+
+    Note over OrchestratorService: All steps succeeded — commit saga
+
+    OrchestratorService->>PaymentService: Confirm payment capture
+    OrchestratorService->>InventoryService: Confirm inventory deduction
+    OrchestratorService->>ShippingService: Confirm dispatch
+
+    Note over OrchestratorService: --- Failure scenario ---
+
+    OrchestratorService->>InventoryService: Reserve inventory (item-99, qty 1)
+    InventoryService-->>OrchestratorService: Out of stock — FAILED
+
+    Note over OrchestratorService: Trigger compensating transactions
+    OrchestratorService->>PaymentService: Cancel payment reservation
+    PaymentService-->>OrchestratorService: Payment released

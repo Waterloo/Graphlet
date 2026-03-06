@@ -1,0 +1,14 @@
+flowchart TD
+    A[User Requests URL] --> B[Server Receives HTTP Request]
+    B --> C[Route Matched on Server]
+    C --> D[Fetch Required Data from API or DB]
+    D --> E[Run Framework renderToString]
+    E --> F[Generate Complete HTML String]
+    F --> G[Serialize Dehydrated State into Script Tag]
+    G --> H[Send HTML Response to Browser]
+    H --> I[Browser Parses and Paints HTML Immediately]
+    I --> J[Browser Downloads JS Bundle]
+    J --> K[Hydration — Attach Event Listeners]
+    K --> L[Page Fully Interactive]
+    style I fill:#3b82f6,color:#fff
+    style L fill:#22c55e,color:#fff

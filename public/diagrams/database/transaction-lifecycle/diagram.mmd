@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant Client
+    participant Engine as DB Engine
+    participant WAL as Write-Ahead Log
+    participant Storage as Heap Storage
+    participant LockMgr as Lock Manager
+
+    Client->>Engine: BEGIN
+    Engine->>Engine: Allocate transaction ID (txid 4821)
+    Engine->>Engine: Create visibility snapshot
+    Engine-->>Client: Transaction started
+
+    Client->>Engine: UPDATE accounts SET balance = 500 WHERE id = 1
+    Engine->>LockMgr: Acquire row lock (id=1)
+    LockMgr-->>Engine: Lock granted
+    Engine->>WAL: Write update record
+    WAL-->>Engine: Logged
+    Engine->>Storage: Apply change (not yet visible)
+    Engine-->>Client: 1 row updated
+
+    Client->>Engine: INSERT INTO audit_log VALUES (4821, 'update', NOW())
+    Engine->>WAL: Write insert record
+    WAL-->>Engine: Logged
+    Engine->>Storage: Apply insert
+    Engine-->>Client: 1 row inserted
+
+    Client->>Engine: COMMIT
+    Engine->>WAL: Write commit record + fsync
+    WAL-->>Engine: Durable
+    Engine->>LockMgr: Release all row locks
+    Engine->>Storage: Mark changes visible to other transactions
+    Engine-->>Client: COMMIT complete

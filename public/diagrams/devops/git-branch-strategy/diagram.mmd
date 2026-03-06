@@ -1,0 +1,17 @@
+flowchart TD
+    Main[main branch] -->|cut hotfix| Hotfix[hotfix branch]
+    Hotfix -->|bug fixed| MergeHotfixMain[Merge into main]
+    Hotfix -->|sync fix| MergeHotfixDev[Merge into develop]
+    MergeHotfixMain --> TagMain[Tag release on main]
+
+    Main -->|cut release| Release[release branch]
+    Release -->|stabilize| BugfixRelease[Commit bug fixes only]
+    BugfixRelease --> MergeRelMain[Merge into main]
+    BugfixRelease --> MergeRelDev[Merge into develop]
+    MergeRelMain --> TagRelease[Tag version on main]
+
+    Develop[develop branch] -->|cut feature| Feature[feature branch]
+    Feature -->|implement| Commits[Commit feature work]
+    Commits -->|PR approved| MergeFeature[Merge into develop]
+    MergeFeature --> Develop
+    Develop -->|ready for release| Release

@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant App as Mobile App
+    participant OS as Device OS
+    participant Gateway as APNs / FCM
+    participant Server as App Server
+
+    App->>OS: Request notification permission
+    OS-->>App: Permission granted
+    App->>OS: Register for push notifications
+    OS->>Gateway: Request device token
+    Gateway-->>OS: Issue device token
+    OS-->>App: Return device token
+    App->>Server: POST /device-token with token + user ID
+    Server-->>App: 200 OK, token stored
+
+    Note over Server: User event triggers notification
+    Server->>Gateway: Send payload + device token
+    Gateway-->>Gateway: Authenticate server credentials
+    Gateway->>OS: Deliver push notification
+    OS-->>App: Display notification banner
+    App->>Server: POST /notification/ack (optional delivery receipt)

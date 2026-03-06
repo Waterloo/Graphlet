@@ -1,0 +1,19 @@
+flowchart LR
+    Src([Source Host\n10.0.0.5]) --> R1
+
+    R1[Router 1\n10.0.0.1] --> RT1{Lookup dst IP\nin routing table}
+    RT1 -->|Local subnet| ARP[ARP for MAC\ndeliver locally]
+    RT1 -->|Next hop: 172.16.0.1| TTL1[Decrement TTL\nUpdate src MAC]
+    TTL1 --> R2
+
+    R2[Router 2\n172.16.0.1] --> RT2{Longest prefix\nmatch lookup}
+    RT2 -->|Next hop: 203.0.113.1| TTL2[Decrement TTL]
+    TTL2 --> R3
+
+    R3[Router 3\n203.0.113.1] --> RT3{Lookup dst IP}
+    RT3 -->|Directly connected| Deliver[Deliver to\ndestination LAN]
+    Deliver --> Dst([Destination Host\n203.0.113.50])
+
+    TTL1 -->|TTL = 0| ICMP[Discard packet\nSend ICMP Time Exceeded\nto source]
+
+    RT3 -->|No route found| Drop[Discard packet\nSend ICMP\nDest Unreachable]

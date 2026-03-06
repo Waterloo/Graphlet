@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant User
+    participant Client as Client App
+    participant IdP as Identity Provider
+    participant JWKS as JWKS Endpoint
+
+    User->>Client: Click "Sign in with Provider"
+    Client->>IdP: Redirect with scope=openid profile email, nonce, state
+    IdP->>User: Show login and consent screen
+    User->>IdP: Authenticate and approve
+    IdP->>Client: Redirect with authorization code
+    Client->>IdP: POST /token with code + client_secret
+    IdP-->>Client: Access token + ID token + refresh token
+    Client->>JWKS: GET /.well-known/jwks.json
+    JWKS-->>Client: Public signing keys
+    Client-->>Client: Validate ID token signature, iss, aud, exp, nonce
+    Client-->>User: Establish session with user identity (sub, email, name)

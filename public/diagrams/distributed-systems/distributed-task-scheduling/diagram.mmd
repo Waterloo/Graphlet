@@ -1,0 +1,37 @@
+flowchart TD
+    A([Client submits Job\nCPU=4 Mem=8GB Priority=HIGH]) --> B[Job Admission Controller\nvalidate resources and quotas]
+    B --> C{Quota\navailable?}
+    C -->|No| D[Reject — return error\nto client]
+    C -->|Yes| E[Place job on Priority Queue]
+
+    E --> F[Scheduler main loop]
+    F --> G[Fetch highest-priority\npending task]
+    G --> H[Query Resource Inventory\nfor available nodes]
+
+    H --> I{Filter Phase:\nnode has required resources?}
+    I -->|Node 1: 6 CPU free — pass| J[Node 1 — candidate]
+    I -->|Node 2: 2 CPU free — fail| K[Node 2 — eliminated]
+    I -->|Node 3: 8 CPU free — pass| L[Node 3 — candidate]
+    I -->|Node 4: 4 CPU free — pass| M[Node 4 — candidate]
+
+    J --> N[Score Phase:\nrank by locality + bin-pack]
+    L --> N
+    M --> N
+    N --> O[Node 3 wins — highest score]
+
+    O --> P[Dispatch task to Node 3\nreserve 4 CPU 8GB]
+    P --> Q[Node 3 executes task]
+    Q --> R{Task\noutcome}
+    R -->|Success| S[Release resources\nmark task COMPLETE]
+    R -->|Failure| T[Increment retry count]
+    T --> U{Retries\nexceeded?}
+    U -->|No| E
+    U -->|Yes| V[Mark task FAILED\nnotify client]
+
+    subgraph Heartbeat ["Worker Heartbeat Loop"]
+        W[Worker node] -->|Every 5s| X[Report available resources\nto scheduler]
+        X -->|No heartbeat in 30s| Y[Mark node unhealthy\nreschedule all tasks]
+    end
+
+    style S fill:#d1fae5,stroke:#10b981
+    style V fill:#fee2e2,stroke:#ef4444

@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: HTTP/3 runs over QUIC (UDP port 443)
+
+    Note over Client,Server: New connection: 1 RTT
+    Client->>Server: QUIC Initial + TLS ClientHello\n(UDP datagram)
+    Server-->>Client: QUIC Initial + ServerHello\nHandshake + Certificate + Finished
+
+    Note over Client: Verify certificate
+    Client->>Server: QUIC Handshake Finished\n+ HTTP/3 SETTINGS frame
+
+    Note over Client,Server: Application data begins — streams are independent
+    Client->>Server: HEADERS frame stream 0\nGET /index.html
+    Client->>Server: HEADERS frame stream 4\nGET /api/data
+    Server-->>Client: HEADERS + DATA stream 0\n200 OK + HTML
+    Server-->>Client: HEADERS + DATA stream 4\n200 OK + JSON
+
+    Note over Client,Server: Packet loss only affects owning stream
+    Note over Client,Server: Connection migration: client changes IP
+    Client->>Server: PATH_CHALLENGE (new IP address)
+    Server-->>Client: PATH_RESPONSE (connection continues)
+
+    Note over Client,Server: 0-RTT resumption on next visit
+    Client->>Server: 0-RTT data + Early data HTTP request
+    Server-->>Client: 1-RTT response

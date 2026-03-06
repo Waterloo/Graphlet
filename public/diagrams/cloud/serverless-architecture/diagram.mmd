@@ -1,0 +1,15 @@
+flowchart LR
+    Client([Client]) --> GW[API Gateway]
+    GW --> Auth[Authorizer Function\nJWT / OAuth]
+    Auth -->|Valid token| Router{Route Matcher}
+    Auth -->|Invalid| Reject([401 Unauthorized])
+    Router -->|POST /upload| FnUpload[Upload Handler\nFunction]
+    Router -->|GET /data| FnQuery[Query Handler\nFunction]
+    Router -->|POST /process| FnProcess[Process Handler\nFunction]
+    FnUpload --> S3[(Object Storage)]
+    FnQuery --> DB[(Managed Database)]
+    FnProcess --> Queue[[Message Queue]]
+    Queue --> FnWorker[Worker Function\nasync trigger]
+    FnWorker --> DB
+    FnWorker --> Notify[Notification Service\nSNS / SES]
+    S3 -->|Storage event trigger| FnWorker

@@ -1,0 +1,18 @@
+flowchart TD
+    P[Producer] -->|publish with delay_until=T+24h| DS[Delay Store\nRedis Sorted Set\nscore = fire_at timestamp]
+
+    SCHED[Scheduler\ncron every 1 min] -->|query: score <= now| DS
+    DS -->|return due messages| SCHED
+    SCHED -->|re-enqueue| MQ[Main Queue]
+    DS -->|delete delivered message| DS
+
+    MQ -->|message now visible| C[Consumer]
+    C -->|process| BL[Execute Business Logic\nSend email, cancel order, etc.]
+    C -->|ack| MQ
+
+    subgraph ShortDelay[Short Delay - SQS Native]
+        P2[Producer] -->|DelaySeconds=300| SQ[SQS Queue\nmessage invisible for 5m]
+        SQ -->|visible after 5 minutes| C2[Consumer]
+    end
+
+    style BL fill:#4a4,color:#fff

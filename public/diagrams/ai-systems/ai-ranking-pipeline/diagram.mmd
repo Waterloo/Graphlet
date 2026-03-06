@@ -1,0 +1,12 @@
+flowchart TD
+    A([Ranking request: user context and candidate pool]) --> B[Candidate retrieval: ANN or inverted index]
+    B --> C[Hundreds of candidates returned]
+    C --> D[Fetch user and item features from feature store]
+    D --> E[L1 light scoring: logistic regression or gradient-boosted tree]
+    E --> F[Prune low-score candidates: keep top-N]
+    F --> G[Fetch deep features for shortlisted candidates]
+    G --> H[L2 deep scoring: neural ranker or transformer model]
+    H --> I[Sort candidates by L2 score]
+    I --> J[Apply business rules: diversity, freshness, sponsored boosts]
+    J --> K[Apply policy filters: regional restrictions]
+    K --> L([Return final ranked list to surface])

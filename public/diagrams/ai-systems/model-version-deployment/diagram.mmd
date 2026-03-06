@@ -1,0 +1,20 @@
+flowchart TD
+    A([New model version registered]) --> B[Deploy to staging environment]
+    B --> C[Run offline validation and integration tests]
+    C --> D{Staging tests pass?}
+    D -- Fail --> E([Block promotion: fix model or pipeline])
+    D -- Pass --> F[Deploy in shadow mode alongside production model]
+    F --> G[Compare shadow predictions to incumbent]
+    G --> H{Shadow metrics acceptable?}
+    H -- No --> I([Rollback: investigate divergence])
+    H -- Yes --> J[Canary rollout: route 5 percent of live traffic to new version]
+    J --> K[Monitor latency, error rate, and business KPIs]
+    K --> L{Canary metrics healthy?}
+    L -- Degraded --> M([Auto-rollback to previous version])
+    L -- Healthy --> N[Progressive traffic shift: 25% then 50%]
+    N --> O[Monitor at each traffic step]
+    O --> P{All steps healthy?}
+    P -- No --> M
+    P -- Yes --> Q[Full cutover: 100 percent traffic to new version]
+    Q --> R[Keep previous version in standby]
+    R --> S([Decommission old version after stability window])

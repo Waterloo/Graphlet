@@ -1,0 +1,22 @@
+flowchart TD
+    A[Application Source Code] --> B[Bundler Analyzes Dependency Graph]
+    B --> C{Split strategy?}
+    C --> D[Entry-Point Split]
+    C --> E[Dynamic Import Split]
+    C --> F[Vendor Split]
+    D --> G[Chunk per App Entry Point]
+    E --> H[Chunk per dynamic import boundary]
+    F --> I[Shared vendor libraries chunk]
+    G --> J[Chunk Manifest Generated]
+    H --> J
+    I --> J
+    J --> K[Output: main.hash.js + async chunks]
+    K --> L[Initial Page Load — Download main.js Only]
+    L --> M[App Boots and Renders Initial Route]
+    M --> N{User navigates to new route?}
+    N -- Route chunk not loaded --> O[Runtime Inserts script tag for chunk]
+    O --> P[Browser Downloads Route Chunk]
+    P --> Q[Execute Chunk and Render Route]
+    N -- Chunk cached --> Q
+    style L fill:#3b82f6,color:#fff
+    style Q fill:#22c55e,color:#fff

@@ -1,0 +1,22 @@
+flowchart TD
+    A([Incoming transaction]) --> B[Enrich with cardholder history]
+    B --> C[Compute behavioral features]
+    C --> D{Hard rule match?}
+    D -->|Blocked card or IP| E[Auto-decline]
+    D -->|High-risk merchant + amount| E
+    D -->|No rule triggered| F[Score with ML fraud model]
+    F --> G{Risk score}
+    G -->|Score < 0.2 low risk| H[Auto-approve transaction]
+    G -->|Score 0.2-0.7 medium risk| I{Challenge method}
+    I -->|3DS enrolled| J[Trigger 3D Secure challenge]
+    I -->|Not enrolled| K[Flag for manual review]
+    G -->|Score > 0.7 high risk| E
+    J --> L{3DS result}
+    L -->|Authenticated| H
+    L -->|Failed| E
+    H --> M[Log decision and score]
+    E --> M
+    K --> N{Reviewer decision}
+    N -->|Approve| H
+    N -->|Decline| E
+    M --> O([Forward to card network])

@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant ServiceA as Client Service
+    participant AuthServer as Authorization Server
+    participant ServiceB as Resource Server
+
+    ServiceA->>AuthServer: POST /token with client_id + client_secret + scope
+    AuthServer-->>AuthServer: Validate credentials and scope
+    alt Credentials valid
+        AuthServer-->>ServiceA: Access token (JWT, short-lived)
+    else Credentials invalid
+        AuthServer-->>ServiceA: 401 Unauthorized
+    end
+    ServiceA->>ServiceB: GET /api/data with Bearer token
+    ServiceB-->>ServiceB: Validate token signature and scope
+    alt Token valid
+        ServiceB-->>ServiceA: 200 OK with resource data
+    else Token expired or invalid
+        ServiceB-->>ServiceA: 401 Unauthorized
+        ServiceA->>AuthServer: POST /token (re-authenticate)
+        AuthServer-->>ServiceA: New access token
+        ServiceA->>ServiceB: Retry request with new token
+        ServiceB-->>ServiceA: 200 OK with resource data
+    end

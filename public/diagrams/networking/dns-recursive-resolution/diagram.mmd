@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant StubResolver as Stub Resolver (Client)
+    participant Recursive as Recursive Resolver
+    participant Root as Root Name Server
+    participant TLD as TLD Name Server (.com)
+    participant Auth as Authoritative Name Server
+
+    StubResolver->>Recursive: Recursive query: api.example.com?
+    Note over Recursive: Check local cache — miss
+
+    Recursive->>Root: Iterative query: api.example.com?
+    Root-->>Recursive: Referral: ask a.gtld-servers.net for .com
+
+    Recursive->>TLD: Iterative query: api.example.com?
+    TLD-->>Recursive: Referral: ask ns1.example.com
+
+    Recursive->>Auth: Iterative query: api.example.com?
+    Auth-->>Recursive: A record: 203.0.113.42 (TTL 300)
+
+    Note over Recursive: Cache answer for TTL duration
+    Recursive-->>StubResolver: Authoritative answer: 203.0.113.42

@@ -1,0 +1,14 @@
+stateDiagram-v2
+    [*] --> Closed
+
+    Closed --> Closed : Request succeeded
+    Closed --> Closed : Failure count below threshold
+    Closed --> Open : Failure threshold exceeded
+
+    Open --> Open : Requests rejected with fail-fast error
+    Open --> HalfOpen : Reset timeout elapsed
+
+    HalfOpen --> Closed : Test request succeeded
+    HalfOpen --> Open : Test request failed
+
+    Closed --> [*] : Service decommissioned

@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant Sub1 as Subscriber A
+    participant Sub2 as Subscriber B
+    participant Redis as Redis Server
+    participant Pub as Publisher
+
+    Sub1->>Redis: SUBSCRIBE news.sports
+    Redis-->>Sub1: subscribe, news.sports, 1
+
+    Sub2->>Redis: SUBSCRIBE news.sports
+    Redis-->>Sub2: subscribe, news.sports, 1
+
+    Sub2->>Redis: PSUBSCRIBE news.*
+    Redis-->>Sub2: psubscribe, news.*, 2
+
+    Pub->>Redis: PUBLISH news.sports "Goal scored!"
+    Note over Redis: Fan out to all channel subscribers
+    Redis-->>Sub1: message, news.sports, "Goal scored!"
+    Redis-->>Sub2: message, news.sports, "Goal scored!"
+    Redis-->>Pub: (integer) 2 recipients
+
+    Sub1->>Redis: UNSUBSCRIBE news.sports
+    Redis-->>Sub1: unsubscribe, news.sports, 0
+
+    Pub->>Redis: PUBLISH news.sports "Final whistle"
+    Redis-->>Sub2: message, news.sports, "Final whistle"
+    Note over Sub1: Missed message — was unsubscribed

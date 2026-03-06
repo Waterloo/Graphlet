@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant App as Application
+    participant LLM as LLM Model
+    participant Router as Tool Router
+    participant Search as Search Tool
+    participant Calc as Calculator Tool
+
+    App->>LLM: User message + tool definitions [{name, description, schema}]
+    LLM-->>App: tool_calls: [{name:"search", args:{query:"current BTC price"}}]
+    App->>App: Parse and validate tool call arguments
+    App->>Router: Dispatch search(query="current BTC price")
+    Router->>Search: Execute web search
+    Search-->>Router: Result: BTC = $67,420
+    Router-->>App: Tool result: BTC = $67,420
+    App->>LLM: Append role:tool message with result, re-send context
+    LLM-->>App: tool_calls: [{name:"calculator", args:{expr:"67420 * 1.05"}}]
+    App->>Router: Dispatch calculator(expr="67420 * 1.05")
+    Router->>Calc: Evaluate expression
+    Calc-->>Router: Result: 70791
+    Router-->>App: Tool result: 70791
+    App->>LLM: Append role:tool message, re-send context
+    LLM-->>App: Final response: "BTC is currently $67,420. A 5% increase would put it at $70,791."
+    App-->>App: Return final response to user

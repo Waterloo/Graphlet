@@ -1,0 +1,21 @@
+sequenceDiagram
+    participant Customer
+    participant Merchant
+    participant Gateway as Payment Gateway
+    participant Acquirer as Acquirer Bank
+    participant Network as Card Network
+    participant Issuer as Issuing Bank
+
+    Customer->>Merchant: Request refund (order ID)
+    Merchant->>Gateway: POST /refunds (original transaction ID, amount)
+    Gateway->>Gateway: Validate original transaction exists and was captured
+    Gateway->>Gateway: Check refund amount <= captured amount
+    Gateway->>Acquirer: Submit credit instruction
+    Acquirer->>Network: Route credit transaction
+    Network->>Issuer: Credit cardholder account
+    Issuer->>Issuer: Post credit to account (3-10 business days)
+    Issuer-->>Network: Credit confirmed
+    Network-->>Acquirer: Settlement updated
+    Acquirer-->>Gateway: Refund processed
+    Gateway-->>Merchant: Refund confirmation + refund ID
+    Merchant-->>Customer: Refund confirmation email

@@ -1,0 +1,27 @@
+stateDiagram-v2
+    [*] --> Mounting : Component added to tree
+    Mounting --> Mounted : Initial render + DOM attached
+    state Mounting {
+        [*] --> Constructor
+        Constructor --> RenderFunction
+        RenderFunction --> DOMAttached
+    }
+    Mounted --> Updating : Props or state change
+    state Mounted {
+        [*] --> RunMountedHooks
+        RunMountedHooks --> IdleWaitingForUpdates
+    }
+    Updating --> Mounted : Re-render complete + DOM patched
+    state Updating {
+        [*] --> ReRunRender
+        ReRunRender --> ReconcileDiff
+        ReconcileDiff --> ApplyDOMPatches
+        ApplyDOMPatches --> RunUpdateHooks
+    }
+    Mounted --> Unmounting : Component removed from tree
+    Unmounting --> [*] : Cleanup complete
+    state Unmounting {
+        [*] --> RunCleanupCallbacks
+        RunCleanupCallbacks --> RemoveEventListeners
+        RemoveEventListeners --> DestroyInstance
+    }

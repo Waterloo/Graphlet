@@ -1,0 +1,15 @@
+flowchart TD
+    Artifact[Fetch build artifact from registry] --> DeployStage[Deploy to staging environment]
+    DeployStage --> SmokeTests[Run smoke tests]
+    SmokeTests --> E2ETests[Run end-to-end tests]
+    E2ETests --> StageGate{Staging tests passed?}
+    StageGate -->|No| RollbackStage[Rollback staging deployment]
+    StageGate -->|Yes| ApprovalGate{Deployment approved?}
+    RollbackStage --> NotifyFail[Notify team of failure]
+    ApprovalGate -->|No| Hold[Hold for approval]
+    ApprovalGate -->|Yes| DeployProd[Deploy to production]
+    DeployProd --> HealthCheck[Run post-deploy health checks]
+    HealthCheck --> ProdGate{Health checks passed?}
+    ProdGate -->|No| Rollback[Trigger automatic rollback]
+    ProdGate -->|Yes| Monitor[Monitor metrics and alerts]
+    Monitor --> Done[Deployment complete]

@@ -1,0 +1,23 @@
+flowchart TD
+    A([Merchant submits application]) --> B[Collect business details and beneficial owner info]
+    B --> C[Run automated KYB checks]
+    C --> D[Verify business registration in government database]
+    D --> E[Screen against sanctions lists — OFAC, EU]
+    E --> F[Verify beneficial owner identity documents]
+    F --> G{KYB checks passed?}
+    G -->|Fail — sanctions match or invalid docs| H[Reject application]
+    H --> I([Notify merchant with reason])
+    G -->|Pass| J[Assess merchant category code risk]
+    J --> K{MCC risk level}
+    K -->|High risk MCC| L[Manual underwriting review]
+    L --> M{Underwriter decision}
+    M -->|Decline| H
+    M -->|Approve with conditions| N[Set elevated reserve and limits]
+    K -->|Standard MCC| O[Assign standard risk tier]
+    N --> P[Configure merchant account]
+    O --> P
+    P --> Q[Set payout schedule and reserve requirements]
+    Q --> R[Configure supported payment methods and currencies]
+    R --> S[Create acquirer account and settlement routing]
+    S --> T[Issue API credentials to merchant]
+    T --> U([Merchant active — can accept payments])

@@ -1,0 +1,51 @@
+erDiagram
+    USER {
+        uuid id PK
+        string email
+        string name
+        timestamp created_at
+    }
+
+    ROLE {
+        uuid id PK
+        string name
+        string description
+        uuid tenant_id FK
+    }
+
+    PERMISSION {
+        uuid id PK
+        string resource
+        string action
+        string description
+    }
+
+    TENANT {
+        uuid id PK
+        string name
+        string slug
+    }
+
+    USER_ROLE {
+        uuid user_id FK
+        uuid role_id FK
+        timestamp assigned_at
+    }
+
+    ROLE_PERMISSION {
+        uuid role_id FK
+        uuid permission_id FK
+    }
+
+    ROLE_PARENT {
+        uuid child_role_id FK
+        uuid parent_role_id FK
+    }
+
+    USER ||--o{ USER_ROLE : "assigned"
+    ROLE ||--o{ USER_ROLE : "held by"
+    ROLE ||--o{ ROLE_PERMISSION : "grants"
+    PERMISSION ||--o{ ROLE_PERMISSION : "granted via"
+    ROLE ||--o{ ROLE_PARENT : "inherits from"
+    ROLE ||--o{ ROLE_PARENT : "parent of"
+    TENANT ||--o{ ROLE : "owns"

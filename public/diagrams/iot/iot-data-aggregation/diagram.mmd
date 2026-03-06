@@ -1,0 +1,15 @@
+flowchart TD
+    Raw[(Raw time-series store\nFull resolution, 72h retention)] --> OneMin[1-minute rollup job\nMean / min / max / stddev / count]
+    OneMin --> OneMinTable[(1-minute rollup table\n30-day retention)]
+    OneMinTable --> Hourly[Hourly aggregation job]
+    Hourly --> HourlyTable[(Hourly rollup table\n2-year retention)]
+    HourlyTable --> Daily[Daily aggregation job]
+    Daily --> DailyTable[(Daily rollup table\nIndefinite retention)]
+    OneMin --> Quality[Data quality score\nSamples received vs expected]
+    Quality --> QualityStore[(Quality metrics store)]
+    OneMinTable --> OpsDash[Operational dashboard\nReal-time + recent history]
+    HourlyTable --> ReportSvc[Reporting service\nScheduled PDF / CSV]
+    DailyTable --> Warehouse[(Data warehouse\nBigQuery / Redshift)]
+    Warehouse --> BizAnalytics[Cross-domain analytics\nIoT + production + maintenance]
+    QualityStore --> OpsDash
+    DailyTable --> Compliance[Compliance archive\nAudit records]

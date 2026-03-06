@@ -1,0 +1,13 @@
+flowchart LR
+    Client([Client Browser]) --> GW[API Gateway]
+    GW --> US[User Service]
+    GW --> OS[Order Service]
+    GW --> PS[Payment Service]
+    GW --> NS[Notification Service]
+    US --> UserDB[(Postgres\nUsers DB)]
+    OS --> OrderDB[(MongoDB\nOrders DB)]
+    PS --> PayDB[(Payments DB)]
+    OS -->|Order placed event| MB[[Message Bus]]
+    MB --> PS
+    PS -->|Payment confirmed| NS
+    NS --> Email[Email / SMS\nProvider]

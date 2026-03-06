@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant P as Producer
+    participant MB as Message Broker
+    participant W1 as Worker 1
+    participant W2 as Worker 2
+
+    P->>MB: Publish message (job payload)
+    MB-->>P: Acknowledge receipt
+    MB->>MB: Persist message to queue
+
+    W1->>MB: Poll for messages
+    MB-->>W1: Deliver message (mark in-flight)
+    W2->>MB: Poll for messages
+    MB-->>W2: No messages available (locked by W1)
+
+    W1->>W1: Process job
+    alt Processing succeeds
+        W1->>MB: ACK message
+        MB->>MB: Remove message from queue
+        W1-->>P: Job completed
+    else Processing fails
+        W1->>MB: NACK message
+        MB->>MB: Return message to queue
+        MB-->>W2: Deliver message to next available worker
+        W2->>W2: Process job
+        W2->>MB: ACK message
+        MB->>MB: Remove message from queue
+    end

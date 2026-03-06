@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Client
+    participant AuthServer as Auth Server
+    participant API as Resource Server
+
+    Client->>AuthServer: POST /login with credentials
+    AuthServer-->>AuthServer: Verify credentials
+    AuthServer-->>AuthServer: Build payload (sub, exp, iat, roles)
+    AuthServer-->>AuthServer: Sign JWT with private key
+    AuthServer-->>Client: Signed JWT access token
+
+    Client->>API: GET /api/resource with Authorization: Bearer JWT
+    API-->>API: Decode JWT header and payload
+    API-->>API: Fetch public key (or use shared secret)
+    API-->>API: Verify signature
+    alt Signature valid and not expired
+        API-->>API: Extract claims (sub, roles)
+        API-->>Client: 200 OK with resource data
+    else Token expired
+        API-->>Client: 401 Unauthorized - token expired
+        Client->>AuthServer: POST /token with refresh token
+        AuthServer-->>Client: New access token
+    else Invalid signature
+        API-->>Client: 401 Unauthorized - invalid token
+    end

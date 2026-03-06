@@ -1,0 +1,13 @@
+flowchart TD
+    A([Query vector]) --> B{Metadata filters present?}
+    B -- Yes --> C[Apply pre-filter to narrow candidate set]
+    B -- No --> D[Use full index]
+    C --> E[ANN index lookup via HNSW or IVF]
+    D --> E
+    E --> F[Retrieve over-sampled candidate list]
+    F --> G{Re-ranking enabled?}
+    G -- Yes --> H[Score candidates with exact cosine similarity]
+    H --> I[Sort by score, keep top-k]
+    G -- No --> I
+    I --> J[Fetch text chunks and metadata for top-k IDs]
+    J --> K([Return ranked results with scores and payloads])

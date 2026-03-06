@@ -1,0 +1,19 @@
+flowchart TD
+    A([Customer enters card on checkout form]) --> B[Client-side JS library intercepts form]
+    B --> C[Send raw card number directly to gateway over TLS]
+    C --> D{Tokenization type}
+    D -->|Merchant vault token| E[Gateway stores card in PCI-compliant vault]
+    E --> F[Gateway generates opaque vault token]
+    F --> G[Return token to client JavaScript]
+    G --> H[JS injects token into form, clears card fields]
+    H --> I[Merchant server receives token only]
+    I --> J[Store token in merchant database]
+    J --> K{Future charge?}
+    K -->|Yes| L[Send token to gateway]
+    L --> M[Gateway looks up real PAN in vault]
+    M --> N[Submit authorization to card network]
+    D -->|Network token: Apple Pay, Google Pay| O[Wallet generates device account number]
+    O --> P[Card network Token Service Provider issues cryptogram]
+    P --> Q[One-time cryptogram sent to merchant]
+    Q --> N
+    N --> R([Transaction authorized])

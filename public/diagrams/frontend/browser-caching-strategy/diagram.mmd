@@ -1,0 +1,21 @@
+flowchart TD
+    A[Browser Requests Resource] --> B{Cached entry exists?}
+    B -- No --> C[Fetch from Network — Full Response]
+    C --> D[Store in Cache with Headers]
+    D --> E[Serve Resource to Page]
+    B -- Yes --> F{Cache-Control: no-store?}
+    F -- Yes --> C
+    F -- No --> G{Entry still fresh? max-age not expired}
+    G -- Yes --> H[Serve from Cache — No Network Request]
+    G -- No --> I{stale-while-revalidate?}
+    I -- Yes --> J[Serve Stale Copy Immediately]
+    J --> K[Revalidate in Background]
+    K --> L{Server: resource changed?}
+    I -- No --> M[Send Conditional Request with ETag or Last-Modified]
+    M --> L
+    L -- No --> N[Server returns 304 Not Modified]
+    N --> O[Refresh Cache TTL — Use Existing Copy]
+    L -- Yes --> P[Server returns 200 with New Content]
+    P --> D
+    style H fill:#22c55e,color:#fff
+    style O fill:#22c55e,color:#fff

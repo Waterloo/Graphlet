@@ -1,0 +1,17 @@
+flowchart LR
+    OrderSvc[Order Service\nProducer] -->|order.created| Broker
+    PaymentSvc[Payment Service\nProducer] -->|payment.confirmed| Broker
+    InventorySvc[Inventory Service\nProducer] -->|stock.updated| Broker
+
+    subgraph Broker[Event Broker\nKafka / RabbitMQ]
+        T1[Topic: order.created]
+        T2[Topic: payment.confirmed]
+        T3[Topic: stock.updated]
+        DLQ[Dead Letter Queue]
+    end
+
+    Broker --> NotifSvc[Notification Service\nConsumer]
+    Broker --> AnalyticsSvc[Analytics Service\nConsumer]
+    Broker --> FulfillSvc[Fulfillment Service\nConsumer]
+    NotifSvc -->|Max retries exceeded| DLQ
+    FulfillSvc -->|Max retries exceeded| DLQ

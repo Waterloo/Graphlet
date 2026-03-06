@@ -1,0 +1,36 @@
+flowchart TD
+    subgraph Field[Field Devices]
+        Modbus[Modbus RTU\nRS-485 sensors]
+        OPCUA[OPC-UA\nIndustrial PLC]
+        MQTT[MQTT Wi-Fi\nSmart sensors]
+        LoRa[LoRaWAN\nBattery nodes]
+    end
+
+    subgraph GW[IoT Gateway]
+        ModbusAdapt[Modbus adapter]
+        OPCAdapt[OPC-UA adapter]
+        MQTTAdapt[MQTT adapter]
+        LoRaAdapt[LoRaWAN adapter]
+        Bus[Internal message bus\nCanonical JSON format]
+        Processing[Local processing engine\nFilter / enrich / downsample]
+        Shadow[Local device shadow\nLast-known state store]
+        Queue[Outbound queue\nPersistent at-least-once]
+        DevMgmt[Device management\nProvisioning / config]
+    end
+
+    Modbus --> ModbusAdapt
+    OPCUA --> OPCAdapt
+    MQTT --> MQTTAdapt
+    LoRa --> LoRaAdapt
+
+    ModbusAdapt --> Bus
+    OPCAdapt --> Bus
+    MQTTAdapt --> Bus
+    LoRaAdapt --> Bus
+
+    Bus --> Processing
+    Processing --> Shadow
+    Processing --> Queue
+    Queue --> Uplink[Cloud uplink\nMQTT-TLS / HTTPS]
+    Uplink --> Cloud[Cloud IoT Platform]
+    Cloud --> DevMgmt

@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant User
+    participant Client as Browser
+    participant Server
+    participant DB as Database
+    participant Email as Email Service
+
+    User->>Client: Submit forgot password form with email
+    Client->>Server: POST /auth/forgot-password with email
+    Server->>DB: Look up user by email
+    alt User not found
+        Server-->>Client: 200 OK - generic success message
+    else User found
+        Server-->>Server: Generate secure random reset token
+        Server-->>Server: Hash token with SHA-256
+        Server->>DB: Store hashed token + expiry + user_id
+        Server->>Email: Send reset link with plaintext token
+        Server-->>Client: 200 OK - check your email
+    end
+    Email-->>User: Email with reset link
+    User->>Client: Click reset link with token in URL
+    Client->>Server: GET /auth/reset-password?token=XXXX
+    Server->>DB: Look up hashed token
+    alt Token not found or expired
+        Server-->>Client: 400 - invalid or expired link
+    else Token valid
+        Server-->>Client: Show new password form
+        User->>Client: Submit new password
+        Client->>Server: POST /auth/reset-password with token + new password
+        Server->>DB: Validate token again
+        Server->>DB: Hash and save new password
+        Server->>DB: Delete reset token
+        Server->>DB: Invalidate all existing sessions
+        Server-->>Client: 200 OK - password updated, redirect to login
+    end

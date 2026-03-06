@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant Gateway as Payment Gateway
+    participant Endpoint as Merchant Webhook Endpoint
+    participant Worker as Background Worker
+    participant DB as Database
+
+    Gateway->>Gateway: Payment event occurs (charge.succeeded)
+    Gateway->>Gateway: Sign payload with HMAC-SHA256
+    Gateway->>Endpoint: POST /webhooks (signed payload)
+    Endpoint->>Endpoint: Extract raw body before parsing
+    Endpoint->>Endpoint: Verify HMAC signature
+    Endpoint->>Endpoint: Check timestamp not older than 5 minutes
+    alt Signature invalid or expired
+        Endpoint-->>Gateway: 401 Unauthorized
+    else Signature valid
+        Endpoint->>DB: Check event ID for duplicate
+        alt Duplicate event
+            Endpoint-->>Gateway: 200 OK (idempotent skip)
+        else New event
+            Endpoint->>DB: Store event ID
+            Endpoint->>Worker: Enqueue business logic task
+            Endpoint-->>Gateway: 200 OK
+            Worker->>DB: Update order / subscription state
+        end
+    end
+    Gateway->>Gateway: Retry with backoff if no 2xx received

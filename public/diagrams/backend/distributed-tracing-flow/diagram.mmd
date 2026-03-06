@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant C as Client
+    participant GW as API Gateway
+    participant OS as Order Service
+    participant IS as Inventory Service
+    participant TB as Tracing Backend
+
+    C->>GW: POST /orders
+    GW->>GW: Generate trace-id: abc-123
+    GW->>GW: Start span GW-span-1 (start time)
+    GW->>OS: Forward request (X-Trace-Id: abc-123, X-Span-Id: GW-span-1)
+    OS->>OS: Start span OS-span-2 (parent: GW-span-1)
+    OS->>IS: Check inventory (X-Trace-Id: abc-123, X-Span-Id: OS-span-2)
+    IS->>IS: Start span IS-span-3 (parent: OS-span-2)
+    IS-->>OS: Inventory confirmed
+    IS--)TB: Export span IS-span-3 (async)
+    OS->>OS: Commit order
+    OS-->>GW: 201 Created
+    OS--)TB: Export span OS-span-2 (async)
+    GW-->>C: 201 Created
+    GW--)TB: Export span GW-span-1 (async)
+    TB->>TB: Assemble trace abc-123 from all spans

@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Src as Source Host
+    participant R1 as Router 1 (hop 1)
+    participant R2 as Router 2 (hop 2)
+    participant R3 as Router 3 (hop 3)
+    participant Dst as Destination Host
+
+    Note over Src: Probe 1: TTL=1
+    Src->>R1: UDP probe (dst port 33434) TTL=1
+    Note over R1: TTL decremented to 0\nDiscard packet
+    R1-->>Src: ICMP Time Exceeded\nFrom: 10.0.0.1 RTT=5ms
+    Note over Src: Hop 1: 10.0.0.1 (5ms)
+
+    Note over Src: Probe 2: TTL=2
+    Src->>R1: UDP probe TTL=2
+    R1->>R2: Forward, TTL=1
+    Note over R2: TTL decremented to 0
+    R2-->>Src: ICMP Time Exceeded\nFrom: 172.16.0.1 RTT=18ms
+    Note over Src: Hop 2: 172.16.0.1 (18ms)
+
+    Note over Src: Probe 3: TTL=3
+    Src->>R1: UDP probe TTL=3
+    R1->>R2: Forward TTL=2
+    R2->>R3: Forward TTL=1
+    Note over R3: TTL decremented to 0
+    R3-->>Src: ICMP Time Exceeded\nFrom: 203.0.113.1 RTT=35ms
+    Note over Src: Hop 3: 203.0.113.1 (35ms)
+
+    Note over Src: Probe 4: TTL=4
+    Src->>R1: UDP probe TTL=4
+    R1->>R2: Forward TTL=3
+    R2->>R3: Forward TTL=2
+    R3->>Dst: Forward TTL=1
+    Note over Dst: TTL still 1 — deliver\nPort unreachable response
+    Dst-->>Src: ICMP Port Unreachable\nDestination reached RTT=42ms

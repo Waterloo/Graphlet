@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>300+ Mermaid Diagram Examples: Free Library | Graphlet</title>
+  <meta name="description" content="Explore 300+ free Mermaid diagram examples: networking, auth, databases, AI, DevOps and more. Open any diagram in Graphlet to edit and export as SVG or PNG.">
+  <link rel="canonical" href="https://graphlet.xyz/diagrams">
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="300+ Mermaid Diagram Examples: Free Library | Graphlet">
+  <meta property="og:description" content="Explore 300+ free Mermaid diagram examples: networking, auth, databases, AI, DevOps and more. Open any diagram in Graphlet to edit and export as SVG or PNG.">
+  <meta property="og:url"         content="https://graphlet.xyz/diagrams">
+  <meta property="og:type"        content="website">
+  <meta name="twitter:card"       content="summary_large_image">
+
+  <!-- Plausible Analytics -->
+  <script defer data-domain="graphlet.xyz" src="https://plausible.io/js/script.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,300;1,9..144,700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:           #080b0f;
+      --ink-2:         #0e1117;
+      --ink-3:         #141820;
+      --ink-4:         #1c2230;
+      --rule:          rgba(255,255,255,0.055);
+      --rule-hi:       rgba(255,255,255,0.10);
+      --chalk:         #e8ead6;
+      --chalk-dim:     #8a9090;
+      --chalk-ghost:   #3a4040;
+      --gold:          #e8a23a;
+      --gold-dim:      rgba(232,162,58,0.10);
+      --gold-glow:     rgba(232,162,58,0.28);
+      --gold-hi:       #f0bb62;
+      --teal:          #3ad8c8;
+      --teal-dim:      rgba(58,216,200,0.10);
+      --mono:          'DM Mono', monospace;
+      --sans:          'DM Sans', sans-serif;
+      --display:       'Fraunces', serif;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: var(--chalk);
+      font-family: var(--sans);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim   { animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+    .anim-1 { animation-delay: 0.04s; }
+    .anim-2 { animation-delay: 0.10s; }
+    .anim-3 { animation-delay: 0.17s; }
+    .anim-4 { animation-delay: 0.24s; }
+    .anim-5 { animation-delay: 0.31s; }
+    .anim-6 { animation-delay: 0.38s; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--ink); }
+    ::-webkit-scrollbar-thumb { background: var(--ink-4); border-radius: 3px; }
+
+    /* ── Nav ── */
+    .nav {
+      position: sticky; top: 0; z-index: 100;
+      height: 52px;
+      background: rgba(8,11,15,0.88);
+      backdrop-filter: blur(16px) saturate(180%);
+      border-bottom: 1px solid var(--rule);
+      display: flex; align-items: center;
+      padding: 0 32px;
+    }
+    .nav-logo {
+      font-family: var(--display);
+      font-size: 17px; font-weight: 700; font-style: italic;
+      letter-spacing: -0.01em;
+      color: var(--chalk); text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .nav-logo-mark {
+      width: 22px; height: 22px; border-radius: 5px;
+      background: var(--gold); display: flex; align-items: center;
+      justify-content: center; flex-shrink: 0;
+      box-shadow: 0 0 12px var(--gold-glow);
+    }
+    .nav-logo-mark svg { width: 12px; height: 12px; }
+    .nav-sep { flex: 1; }
+    .nav-link {
+      font-family: var(--mono); font-size: 11px;
+      color: var(--chalk-dim); text-decoration: none;
+      padding: 4px 10px; border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .nav-link:hover { color: var(--chalk); background: var(--rule); }
+
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+      padding: 18px 32px 0;
+      max-width: 1240px; margin: 0 auto;
+      display: flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 11px; color: var(--chalk-ghost);
+    }
+    .breadcrumb a { color: var(--chalk-dim); text-decoration: none; transition: color 0.15s; }
+    .breadcrumb a:hover { color: var(--gold); }
+    .breadcrumb-sep { opacity: 0.35; }
+
+    /* ── Hero ── */
+    .hero {
+      max-width: 1240px; margin: 0 auto;
+      padding: 36px 32px 0;
+    }
+    .hero-eyebrow {
+      font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 20px; height: 1px; background: var(--gold); opacity: 0.5;
+    }
+    .hero-title {
+      font-family: var(--display);
+      font-size: clamp(36px, 5vw, 68px);
+      font-weight: 700; font-optical-sizing: auto; font-style: italic;
+      letter-spacing: -0.03em; line-height: 1.0;
+      color: var(--chalk); margin-bottom: 20px;
+    }
+    .hero-lead {
+      font-size: 16px; color: var(--chalk-dim); font-weight: 300;
+      max-width: 600px; line-height: 1.7; margin-bottom: 14px;
+    }
+    .hero-meta {
+      font-family: var(--mono); font-size: 11px; color: var(--chalk-ghost);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Article ── */
+    .article-wrap {
+      max-width: 1240px; margin: 0 auto;
+      padding: 36px 32px 0;
+    }
+    .article {
+      color: var(--chalk-dim); font-size: 14.5px; line-height: 1.8;
+      max-width: 740px; font-weight: 300;
+    }
+    .article p { margin-bottom: 18px; }
+    .article p:last-child { margin-bottom: 0; }
+    .article strong { color: var(--chalk); font-weight: 500; }
+    .article a {
+      color: var(--gold); text-decoration: none;
+      border-bottom: 1px solid rgba(232,162,58,0.25);
+      transition: border-color 0.15s;
+    }
+    .article a:hover { border-color: var(--gold); }
+    .article h2 {
+      font-family: var(--display); font-size: 19px; font-weight: 600;
+      letter-spacing: -0.02em; color: var(--chalk);
+      margin: 32px 0 12px;
+    }
+    .article code {
+      font-family: var(--mono); font-size: 12px;
+      background: var(--ink-3); border: 1px solid var(--rule);
+      border-radius: 3px; padding: 1px 6px; color: var(--teal);
+    }
+
+    /* ── Categories section ── */
+    .categories {
+      max-width: 1240px; margin: 0 auto;
+      padding: 48px 32px 0;
+    }
+    .section-head {
+      display: flex; align-items: baseline; gap: 10px;
+      margin-bottom: 24px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .section-head-title {
+      font-family: var(--display); font-size: 18px; font-weight: 600;
+      letter-spacing: -0.02em; color: var(--chalk);
+    }
+    .section-head-count {
+      font-family: var(--mono); font-size: 11px; color: var(--chalk-ghost);
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+    }
+    .category-card {
+      background: var(--ink-2); border: 1px solid var(--rule);
+      border-radius: 9px; padding: 20px 22px;
+      text-decoration: none; color: inherit;
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+    .category-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .category-card:hover {
+      border-color: rgba(232,162,58,0.2);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(232,162,58,0.08);
+      transform: translateY(-2px);
+    }
+    .category-card:hover::before { opacity: 1; }
+
+    .category-card-title {
+      font-family: var(--display); font-size: 15px; font-weight: 600;
+      letter-spacing: -0.01em; color: var(--chalk); line-height: 1.3;
+    }
+    .category-card-desc {
+      font-size: 13px; color: var(--chalk-dim); line-height: 1.6; font-weight: 300;
+    }
+    .category-card-meta {
+      font-family: var(--mono); font-size: 10px; color: var(--chalk-ghost);
+      letter-spacing: 0.06em; margin-top: 4px;
+    }
+
+    /* ── CTA ── */
+    .cta-wrap {
+      max-width: 1240px; margin: 0 auto;
+      padding: 48px 32px 80px;
+    }
+    .cta-banner {
+      position: relative; overflow: hidden;
+      background: var(--ink-3);
+      border: 1px solid rgba(232,162,58,0.18);
+      border-radius: 10px;
+      padding: 28px 32px;
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 24px;
+    }
+    .cta-banner::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--gold), transparent);
+    }
+    .cta-banner::after {
+      content: '';
+      position: absolute; top: -60px; right: -30px;
+      width: 220px; height: 220px; border-radius: 50%;
+      background: radial-gradient(circle, var(--gold-dim) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-eyebrow {
+      font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 5px;
+    }
+    .cta-heading {
+      font-family: var(--display); font-size: 19px; font-weight: 600;
+      color: var(--chalk); margin-bottom: 5px; letter-spacing: -0.02em;
+    }
+    .cta-sub { font-size: 13px; color: var(--chalk-dim); font-weight: 300; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-family: var(--mono); font-size: 11px; font-weight: 400;
+      padding: 6px 12px; border-radius: 5px;
+      border: 1px solid var(--rule-hi);
+      background: transparent; color: var(--chalk-dim);
+      cursor: pointer; text-decoration: none;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn:hover { background: var(--rule); color: var(--chalk); border-color: rgba(255,255,255,0.18); }
+    .btn-gold {
+      background: var(--gold); border-color: var(--gold);
+      color: var(--ink); font-weight: 500;
+    }
+    .btn-gold:hover {
+      background: var(--gold-hi); border-color: var(--gold-hi); color: var(--ink);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--rule); padding: 28px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--mono); font-size: 11px; color: var(--chalk-ghost);
+    }
+    footer a { color: var(--chalk-dim); text-decoration: none; transition: color 0.15s; }
+    footer a:hover { color: var(--gold); }
+    .footer-links { display: flex; gap: 24px; }
+
+    @media (max-width: 860px) {
+      .hero, .article-wrap, .categories, .cta-wrap { padding-left: 20px; padding-right: 20px; }
+      .breadcrumb { padding: 14px 20px 0; }
+      .nav { padding: 0 20px; }
+      .cta-banner { flex-direction: column; }
+      .category-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 12px; padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="nav">
+  <a href="/" class="nav-logo">
+    <span class="nav-logo-mark">
+      <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="3" cy="3" r="1.5" fill="#080b0f"/>
+        <circle cx="9" cy="3" r="1.5" fill="#080b0f"/>
+        <circle cx="6" cy="9" r="1.5" fill="#080b0f"/>
+        <line x1="3" y1="3" x2="9" y2="3" stroke="#080b0f" stroke-width="1"/>
+        <line x1="3" y1="3" x2="6" y2="9" stroke="#080b0f" stroke-width="1"/>
+        <line x1="9" y1="3" x2="6" y2="9" stroke="#080b0f" stroke-width="1"/>
+      </svg>
+    </span>
+    graphlet
+  </a>
+  <span class="nav-sep"></span>
+  <a href="/diagrams" class="nav-link">diagrams</a>
+</header>
+
+<nav class="breadcrumb anim anim-1" aria-label="Breadcrumb">
+  <a href="/">graphlet.xyz</a>
+  <span class="breadcrumb-sep">/</span>
+  <span>diagrams</span>
+</nav>
+
+<div class="hero anim anim-2">
+  <div class="hero-eyebrow">Free Mermaid diagram library</div>
+  <h1 class="hero-title">Mermaid Diagram Examples Library</h1>
+  <p class="hero-lead">This library contains 300+ free Mermaid diagram examples covering the full breadth of modern software engineering — from network protocols and authentication flows to AI pipelines and distributed consensus algorithms. It is built for developers, software architects, DevOps engineers, and technical writers who need ready-to-use diagrams they can understand, adapt, and drop straight into documentation, architecture reviews, or slide decks.</p>
+  <p class="hero-meta">300 diagrams &middot; 17 categories</p>
+</div>
+
+<div class="article-wrap anim anim-3">
+  <div class="article"><p>This library contains 300+ free Mermaid diagram examples covering the full breadth of modern software engineering — from network protocols and authentication flows to AI pipelines and distributed consensus algorithms. It is built for developers, software architects, DevOps engineers, and technical writers who need ready-to-use diagrams they can understand, adapt, and drop straight into documentation, architecture reviews, or slide decks.</p>
+<p>Every example is written in raw Mermaid syntax and opens directly in <a href="https://graphlet.xyz">Graphlet</a>, a free Mermaid editor and viewer that runs entirely in the browser. No account required. No install. Just click, edit, and export.</p>
+<h2>What Is Mermaid?</h2>
+<p>Mermaid is an open-source diagramming language that lets you describe charts and diagrams as plain text. Instead of dragging boxes around a canvas, you write a short script — and Mermaid renders it as a clean SVG diagram. It is natively supported in GitHub Markdown, Notion, Obsidian, GitLab, and dozens of other tools, making it the practical choice for teams that want diagrams that live alongside code in version control.</p>
+<p>Mermaid supports multiple diagram types: sequence diagrams for request/response flows, flowcharts for decision logic and process steps, entity-relationship diagrams for data models, Gantt charts for project timelines, state diagrams, class diagrams, and more. The examples in this library use whichever diagram type best fits the concept being illustrated.</p>
+<h2>Browse by Category</h2>
+<p>The library is organised into 17 categories. Each category page contains multiple mermaid diagram examples with a title, a plain-English explanation, and the full Mermaid source code.</p>
+<p>- <a href="/diagrams/networking"><strong>Networking Diagrams</strong></a> — 30 examples covering DNS resolution, HTTP request/response cycles, TLS handshakes, TCP connection states, WebSocket upgrades, and more. - <a href="/diagrams/backend"><strong>Backend Diagrams</strong></a> — 20 examples across REST API design, GraphQL query execution, microservice communication, message queues, and webhook delivery flows. - <a href="/diagrams/authentication"><strong>Authentication Diagrams</strong></a> — 20 mermaid sequence diagram examples for OAuth2 authorization code flow, JWT issuance and validation, SSO with SAML, RBAC policy checks, and two-factor authentication. - <a href="/diagrams/database"><strong>Database Diagrams</strong></a> — 20 examples illustrating primary/replica replication, horizontal sharding, distributed transactions, MVCC, and read-through caching patterns. - <a href="/diagrams/messaging"><strong>Messaging Diagrams</strong></a> — 20 examples for Kafka producer/consumer flows, RabbitMQ routing, pub/sub fanout, event sourcing, and the saga pattern for distributed transactions. - <a href="/diagrams/frontend"><strong>Frontend Diagrams</strong></a> — 20 examples covering the browser rendering pipeline, React and Vue component lifecycles, server-side rendering, hydration, and service worker caching strategies. - <a href="/diagrams/system-design"><strong>System Design Diagrams</strong></a> — 20 mermaid flowchart examples for classic system design topics: microservice decomposition, CQRS read/write separation, blue-green deployments, and high-availability failover. - <a href="/diagrams/cloud"><strong>Cloud Diagrams</strong></a> — 20 examples for Kubernetes pod scheduling, serverless cold-start flows, auto-scaling triggers, IAM permission evaluation, and CDN cache hierarchies. - <a href="/diagrams/security"><strong>Security Diagrams</strong></a> — 20 examples illustrating TLS certificate chains, symmetric and asymmetric encryption, CORS preflight, CSRF token validation, XSS attack vectors, and API gateway security. - <a href="/diagrams/devops"><strong>DevOps Diagrams</strong></a> — 20 examples for CI/CD pipeline stages, Git branching strategies (Gitflow, trunk-based), container build and push workflows, and observability stack integration. - <a href="/diagrams/payments"><strong>Payments Diagrams</strong></a> — 20 examples covering payment gateway authorisation, 3D Secure challenge flows, subscription billing cycles, refund processing, and fraud-scoring pipelines. - <a href="/diagrams/ai-systems"><strong>AI Systems Diagrams</strong></a> — 20 examples for large language model inference, retrieval-augmented generation (RAG), vector database similarity search, multi-agent orchestration, and tool-calling loops. - <a href="/diagrams/mobile"><strong>Mobile Diagrams</strong></a> — 10 examples for APNs/FCM push notification delivery, offline-first sync with conflict resolution, and deep link routing on iOS and Android. - <a href="/diagrams/search-systems"><strong>Search Systems Diagrams</strong></a> — 10 examples covering inverted index construction, query parsing and execution, autocomplete with prefix trees, and result ranking pipelines. - <a href="/diagrams/analytics"><strong>Analytics Diagrams</strong></a> — 10 examples for ETL extract/transform/load pipelines, data warehouse load patterns, client-side event tracking, and stream analytics with windowing. - <a href="/diagrams/iot"><strong>IoT Diagrams</strong></a> — 10 examples for device provisioning and telemetry flows, sensor data aggregation pipelines, MQTT broker routing, and edge processing before cloud ingestion. - <a href="/diagrams/distributed-systems"><strong>Distributed Systems Diagrams</strong></a> — 10 examples for the Raft and Paxos consensus algorithms, leader election, consistent hashing, and gossip protocol propagation.</p>
+<h2>How to Use These Examples</h2>
+<p>Each diagram page follows the same format: a short description of the concept, the rendered diagram, and the complete Mermaid source code below it.</p>
+<p>1. <strong>Read the diagram</strong> — the rendered view gives you an instant overview of the flow or architecture. 2. <strong>Copy the code</strong> — grab the raw Mermaid source to paste into your own documentation, README, or wiki. 3. <strong>Edit in Graphlet</strong> — click the "Edit in Graphlet" button to open the diagram in the Graphlet Mermaid editor. From there you can modify nodes, restyle the diagram, and export as SVG or PNG.</p>
+<p>All examples are intentionally kept realistic rather than toy-sized. They reflect the kinds of flows you would actually encounter in production systems, so they serve as a useful reference even when you are not planning to use the code directly.</p>
+<h2>About Graphlet</h2>
+<p><a href="https://graphlet.xyz">Graphlet</a> is a free, browser-based Mermaid editor and viewer. It provides live preview as you type, syntax error highlighting, and one-click export to SVG and PNG. Because it runs entirely in the browser there is nothing to install and no data is sent to a server — your diagrams stay private. Graphlet is designed for engineers who write diagrams frequently and want a fast, distraction-free environment to do it in.</p>
+<p>Whether you are sketching a new system design, documenting an existing architecture, or preparing diagrams for a technical spec, Graphlet gives you a clean Mermaid viewer alongside a full-featured editor. Open any example from this library to get started.</p></div>
+</div>
+
+<div class="categories anim anim-4">
+  <div class="section-head">
+    <span class="section-head-title">Browse by category</span>
+    <span class="section-head-count">17 categories</span>
+  </div>
+  <div class="category-grid">
+    <a href="/diagrams/networking" class="category-card">
+  <div class="category-card-title">Networking</div>
+  <div class="category-card-desc">DNS, HTTP, TLS, TCP, WebSockets and more</div>
+  <div class="category-card-meta">30 diagrams</div>
+</a>
+<a href="/diagrams/backend" class="category-card">
+  <div class="category-card-title">Backend</div>
+  <div class="category-card-desc">REST, GraphQL, microservices, queues, webhooks</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/authentication" class="category-card">
+  <div class="category-card-title">Authentication</div>
+  <div class="category-card-desc">OAuth2, JWT, SSO, SAML, RBAC, 2FA</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/database" class="category-card">
+  <div class="category-card-title">Database</div>
+  <div class="category-card-desc">Replication, sharding, transactions, caching</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/messaging" class="category-card">
+  <div class="category-card-title">Messaging</div>
+  <div class="category-card-desc">Kafka, RabbitMQ, pub/sub, event sourcing, sagas</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/frontend" class="category-card">
+  <div class="category-card-title">Frontend</div>
+  <div class="category-card-desc">Browser rendering, React, Vue, SSR, service workers</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/system-design" class="category-card">
+  <div class="category-card-title">System Design</div>
+  <div class="category-card-desc">Microservices, CQRS, deployments, high availability</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/cloud" class="category-card">
+  <div class="category-card-title">Cloud</div>
+  <div class="category-card-desc">Kubernetes, serverless, auto-scaling, IAM, CDN</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/security" class="category-card">
+  <div class="category-card-title">Security</div>
+  <div class="category-card-desc">TLS, encryption, CORS, CSRF, XSS, API security</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/devops" class="category-card">
+  <div class="category-card-title">DevOps</div>
+  <div class="category-card-desc">CI/CD pipelines, Git workflows, observability</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/payments" class="category-card">
+  <div class="category-card-title">Payments</div>
+  <div class="category-card-desc">Payment gateways, 3D Secure, fraud, subscriptions</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/ai-systems" class="category-card">
+  <div class="category-card-title">AI Systems</div>
+  <div class="category-card-desc">LLMs, RAG, vector databases, agents, tool calling</div>
+  <div class="category-card-meta">20 diagrams</div>
+</a>
+<a href="/diagrams/mobile" class="category-card">
+  <div class="category-card-title">Mobile</div>
+  <div class="category-card-desc">Push notifications, offline sync, deep links</div>
+  <div class="category-card-meta">10 diagrams</div>
+</a>
+<a href="/diagrams/search-systems" class="category-card">
+  <div class="category-card-title">Search Systems</div>
+  <div class="category-card-desc">Indexing, query processing, autocomplete, ranking</div>
+  <div class="category-card-meta">10 diagrams</div>
+</a>
+<a href="/diagrams/analytics" class="category-card">
+  <div class="category-card-title">Analytics</div>
+  <div class="category-card-desc">ETL, data warehouses, event tracking, stream analytics</div>
+  <div class="category-card-meta">10 diagrams</div>
+</a>
+<a href="/diagrams/iot" class="category-card">
+  <div class="category-card-title">IoT</div>
+  <div class="category-card-desc">Device flows, sensor pipelines, edge processing</div>
+  <div class="category-card-meta">10 diagrams</div>
+</a>
+<a href="/diagrams/distributed-systems" class="category-card">
+  <div class="category-card-title">Distributed Systems</div>
+  <div class="category-card-desc">Raft, Paxos, leader election, gossip protocols</div>
+  <div class="category-card-meta">10 diagrams</div>
+</a>
+  </div>
+</div>
+
+<div class="cta-wrap anim anim-5">
+  <div class="cta-banner">
+    <div>
+      <div class="cta-eyebrow">Free online editor</div>
+      <div class="cta-heading">Edit any diagram in Graphlet</div>
+      <div class="cta-sub">Open, fork, and export to SVG or PNG. No sign-up required.</div>
+    </div>
+    <a class="btn btn-gold" style="font-size:12px; padding: 9px 18px; flex-shrink:0;"
+       href="https://graphlet.xyz" target="_blank" rel="noopener">
+      Open Graphlet &rarr;
+    </a>
+  </div>
+</div>
+
+<footer>
+  <span>&copy; Graphlet</span>
+  <div class="footer-links">
+    <a href="/">graphlet.xyz</a>
+    <a href="/diagrams">All diagrams</a>
+    <a href="https://github.com/graphlet-xyz/graphlet-content">GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>

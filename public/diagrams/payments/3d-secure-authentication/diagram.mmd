@@ -1,0 +1,28 @@
+sequenceDiagram
+    participant Customer
+    participant Merchant
+    participant ThreeDSServer as 3DS Server
+    participant DirectoryServer as Card Network Directory Server
+    participant ACS as Issuer Access Control Server
+
+    Merchant->>ThreeDSServer: Authentication request (card, amount, device data)
+    ThreeDSServer->>DirectoryServer: Check card enrollment
+    DirectoryServer->>ACS: Route to issuer ACS
+    ACS->>ACS: Evaluate risk signals (device, history, address match)
+    alt Frictionless authentication
+        ACS-->>DirectoryServer: Authentication approved (low risk)
+        DirectoryServer-->>ThreeDSServer: CAVV + ECI code (frictionless)
+        ThreeDSServer-->>Merchant: Authentication result
+    else Challenge required
+        ACS-->>DirectoryServer: Challenge required
+        DirectoryServer-->>ThreeDSServer: Challenge URL
+        ThreeDSServer-->>Merchant: Trigger challenge
+        Merchant->>Customer: Display ACS challenge (OTP or app push)
+        Customer->>ACS: Submit OTP or biometric
+        ACS->>ACS: Verify challenge response
+        ACS-->>DirectoryServer: Challenge passed — CAVV + ECI
+        DirectoryServer-->>ThreeDSServer: Authentication result
+        ThreeDSServer-->>Merchant: CAVV + ECI code
+    end
+    Merchant->>Merchant: Include CAVV + ECI in authorization request
+    Note over Merchant: Liability shifts to issuer on success

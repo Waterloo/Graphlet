@@ -1,0 +1,19 @@
+flowchart TD
+    Client[Client application] --> Coordinator[Index coordinator\nshard map and routing]
+    Coordinator --> HashRoute[Hash document ID\nto shard number]
+    HashRoute --> Primary1[(Primary Shard 1\ndocs 0-999k)]
+    HashRoute --> Primary2[(Primary Shard 2\ndocs 1M-1.9M)]
+    HashRoute --> Primary3[(Primary Shard 3\ndocs 2M+)]
+    Primary1 --> Replica1A[(Replica 1A)]
+    Primary1 --> Replica1B[(Replica 1B)]
+    Primary2 --> Replica2A[(Replica 2A)]
+    Primary3 --> Replica3A[(Replica 3A)]
+    QueryIn[Search query] --> Coordinator
+    Coordinator --> Scatter[Scatter query\nto all shards]
+    Scatter --> Primary1
+    Scatter --> Primary2
+    Scatter --> Primary3
+    Primary1 --> Gather[Gather top-K\nper shard results]
+    Primary2 --> Gather
+    Primary3 --> Gather
+    Gather --> Merge[Merge and re-rank\nglobal result list]

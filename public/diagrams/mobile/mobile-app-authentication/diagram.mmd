@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant App as Mobile App
+    participant Browser as System Browser
+    participant AuthServer as Auth Server
+    participant API as Resource API
+
+    App-->>App: Generate code_verifier (random 32 bytes)
+    App-->>App: code_challenge = BASE64URL(SHA256(code_verifier))
+    App->>Browser: Open authorization URL with code_challenge
+    Browser->>AuthServer: GET /authorize?code_challenge=CODE_CHALLENGE&client_id=CLIENT_ID
+    AuthServer-->>Browser: Show login / consent screen
+    Browser-->>Browser: User enters credentials
+    Browser->>AuthServer: Submit credentials
+    AuthServer-->>App: Redirect to app://callback?code=AUTH_CODE
+    App->>AuthServer: POST /token with AUTH_CODE + code_verifier
+    AuthServer-->>AuthServer: SHA256(code_verifier) == stored code_challenge?
+    AuthServer-->>App: access_token + refresh_token
+    App-->>App: Store refresh_token in device Keychain/Keystore
+    App->>API: GET /api/resource with Authorization: Bearer access_token
+    API-->>App: 200 OK with resource data

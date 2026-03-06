@@ -1,0 +1,18 @@
+flowchart TD
+    Write[Client writes value v2\nto Node A] --> NodeA[(Node A\nvalue: v2)]
+
+    NodeA -->|Replicate| NodeB[(Node B\nvalue: v1 stale)]
+    NodeA -->|Replicate| NodeC[(Node C\nvalue: v1 stale)]
+
+    NodeB --> ReadB{Read from Node B}
+    ReadB -->|Before sync| StaleRead[Returns v1 - stale read]
+    ReadB -->|After sync| FreshB[Returns v2]
+
+    NodeB -->|Receives update| SyncB[Node B applies v2]
+    NodeC -->|Receives update| SyncC[Node C applies v2]
+
+    SyncB --> Converged{All nodes synced?}
+    SyncC --> Converged
+    Converged -->|Yes| Consistent[Consistent state\nAll nodes return v2]
+    Converged -->|No| Wait[Wait for propagation]
+    Wait --> Converged

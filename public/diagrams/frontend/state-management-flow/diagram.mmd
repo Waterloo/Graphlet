@@ -1,0 +1,16 @@
+flowchart LR
+    A[User Interaction] --> B[Dispatch Action]
+    B --> C{Async operation?}
+    C -- Yes --> D[Middleware handles async]
+    D --> E[API or IO call]
+    E --> F[Dispatch Result Action]
+    F --> G[Reducer or Mutation]
+    C -- No --> G
+    G --> H[Compute Next State]
+    H --> I[Store Updated]
+    I --> J[Notify Subscribed Components]
+    J --> K{State slice changed?}
+    K -- No --> L[Skip Re-render]
+    K -- Yes --> M[Component Re-renders]
+    M --> N[User Sees Updated UI]
+    style N fill:#22c55e,color:#fff

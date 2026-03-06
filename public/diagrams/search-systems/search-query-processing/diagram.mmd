@@ -1,0 +1,16 @@
+flowchart TD
+    Input[User query string] --> Parse[Parse query\ntokenize and identify syntax]
+    Parse --> Rewrite[Query rewriting\nspell correction, synonyms]
+    Rewrite --> Cache{Cache hit?}
+    Cache -->|Yes| CachedResult[Return cached results]
+    Cache -->|No| Scatter[Scatter to shards in parallel]
+    Scatter --> Shard1[Shard 1\nlocal BM25 score]
+    Scatter --> Shard2[Shard 2\nlocal BM25 score]
+    Scatter --> Shard3[Shard N\nlocal BM25 score]
+    Shard1 --> Merge[Merge top-K results]
+    Shard2 --> Merge
+    Shard3 --> Merge
+    Merge --> Rerank[Re-rank with global signals\nfreshness, personalization]
+    Rerank --> Format[Format response\nsnippets, facets, pagination]
+    Format --> WriteCache[Write to cache]
+    WriteCache --> Response[Return results to client]

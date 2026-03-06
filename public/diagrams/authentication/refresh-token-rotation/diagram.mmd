@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Client
+    participant AuthServer as Authorization Server
+    participant API as Resource Server
+
+    Client->>API: GET /api/data with expired access token
+    API-->>Client: 401 Unauthorized - token expired
+
+    Client->>AuthServer: POST /token with refresh_token (RT1)
+    AuthServer-->>AuthServer: Validate RT1, check it is not revoked
+    alt RT1 valid
+        AuthServer-->>AuthServer: Revoke RT1 immediately
+        AuthServer-->>AuthServer: Issue new access token + new refresh token RT2
+        AuthServer-->>Client: New access token + RT2
+        Client->>API: Retry GET /api/data with new access token
+        API-->>Client: 200 OK with data
+    else RT1 already used (theft detected)
+        AuthServer-->>AuthServer: Revoke entire token family
+        AuthServer-->>Client: 400 - refresh token reuse detected
+        Client-->>Client: Clear all stored tokens
+        Client->>Client: Redirect user to login
+    else RT1 expired or revoked
+        AuthServer-->>Client: 400 - invalid refresh token
+        Client->>Client: Redirect user to login
+    end

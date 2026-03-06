@@ -1,0 +1,29 @@
+flowchart LR
+    subgraph Producers
+        OS[Order Service]
+        PS[Payment Service]
+        US[User Service]
+    end
+
+    EB[Event Bus\nMessage Broker]
+
+    subgraph Consumers
+        NS[Notification Service]
+        IS[Inventory Service]
+        AN[Analytics Service]
+        AU[Audit Service]
+    end
+
+    OS -->|OrderPlaced event| EB
+    OS -->|OrderCancelled event| EB
+    PS -->|PaymentProcessed event| EB
+    PS -->|PaymentFailed event| EB
+    US -->|UserRegistered event| EB
+
+    EB -->|OrderPlaced| IS
+    EB -->|OrderPlaced| AN
+    EB -->|OrderPlaced| AU
+    EB -->|PaymentProcessed| NS
+    EB -->|PaymentFailed| NS
+    EB -->|UserRegistered| NS
+    EB -->|all events| AU

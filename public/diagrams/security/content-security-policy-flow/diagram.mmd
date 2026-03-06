@@ -1,0 +1,22 @@
+flowchart TD
+    A[Server includes CSP header\nin HTTP response\nContent-Security-Policy: default-src self] --> B[Browser parses CSP directives\ndefault-src, script-src, img-src, connect-src]
+    B --> C[Page HTML loads\nand references resources]
+
+    C --> D{Resource type: Script}
+    D --> E{Script source\nmatches script-src allowlist?}
+    E -- Yes, same origin or nonce match --> F[Script executes normally]
+    E -- No, external or inline without nonce --> G[Browser blocks script\nlogs CSP violation]
+
+    C --> H{Resource type: Image}
+    H --> I{Image source\nmatches img-src allowlist?}
+    I -- Yes --> J[Image loads normally]
+    I -- No --> K[Browser blocks image load]
+
+    C --> L{Resource type: Fetch/XHR}
+    L --> M{Target URL\nmatches connect-src allowlist?}
+    M -- Yes --> N[Request proceeds]
+    M -- No --> O[Browser blocks network request]
+
+    G --> P[Violation report sent\nto report-uri endpoint]
+    K --> P
+    O --> P

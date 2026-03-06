@@ -1,0 +1,16 @@
+flowchart TD
+    Services[Instrumented services emit telemetry] --> Collector[Telemetry collector agent]
+    Collector --> Filter[Filter and sample telemetry]
+    Filter --> Enrich[Enrich with environment metadata]
+    Enrich --> Route{Route by telemetry type}
+    Route -->|Metrics| MetricsDB[Write to time-series database]
+    Route -->|Logs| LogStore[Ship to log aggregation store]
+    Route -->|Traces| TraceBackend[Send to distributed tracing backend]
+    MetricsDB --> Dashboards[Visualization dashboards]
+    LogStore --> Dashboards
+    TraceBackend --> Dashboards
+    MetricsDB --> AlertEngine[Alerting rule engine]
+    AlertEngine --> ThresholdCheck{Threshold breached?}
+    ThresholdCheck -->|Yes| FireAlert[Fire alert notification]
+    ThresholdCheck -->|No| Continue[Continue monitoring]
+    FireAlert --> OnCall[Route to on-call engineer]

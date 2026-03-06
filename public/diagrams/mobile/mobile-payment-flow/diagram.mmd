@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant App as Mobile App
+    participant SDK as Payment SDK
+    participant Backend as App Backend
+    participant Processor as Payment Processor
+    participant Bank as Card Network / Bank
+
+    App->>Backend: POST /checkout {amount, currency, items}
+    Backend->>Processor: Create PaymentIntent {amount, currency}
+    Processor-->>Backend: client_secret + payment_intent_id
+    Backend-->>App: client_secret
+
+    App->>SDK: Present payment sheet with client_secret
+    SDK-->>App: Show Apple Pay / Google Pay sheet
+    App-->>App: User authenticates with Face ID / fingerprint
+    SDK-->>SDK: Secure Element generates one-time payment token
+    SDK->>Processor: Submit payment token + client_secret
+    Processor->>Bank: Charge request with network cryptogram
+    Bank-->>Processor: Authorized
+    Processor-->>SDK: Payment confirmed {payment_intent_id}
+    SDK-->>App: Payment success result
+
+    Processor->>Backend: POST /webhook payment_intent.succeeded
+    Backend-->>Backend: Verify webhook signature
+    Backend-->>Backend: Create order in database
+    Backend-->>App: Order confirmation {order_id, receipt_url}
+    App-->>App: Display receipt screen

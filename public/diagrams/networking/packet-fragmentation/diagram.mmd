@@ -1,0 +1,18 @@
+flowchart TD
+    Packet([IP Packet: 2000 bytes]) --> MTUCheck{Packet size\nvs link MTU?}
+    MTUCheck -->|Fits within MTU\ne.g. packet 1400B, MTU 1500B| Forward([Forward packet\nno fragmentation])
+
+    MTUCheck -->|Exceeds MTU\ne.g. packet 2000B, MTU 1500B| DFCheck{DF bit set\nDont Fragment?}
+
+    DFCheck -->|DF=0 IPv4 fragmentation allowed| Fragment[Fragment at router\nSplit payload into chunks]
+    Fragment --> Frag1[Fragment 1\noffset=0, MF=1\n1480 bytes data]
+    Fragment --> Frag2[Fragment 2\noffset=185, MF=0\n520 bytes data]
+
+    Frag1 --> Transit[Network Transit]
+    Frag2 --> Transit
+    Transit --> Reassemble[Destination reassembles\nusing ID + offset + MF flag]
+    Reassemble --> Delivered([Original packet delivered])
+
+    DFCheck -->|DF=1 or IPv6 no router frag| ICMP[Router drops packet\nSends ICMP\nFragmentation Needed\nwith link MTU]
+    ICMP --> PMTUD[Source receives ICMP\nReduces PMTU\nRetransmits smaller packet]
+    PMTUD --> MTUCheck

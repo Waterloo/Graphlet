@@ -1,0 +1,18 @@
+flowchart TD
+    Sensor[IoT Sensor\nTemperature / Motion / Vibration] --> Read[Read raw ADC value]
+    Read --> Validate{Valid range?}
+    Validate -->|No| Drop[Drop invalid reading]
+    Validate -->|Yes| Calibrate[Apply calibration offset\nConvert to SI units]
+    Calibrate --> Threshold{Exceeds threshold\nor delta?}
+    Threshold -->|No| Aggregate[Aggregate locally\nfor periodic summary]
+    Threshold -->|Yes| Gateway[IoT Gateway\nLocal hub / broker]
+    Aggregate -->|Periodic batch| Gateway
+    Gateway --> Protocol[Protocol translation\nMQTT / CoAP → HTTPS]
+    Protocol --> Cloud[Cloud IoT Platform\nAWS IoT / Azure IoT Hub]
+    Cloud --> Auth{Device authenticated?}
+    Auth -->|No| Reject[Reject connection]
+    Auth -->|Yes| Ingest[Ingest message stream]
+    Ingest --> TSDB[(Time-series database\nInfluxDB / TimescaleDB)]
+    Ingest --> Rules[Rules engine\nAlert evaluation]
+    Rules -->|Threshold breach| Alert[Send alert\nPagerDuty / SNS]
+    TSDB --> Dashboard[Analytics dashboard\nGrafana / custom UI]

@@ -1,0 +1,22 @@
+flowchart TD
+    A[Page Makes fetch Request] --> B[Service Worker fetch Handler Intercepts]
+    B --> C{Resource type?}
+    C -- Static app shell --> D[Cache-First Strategy]
+    C -- API data --> E[Network-First Strategy]
+    C -- Semi-static content --> F[Stale-While-Revalidate Strategy]
+    D --> G{Cache has entry?}
+    G -- Yes --> H[Serve from Cache Immediately]
+    H --> I[Update Cache in Background if Network Available]
+    G -- No --> J[Fetch from Network and Cache Result]
+    E --> K{Network available?}
+    K -- Yes --> L[Fetch from Network]
+    L --> M[Update Cache with Fresh Response]
+    K -- No --> N{Cache has stale entry?}
+    N -- Yes --> O[Serve Stale Cache Entry]
+    N -- No --> P[Return Offline Fallback Page]
+    F --> Q[Serve from Cache Immediately]
+    Q --> R[Revalidate from Network in Background]
+    R --> S[Update Cache with Fresh Data]
+    style H fill:#22c55e,color:#fff
+    style O fill:#f59e0b,color:#fff
+    style P fill:#ef4444,color:#fff

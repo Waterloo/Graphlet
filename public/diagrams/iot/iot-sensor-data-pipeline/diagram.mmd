@@ -1,0 +1,17 @@
+flowchart TD
+    Sensor[Physical Sensor\nThermistor / Flow Meter / Contact] --> ADC[ADC Sampling\nFixed sample rate]
+    ADC --> Buffer[Ring buffer\nIn device memory]
+    Buffer --> Filter[Noise filter\nMoving average / median]
+    Filter --> Outlier{Outlier detected?}
+    Outlier -->|Yes| Discard[Discard reading\nlog fault counter]
+    Outlier -->|No| Calibrate[Apply calibration curve\nRaw → physical unit]
+    Calibrate --> Feature[Feature extraction\nMin / max / rate-of-change]
+    Feature --> Serialise[Serialise payload\nJSON / Protobuf]
+    Serialise --> Dedup{Already acknowledged?}
+    Dedup -->|Yes| Drop[Drop duplicate]
+    Dedup -->|No| Publish[Publish over MQTT\nto local broker]
+    Publish --> Broker[Local MQTT broker]
+    Broker --> Bridge[Cloud bridge\nTLS connection]
+    Bridge --> Ingest[Cloud ingestion service]
+    Ingest --> TSDB[(Time-series database)]
+    Ingest --> Stream[Stream processor\nKinesis / Kafka]

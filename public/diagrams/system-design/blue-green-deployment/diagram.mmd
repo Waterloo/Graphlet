@@ -1,0 +1,8 @@
+flowchart TD
+    LB[Load Balancer] --> BlueEnv[Blue Environment\nv1.0 - Live]
+    LB -.->|Switch traffic| GreenEnv[Green Environment\nv2.0 - Staging]
+    GreenEnv --> HealthCheck{Health Check\nPassed?}
+    HealthCheck -->|Yes| SwitchTraffic[Switch 100% traffic to Green]
+    HealthCheck -->|No| Rollback[Keep Blue live\nDebug Green]
+    SwitchTraffic --> NewLive[Green is now Live]
+    NewLive --> OldBlue[Blue becomes\nnext Staging]

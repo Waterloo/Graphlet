@@ -1,0 +1,20 @@
+flowchart TD
+    Client([Client]) --> GLB[Global Load Balancer]
+    GLB --> AppNode1[Application Node 1\nZone A]
+    GLB --> AppNode2[Application Node 2\nZone B]
+    GLB --> AppNode3[Application Node 3\nZone C]
+
+    AppNode1 --> Cache[(Distributed Cache\nRedis Cluster)]
+    AppNode2 --> Cache
+    AppNode3 --> Cache
+
+    Cache -->|Cache miss| PrimaryDB[(Primary Database)]
+    PrimaryDB --> Replica1[(Read Replica 1)]
+    PrimaryDB --> Replica2[(Read Replica 2)]
+
+    AppNode1 --> MQ[[Message Queue]]
+    MQ --> Worker1[Worker Node 1]
+    MQ --> Worker2[Worker Node 2]
+
+    AppNode1 --> Observe[Observability Platform\nMetrics / Traces / Logs]
+    PrimaryDB --> ConfigSvc[Configuration Service\netcd / Consul]

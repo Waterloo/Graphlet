@@ -1,0 +1,18 @@
+flowchart TD
+    A[Create reactive or ref value] --> B[Wrap in ES6 Proxy]
+    B --> C[Component Render Effect Activated]
+    C --> D[Read Reactive Property — get trap fires]
+    D --> E[track — Register Effect as Subscriber]
+    E --> F[Render Output Produced]
+    F --> G[User or Code Mutates Reactive Value]
+    G --> H[Proxy set trap fires]
+    H --> I[trigger — Look up Subscribers]
+    I --> J[Schedule Render Effect on Microtask Queue]
+    J --> K{More mutations in same tick?}
+    K -- Yes --> L[Queue deduplicates — single re-render]
+    K -- No --> M[Flush Microtask Queue]
+    L --> M
+    M --> N[Re-run Render Effect]
+    N --> O[Reconcile Diff and Patch DOM]
+    O --> P[nextTick resolves]
+    style P fill:#22c55e,color:#fff

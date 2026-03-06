@@ -1,0 +1,12 @@
+flowchart TD
+    App[Application] --> CheckCache{Cache Hit?}
+    CheckCache -->|Yes| ReturnCached[Return cached data]
+    CheckCache -->|No| QueryDB[Query database]
+    QueryDB --> StoreCache[Store result in cache\nwith TTL]
+    StoreCache --> ReturnFresh[Return fresh data]
+    ReturnCached --> Client[Client receives data]
+    ReturnFresh --> Client
+
+    WriteApp[Application write] --> UpdateDB[(Update database)]
+    UpdateDB --> InvalidateKey[Invalidate cache key]
+    InvalidateKey --> NextRead[Next read will miss\nand reload from DB]

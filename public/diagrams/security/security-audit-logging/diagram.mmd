@@ -1,0 +1,16 @@
+flowchart TD
+    A[Security event occurs\nauth attempt, data access, admin action] --> B[Application generates\nstructured log entry]
+    B --> C[Enrich log entry\nAdd user ID, IP, session, timestamp]
+    C --> D[Mask or omit sensitive fields\nNo passwords or tokens in logs]
+    D --> E[Forward to centralized log pipeline\nFluentd, Logstash, or cloud agent]
+
+    E --> F[Log pipeline receives event]
+    F --> G[Parse and normalize\nto standard schema]
+    G --> H[Route to SIEM\nSplunk, Elasticsearch, CloudWatch]
+    H --> I[Store in hot storage\nIndexed for fast query]
+    I --> J{Real-time rule match?\nBrute force, privilege escalation}
+    J -- Yes --> K[Trigger alert\nNotify security team]
+    J -- No --> L[Archive to cold storage\nAfter hot retention period]
+
+    I --> M[Compliance and forensic queries\nWho accessed what data and when?]
+    K --> N[Feed into incident response\nworkflow]

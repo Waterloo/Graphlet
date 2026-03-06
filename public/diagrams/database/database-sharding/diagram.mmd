@@ -1,0 +1,13 @@
+flowchart TD
+    App[Application] --> Router{Shard Router}
+    Router --> HashFn[Hash shard key]
+    HashFn --> ShardID{Shard ID?}
+    ShardID -->|0| Shard0[(Shard 0\nUsers 0-999k)]
+    ShardID -->|1| Shard1[(Shard 1\nUsers 1M-1.9M)]
+    ShardID -->|2| Shard2[(Shard 2\nUsers 2M-2.9M)]
+    ShardID -->|3| Shard3[(Shard 3\nUsers 3M+)]
+    Shard0 --> Result[Query Result]
+    Shard1 --> Result
+    Shard2 --> Result
+    Shard3 --> Result
+    Result --> App

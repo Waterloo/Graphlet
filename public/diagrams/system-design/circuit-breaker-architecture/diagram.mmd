@@ -1,0 +1,19 @@
+flowchart TD
+    Caller[Calling Service] --> CB{Circuit Breaker\nState?}
+
+    CB -->|Closed| Forward[Forward Request\nto Downstream Service]
+    Forward --> Result{Request\nResult}
+    Result -->|Success| CountSuccess[Record Success\nReset failure count]
+    Result -->|Failure| CountFail[Record Failure\nIncrement counter]
+    CountFail --> Threshold{Failure rate\nexceeds threshold?}
+    Threshold -->|No| CB
+    Threshold -->|Yes| TripOpen[Trip to OPEN state]
+
+    CB -->|Open| FastFail[Return Error\nImmediately - No call made]
+    FastFail --> WaitTimeout[Wait recovery\ntimeout - 30s]
+    WaitTimeout --> HalfOpen[Transition to\nHALF-OPEN state]
+
+    CB -->|Half-Open| ProbeRequest[Send single\nprobe request]
+    ProbeRequest --> ProbeResult{Probe\nResult}
+    ProbeResult -->|Success| Reset[Reset to CLOSED\nstate]
+    ProbeResult -->|Failure| TripOpen

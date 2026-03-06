@@ -1,0 +1,30 @@
+flowchart TD
+    A([Proposer selects\nproposal number n]) --> B[Phase 1a: Broadcast\nPrepare n to quorum]
+    B --> C[Acceptor 1]
+    B --> D[Acceptor 2]
+    B --> E[Acceptor 3]
+    B --> F[Acceptor 4]
+    B --> G[Acceptor 5]
+
+    C --> H{Has accepted\nhigher n?}
+    D --> H
+    E --> H
+    H -->|No| I[Promise n\nwith highest accepted value]
+    H -->|Yes| J[Reject — already\npromised higher n]
+
+    I --> K{Majority\npromises received?}
+    K -->|No — restart| A
+    K -->|Yes| L[Phase 2a: Determine value v\nuse highest prior accepted value\nor own value if none]
+    L --> M[Broadcast Accept n v\nto same quorum]
+    M --> N[Acceptor checks:\nn >= promised n?]
+    N -->|No| O[Reject Accept]
+    N -->|Yes| P[Accept n v\nreply Accepted n v]
+    P --> Q{Majority\naccepted?}
+    O --> Q
+    Q -->|No| A
+    Q -->|Yes| R[Value v is CHOSEN]
+    R --> S[Notify Learners\nvalue = v]
+    S --> T([Consensus reached])
+
+    style R fill:#d1fae5,stroke:#10b981
+    style T fill:#d1fae5,stroke:#10b981

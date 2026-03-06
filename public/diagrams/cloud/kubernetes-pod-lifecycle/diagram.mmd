@@ -1,0 +1,14 @@
+stateDiagram-v2
+    [*] --> Pending : Pod submitted to API server
+    Pending --> Running : All containers started successfully
+    Pending --> Failed : Image pull error or unschedulable
+    Running --> Succeeded : All containers exited with code 0
+    Running --> Failed : Container crash or OOM kill
+    Running --> Unknown : Node communication lost
+    Running --> CrashLoopBackOff : Container repeatedly restarting
+    CrashLoopBackOff --> Running : Container stabilises after backoff
+    CrashLoopBackOff --> Failed : Restart limit exceeded
+    Failed --> Pending : restartPolicy Always or OnFailure
+    Succeeded --> [*]
+    Failed --> [*]
+    Unknown --> [*]

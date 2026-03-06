@@ -1,0 +1,18 @@
+flowchart TD
+    WriteIaC[Write or update IaC configuration] --> PRReview[Submit via pull request]
+    PRReview --> Validate[Run terraform validate and lint]
+    Validate --> ValidGate{Validation passed?}
+    ValidGate -->|No| FixConfig[Fix configuration errors]
+    FixConfig --> Validate
+    ValidGate -->|Yes| Plan[Generate terraform plan]
+    Plan --> ReviewPlan[Human reviews execution plan]
+    ReviewPlan --> PlanGate{Plan approved?}
+    PlanGate -->|No| RejectPlan[Reject and request changes]
+    RejectPlan --> WriteIaC
+    PlanGate -->|Yes| Apply[Run terraform apply]
+    Apply --> ApplyGate{Apply succeeded?}
+    ApplyGate -->|No| RetryApply[Inspect partial state and retry]
+    RetryApply --> Apply
+    ApplyGate -->|Yes| StoreState[Store updated remote state]
+    StoreState --> ComplianceCheck[Run post-apply compliance checks]
+    ComplianceCheck --> Done[Infrastructure provisioned]

@@ -1,0 +1,25 @@
+flowchart TD
+    User([Global Users]) --> DNS[DNS Geo-routing\nRoute 53 / Cloudflare]
+    User --> GCDN[Global CDN\nStatic Assets]
+
+    DNS --> RegionUS[US-East Region]
+    DNS --> RegionEU[EU-West Region]
+    DNS --> RegionAP[AP-Southeast Region]
+
+    subgraph RegionUS[US-East Region]
+        LB_US[Load Balancer] --> App_US[Application Cluster]
+        App_US --> DB_US[(Regional Database\nPrimary Writer)]
+    end
+
+    subgraph RegionEU[EU-West Region]
+        LB_EU[Load Balancer] --> App_EU[Application Cluster]
+        App_EU --> DB_EU[(Regional Database\nRead Replica)]
+    end
+
+    subgraph RegionAP[AP-Southeast Region]
+        LB_AP[Load Balancer] --> App_AP[Application Cluster]
+        App_AP --> DB_AP[(Regional Database\nRead Replica)]
+    end
+
+    DB_US -->|Async replication| DB_EU
+    DB_US -->|Async replication| DB_AP

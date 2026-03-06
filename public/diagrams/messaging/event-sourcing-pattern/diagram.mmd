@@ -1,0 +1,18 @@
+flowchart LR
+    CMD[Command\nWithdrawMoney] --> CH[Command Handler]
+    CH -->|load current state| ES[(Event Store\nAppend-Only Log)]
+    ES -->|replay events| AGG[Aggregate\nReconstituted State]
+    AGG -->|validate business rules| CH
+    CH -->|append new event| ES
+
+    ES -->|MoneyWithdrawn| P1[Projection:\nAccount Balance View]
+    ES -->|MoneyWithdrawn| P2[Projection:\nTransaction History View]
+    ES -->|MoneyWithdrawn| P3[Projection:\nFraud Detection View]
+
+    P1 --> RM1[(Read Model:\nBalances DB)]
+    P2 --> RM2[(Read Model:\nTransactions DB)]
+    P3 --> RM3[(Read Model:\nFraud Signals DB)]
+
+    RM1 --> Q1[Query:\nGet Balance]
+    RM2 --> Q2[Query:\nGet History]
+    RM3 --> AL[Alert:\nSuspicious Activity]

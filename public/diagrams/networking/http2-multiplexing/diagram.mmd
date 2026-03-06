@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: Single TCP+TLS connection established
+
+    Note over Client,Server: Stream 1: HTML request
+    Client->>Server: HEADERS frame (stream 1)\nGET /index.html
+
+    Note over Client,Server: Stream 3: CSS request (concurrent)
+    Client->>Server: HEADERS frame (stream 3)\nGET /style.css
+
+    Note over Client,Server: Stream 5: JS request (concurrent)
+    Client->>Server: HEADERS frame (stream 5)\nGET /app.js
+
+    Note over Client,Server: Responses interleaved — no blocking
+    Server-->>Client: HEADERS frame (stream 1)\n200 OK, content-type: text/html
+    Server-->>Client: DATA frame (stream 3)\nCSS content chunk 1
+    Server-->>Client: DATA frame (stream 1)\nHTML content
+    Server-->>Client: DATA frame (stream 5)\nJS content
+    Server-->>Client: DATA frame (stream 3)\nCSS content chunk 2
+
+    Note over Client,Server: Server push: proactive resource
+    Server-->>Client: PUSH_PROMISE (stream 2)\nPushing /logo.png
+    Server-->>Client: DATA frame (stream 2)\nImage data

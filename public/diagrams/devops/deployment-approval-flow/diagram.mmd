@@ -1,0 +1,15 @@
+flowchart TD
+    PipelineReady[CD pipeline ready to deploy] --> CreateRequest[Create approval request with deployment summary]
+    CreateRequest --> NotifyApprovers[Notify approver group]
+    NotifyApprovers --> ApproverReview[Approver reviews changelog and test results]
+    ApproverReview --> Decision{Approver decision}
+    Decision -->|Clarification needed| RequestInfo[Request more information]
+    RequestInfo --> ApproverReview
+    Decision -->|Rejected| RejectDeploy[Cancel deployment pipeline]
+    RejectDeploy --> NotifyTeam[Notify team with rejection reason]
+    Decision -->|Approved| TimeWindow{Within permitted deploy window?}
+    TimeWindow -->|No| QueueDeploy[Queue deployment for next window]
+    QueueDeploy --> TimeWindow
+    TimeWindow -->|Yes| ProceedDeploy[Resume deployment pipeline]
+    ProceedDeploy --> AuditLog[Record approval in audit log]
+    AuditLog --> Done[Deployment proceeds to environment]

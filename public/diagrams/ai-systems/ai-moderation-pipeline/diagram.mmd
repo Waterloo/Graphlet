@@ -1,0 +1,25 @@
+flowchart TD
+    A([User input]) --> B[Rule-based filter: blocked keywords and jailbreak patterns]
+    B --> C{Rule violation?}
+    C -- Yes --> D([Return policy refusal])
+    C -- No --> E[Moderation classifier: score harm categories]
+    E --> F{Score above threshold?}
+    F -- Yes --> D
+    F -- No --> G[PII detection: scan for emails, phone numbers, SSNs]
+    G --> H{PII found?}
+    H -- Block --> D
+    H -- Redact --> I[Redact PII from input]
+    H -- Clean --> J[Forward sanitized input to LLM]
+    I --> J
+    J --> K[LLM generates draft response]
+    K --> L[Output moderation classifier]
+    L --> M{Output flagged?}
+    M -- Yes --> N{Severity level?}
+    N -- High --> O([Return fallback refusal response])
+    N -- Low --> P([Escalate to human review queue])
+    M -- No --> Q{Grounding check required?}
+    Q -- Yes --> R[Verify citations against retrieved sources]
+    R --> S{Grounded?}
+    S -- No --> T([Return grounding warning with response])
+    S -- Yes --> U([Return response to user])
+    Q -- No --> U

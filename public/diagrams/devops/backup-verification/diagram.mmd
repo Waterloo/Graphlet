@@ -1,0 +1,17 @@
+flowchart TD
+    BackupJob[Scheduled backup job runs] --> Snapshot[Take full or incremental snapshot]
+    Snapshot --> WriteMetadata[Write backup metadata and checksum]
+    WriteMetadata --> IntegrityCheck[Recompute and compare checksum]
+    IntegrityCheck --> IntegrityGate{Checksum matches?}
+    IntegrityGate -->|No| AlertCorruption[Alert team of backup corruption]
+    AlertCorruption --> RetakeBackup[Attempt to retake backup]
+    IntegrityGate -->|Yes| ProvisionEnv[Provision isolated restore environment]
+    ProvisionEnv --> RestoreSnapshot[Restore backup into environment]
+    RestoreSnapshot --> RestoreGate{Restore succeeded?}
+    RestoreGate -->|No| AlertRestoreFail[Alert team of restore failure]
+    RestoreGate -->|Yes| DataValidation[Validate restored data and run smoke tests]
+    DataValidation --> ValidationGate{Data validation passed?}
+    ValidationGate -->|No| AlertDataFail[Alert team of data inconsistency]
+    ValidationGate -->|Yes| RecordResult[Record restore duration and pass status]
+    RecordResult --> DestroyEnv[Destroy ephemeral restore environment]
+    DestroyEnv --> UpdateLog[Update verification log for compliance]

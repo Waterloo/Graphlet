@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Device as IoT Device
+    participant CA as Certificate Authority
+    participant Platform as IoT Platform
+    participant Policy as Policy Engine
+
+    Note over Device,CA: Factory provisioning (one-time)
+    CA->>Device: Issue X.509 device certificate
+    Device->>Device: Store cert in secure element / TPM
+
+    Note over Device,Platform: Runtime connection
+    Device->>Platform: TCP connect to MQTT/HTTPS endpoint
+    Platform->>Device: TLS ServerHello + server certificate
+    Device->>Device: Verify server cert against pinned root CA
+    Device->>Platform: TLS ClientCertificate (device cert)
+    Platform->>Platform: Verify device cert against registered CA chain
+    alt Certificate invalid or expired
+        Platform->>Device: TLS Alert — certificate_unknown
+        Device->>Device: Log auth failure, retry with backoff
+    else Certificate valid
+        Platform->>Policy: Check device policy\n(device ID, status, permissions)
+        Policy->>Platform: ALLOW / DENY
+        alt Policy DENY
+            Platform->>Device: CONNACK — Connection refused
+        else Policy ALLOW
+            Platform->>Device: TLS handshake complete
+            Platform->>Device: MQTT CONNACK — Connection accepted
+            Device->>Platform: Publish sensor data
+        end
+    end

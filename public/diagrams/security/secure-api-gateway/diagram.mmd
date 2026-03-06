@@ -1,0 +1,21 @@
+flowchart TD
+    A[Incoming HTTPS Request] --> B[TLS Termination\nDecrypt and validate certificate]
+    B --> C[IP Allowlist and Blocklist Check\nBlock known malicious IPs]
+    C --> D{IP allowed?}
+    D -- No --> E[Return 403 Forbidden]
+    D -- Yes --> F[Rate Limit Check\nper IP or API key]
+    F --> G{Within rate limit?}
+    G -- No --> H[Return 429 Too Many Requests]
+    G -- Yes --> I[Authentication\nValidate JWT or API key]
+    I --> J{Token valid?}
+    J -- No --> K[Return 401 Unauthorized]
+    J -- Yes --> L[Authorization\nCheck scopes and roles]
+    L --> M{Access permitted?}
+    M -- No --> N[Return 403 Forbidden]
+    M -- Yes --> O[Request Validation\nSchema and size checks]
+    O --> P{Request valid?}
+    P -- No --> Q[Return 400 Bad Request]
+    P -- Yes --> R[Route to Backend Service]
+    R --> S[Backend processes request]
+    S --> T[Log request and response metrics]
+    T --> U[Return response to client]

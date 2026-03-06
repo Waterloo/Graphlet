@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Monitor as Health Monitor
+    participant Primary as Primary DB
+    participant Replica as Replica DB
+    participant DNS as DNS / VIP
+    participant App as Application
+
+    Monitor->>Primary: Heartbeat probe
+    Primary--xMonitor: No response (timeout)
+    Monitor->>Primary: Retry probe x3
+    Primary--xMonitor: Still no response
+
+    Monitor->>Monitor: Confirm primary failure
+    Monitor->>Replica: Check replication LSN
+    Replica-->>Monitor: LSN=98432 (fully caught up)
+
+    Monitor->>Primary: Fence primary (revoke network access)
+    Monitor->>Replica: PROMOTE to primary
+    Replica->>Replica: Apply remaining WAL
+    Replica->>Replica: Switch to read-write mode
+    Replica-->>Monitor: Promotion complete
+
+    Monitor->>DNS: Update primary endpoint to new primary
+    DNS-->>Monitor: DNS updated
+
+    App->>DNS: Reconnect to primary endpoint
+    DNS-->>App: Resolves to new primary
+    App->>Replica: Write query (new primary)
+    Replica-->>App: Write acknowledged
+    Note over App,Replica: Failover complete — normal operation resumed

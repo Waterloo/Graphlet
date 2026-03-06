@@ -1,0 +1,17 @@
+flowchart TD
+    App[Application Request] --> PoolMgr[Connection Pool Manager]
+    PoolMgr --> CheckIdle{Idle connection\navailable?}
+    CheckIdle -->|Yes| LeaseConn[Lease connection to app]
+    CheckIdle -->|No| CheckMax{Pool at\nmax size?}
+    CheckMax -->|No| NewConn[Open new DB connection]
+    NewConn --> Auth[Authenticate with DB]
+    Auth --> LeaseConn
+    CheckMax -->|Yes| Queue[Queue request]
+    Queue --> WaitReturn{Connection\nreturned?}
+    WaitReturn -->|Timeout| Error[Connection timeout error]
+    WaitReturn -->|Available| LeaseConn
+    LeaseConn --> Query[Execute query]
+    Query --> ReturnConn[Return connection to pool]
+    ReturnConn --> Validate{Connection\nstill healthy?}
+    Validate -->|Yes| IdlePool[Mark idle in pool]
+    Validate -->|No| DiscardConn[Discard and close]

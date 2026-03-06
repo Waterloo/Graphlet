@@ -1,0 +1,17 @@
+flowchart TD
+    Query[Incoming search query] --> NormKey[Normalize query\nlowercase, strip stop words]
+    NormKey --> BuildKey[Build cache key\nquery plus filter params]
+    BuildKey --> Lookup{Cache hit?}
+    Lookup -->|Hit, not expired| ServeCache[Serve cached results\nreturn immediately]
+    Lookup -->|Miss or expired| Execute[Execute full query\nagainst index shards]
+    Execute --> Results[Ranked result set]
+    Results --> TTL{Determine TTL\nbased on query type}
+    TTL -->|Dynamic content| ShortTTL[Short TTL\n5-30 seconds]
+    TTL -->|Stable content| LongTTL[Long TTL\n1-24 hours]
+    ShortTTL --> WriteCache[Write result to cache\nRedis or Memcached]
+    LongTTL --> WriteCache
+    WriteCache --> Eviction{Cache full?}
+    Eviction -->|Yes| LRU[Evict LRU entries\nfree memory]
+    Eviction -->|No| ReturnResult[Return results to client]
+    LRU --> ReturnResult
+    ServeCache --> ReturnResult

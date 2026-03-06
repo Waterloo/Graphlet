@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant User
+    participant Client as Client App
+    participant AuthServer as Authorization Server
+    participant ResourceServer as Resource Server
+
+    User->>Client: Click "Login with Provider"
+    Client->>AuthServer: Redirect with client_id, scope, redirect_uri, state
+    AuthServer->>User: Show login and consent screen
+    User->>AuthServer: Authenticate and approve scopes
+    AuthServer->>Client: Redirect with authorization code
+    Client->>AuthServer: POST /token with code + client_secret
+    AuthServer-->>Client: Access token + refresh token
+    Client->>ResourceServer: GET /api/user with Bearer token
+    ResourceServer-->>Client: Protected resource data
+    Client-->>User: Show user data

@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant Merchant
+    participant Acquirer as Acquirer Bank
+    participant Network as Card Network
+    participant Issuer as Issuing Bank
+
+    Merchant->>Acquirer: Authorization request (PAN, CVV, amount)
+    Acquirer->>Network: Route via card BIN prefix
+    Network->>Issuer: Forward authorization request
+    Issuer->>Issuer: Validate card number (Luhn check)
+    Issuer->>Issuer: Verify CVV and expiry
+    Issuer->>Issuer: Check available funds or credit limit
+    Issuer->>Issuer: Evaluate fraud scoring rules
+    alt Approved
+        Issuer-->>Network: Approval + authorization code
+        Network-->>Acquirer: Forward approval
+        Acquirer-->>Merchant: Approval + auth code
+    else Declined
+        Issuer-->>Network: Decline + reason code
+        Network-->>Acquirer: Forward decline
+        Acquirer-->>Merchant: Decline + reason code
+    end
+    Merchant->>Merchant: Store auth code for capture

@@ -1,0 +1,20 @@
+flowchart TD
+    A[User authenticates successfully] --> B[Generate cryptographically\nrandom session ID\n128+ bits entropy]
+    B --> C[Store session data server-side\nin Redis with TTL]
+    C --> D[Set HttpOnly Secure\nSameSite cookie with session ID]
+
+    D --> E[Subsequent request arrives\nwith session cookie]
+    E --> F[Extract session ID\nfrom cookie]
+    F --> G[Lookup session in Redis\nby session ID]
+    G --> H{Session found\nand not expired?}
+    H -- No --> I[Reject request\nRedirect to login]
+    H -- Yes --> J[Attach session data\nto request context]
+    J --> K{Privilege change?\nLogin or role escalation}
+    K -- Yes --> L[Regenerate session ID\nprevent session fixation]
+    K -- No --> M[Update last-activity timestamp\nrolling TTL in Redis]
+    L --> M
+    M --> N[Process authenticated request]
+
+    N --> O{User logs out?}
+    O -- Yes --> P[Delete session record\nfrom Redis]
+    P --> Q[Clear cookie in response\nSet-Cookie: session= Expires=epoch]

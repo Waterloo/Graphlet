@@ -1,0 +1,22 @@
+flowchart TD
+    A([API request received]) --> B[Serialize job payload]
+    B --> C[Push job to queue]
+    C --> D[Return 202 Accepted to client]
+
+    E([Worker polls queue]) --> F{Job available?}
+    F -- No jobs --> G[Wait and poll again]
+    G --> F
+    F -- Job claimed --> H[Mark job as in-progress]
+    H --> I[Execute job logic]
+    I --> J{Job succeeded?}
+
+    J -- Success --> K[Acknowledge message in queue]
+    K --> L[Mark job complete]
+    L --> M([Worker ready for next job])
+
+    J -- Failure --> N[Increment retry counter]
+    N --> O{Below max retries?}
+    O -- Retry available --> P[Re-queue with backoff delay]
+    P --> H
+    O -- Retries exhausted --> Q[Move to dead-letter queue]
+    Q --> R[Emit alert or notification]

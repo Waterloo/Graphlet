@@ -1,0 +1,18 @@
+flowchart TD
+    A([User goal submitted]) --> B[Load system prompt, tools, and memory]
+    B --> C[LLM reasoning: analyze goal and context]
+    C --> D{Action type?}
+    D -- Tool call --> E[Extract tool name and parameters]
+    E --> F[Dispatch to tool router]
+    F --> G[Execute tool: search, code, API, or DB]
+    G --> H[Receive tool result]
+    H --> I[Inject observation into agent context]
+    I --> J{Iteration limit reached?}
+    J -- Yes --> K([Return partial result with explanation])
+    J -- No --> L{Goal satisfied?}
+    L -- No --> C
+    L -- Yes --> M[Synthesize final answer from observations]
+    M --> N([Return final answer to user])
+    D -- Final answer --> M
+    D -- Clarification needed --> O([Ask user for clarification])
+    O --> A

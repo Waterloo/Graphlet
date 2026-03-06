@@ -1,0 +1,12 @@
+flowchart LR
+    Client[Client Application] --> Primary[(Primary DB)]
+    Primary --> BinLog[Binary Log]
+    BinLog --> RepProcess[Replication Process]
+    RepProcess -->|Async| Replica1[(Replica 1)]
+    RepProcess -->|Async| Replica2[(Replica 2)]
+    RepProcess -->|Sync| Replica3[(Replica 3 Sync)]
+    Replica3 -->|Ack| Primary
+    Replica1 --> ReadTraffic[Read Queries]
+    Replica2 --> ReadTraffic
+    Primary --> WriteAck[Write Acknowledged]
+    WriteAck --> Client

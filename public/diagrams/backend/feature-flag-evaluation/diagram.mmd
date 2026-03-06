@@ -1,0 +1,13 @@
+flowchart TD
+    A([Evaluate flag for user request]) --> B{Kill switch enabled?}
+    B -- Yes --> C([Return: Feature OFF])
+    B -- No --> D{User in allowlist?}
+    D -- Yes --> E([Return: Feature ON])
+    D -- No --> F{Evaluate targeting rules}
+    F --> G{Any rule matches user attributes?}
+    G -- Match found --> H[Return rule variant]
+    H --> I([Return: Rule variant result])
+    G -- No match --> J[Hash user ID to rollout bucket]
+    J --> K{Bucket within rollout percentage?}
+    K -- Within percentage --> L([Return: Feature ON])
+    K -- Outside percentage --> M([Return: Feature OFF default])

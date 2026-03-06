@@ -1,0 +1,18 @@
+flowchart LR
+    User([User Browser]) --> DNS[DNS resolves to\nnearest CDN PoP]
+    DNS --> Edge[CDN Edge Node\nnearby PoP]
+    Edge --> CacheCheck{Resource in\nedge cache?\nTTL valid?}
+
+    CacheCheck -->|Cache HIT| ServeCache[Serve from edge cache\nAdd Age header]
+    ServeCache --> UserResp([Response to user\nlow latency])
+
+    CacheCheck -->|Cache MISS| FetchOrigin[Forward request\nto origin server]
+    FetchOrigin --> Origin[Origin Server\napp / storage]
+    Origin --> OriginResp[Origin response\n+ Cache-Control headers]
+    OriginResp --> CacheStore{Cacheable?\nCache-Control: public}
+    CacheStore -->|Yes| StoreEdge[Store in edge cache\nwith TTL]
+    StoreEdge --> UserResp2([Response to user])
+    CacheStore -->|No — private/no-store| PassThrough([Pass through\ndo not cache])
+
+    Edge --> Purge[Cache purge API\nor surrogate key tag]
+    Purge --> Invalidate[Invalidate cached\nresources on deploy]

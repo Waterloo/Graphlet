@@ -1,0 +1,21 @@
+flowchart TD
+    T[Topic: orders\n4 partitions] --> P0[Partition 0]
+    T --> P1[Partition 1]
+    T --> P2[Partition 2]
+    T --> P3[Partition 3]
+
+    subgraph CG[Consumer Group: order-processors]
+        CA[Consumer A]
+        CB[Consumer B]
+        CC[Consumer C]
+    end
+
+    P0 --> CA
+    P1 --> CA
+    P2 --> CB
+    P3 --> CC
+
+    GC[Group Coordinator\nBroker] -->|Manages rebalance| CG
+    CA -->|Commit offset| GC
+    CB -->|Commit offset| GC
+    CC -->|Commit offset| GC

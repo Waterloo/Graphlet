@@ -1,0 +1,10 @@
+flowchart TD
+    Client([Client]) --> LB[Load Balancer]
+    LB --> App1[Monolith Instance 1]
+    LB --> App2[Monolith Instance 2]
+    App1 --> PL[Presentation Layer\nHTTP Routing / Templates]
+    PL --> BL[Business Logic Layer\nDomain Services / Validation]
+    BL --> DAL[Data Access Layer\nORM / Query Builder]
+    DAL --> DB[(Relational Database\nPostgres / MySQL)]
+    DAL --> Cache[(Cache\nRedis)]
+    App2 --> PL

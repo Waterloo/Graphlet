@@ -1,0 +1,23 @@
+flowchart TD
+    TRIGGER([Revocation trigger:\nlogout / compromise / permission change]) --> TYPE{Token type}
+
+    TYPE -- Opaque token --> OPQ[Delete token record from store]
+    OPQ --> OPQ_RESULT([Token immediately invalid])
+
+    TYPE -- JWT access token --> JWT_STRATEGY{Revocation strategy}
+    JWT_STRATEGY -- Denylist --> DL[Add token jti to Redis denylist]
+    DL --> DL_TTL[Set Redis TTL to token remaining lifetime]
+    DL_TTL --> DL_CHECK[Resource server checks jti on each request]
+    DL_CHECK --> DL_RESULT([Token rejected if jti in denylist])
+
+    JWT_STRATEGY -- Short expiry --> SE[Keep access token TTL to 5-15 min]
+    SE --> SE_RT[Revoke refresh token in store]
+    SE_RT --> SE_RESULT([No new access tokens can be issued])
+
+    JWT_STRATEGY -- Introspection --> INTRO[Resource server calls /introspect on each request]
+    INTRO --> INTRO_CHECK{Token active?}
+    INTRO_CHECK -- Yes --> ALLOW([Allow request])
+    INTRO_CHECK -- No --> REJECT([401 Unauthorized])
+
+    TYPE -- Refresh token --> RT[Delete refresh token from store]
+    RT --> RT_RESULT([No new access tokens can be issued])

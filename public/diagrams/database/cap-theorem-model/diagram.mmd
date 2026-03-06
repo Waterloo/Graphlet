@@ -1,0 +1,21 @@
+flowchart TD
+    CAP[CAP Theorem] --> C[Consistency\nEvery read gets latest write]
+    CAP --> A[Availability\nEvery request gets a response]
+    CAP --> P[Partition Tolerance\nSystem works despite network split]
+
+    P --> MustChoose{Network partition occurs\nChoose C or A}
+
+    MustChoose -->|Choose Consistency| CP[CP Systems]
+    MustChoose -->|Choose Availability| AP[AP Systems]
+
+    CP --> CPEx1[Zookeeper]
+    CP --> CPEx2[HBase]
+    CP --> CPEx3[Etcd]
+    CP --> CPBehavior[Refuses requests\nif node is out of sync]
+
+    AP --> APEx1[DynamoDB]
+    AP --> APEx2[Cassandra]
+    AP --> APEx3[CouchDB]
+    AP --> APBehavior[Serves stale data\nconverges after partition heals]
+
+    CA[CA - Single node only\nNo partition tolerance] --> CAEx[Traditional\nRelational DB\nno distribution]

@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant Operator as Operator / Automation
+    participant API as Command API
+    participant Auth as Authorization Service
+    participant Queue as Command Queue
+    participant Platform as IoT Platform
+    participant Device as IoT Device
+
+    Operator->>API: Submit command\n(device ID, action, params)
+    API->>Auth: Check permission\n(caller, device, command type)
+    Auth->>API: ALLOW / DENY
+    alt Not authorized
+        API->>Operator: 403 Forbidden
+    else Authorized
+        API->>Queue: Persist command\n(status: PENDING)
+        API->>Operator: 202 Accepted (command ID)
+        Queue->>Platform: Dispatch command to device topic
+        Platform->>Device: Publish command via MQTT retained
+        alt Device connected
+            Device->>Platform: PUBACK (message received)
+            Platform->>Queue: Update status: DELIVERED
+            Device->>Device: Execute command
+            Device->>Platform: Publish completion status\n(success / error code)
+            Platform->>Queue: Update status: COMPLETED
+            Queue->>Operator: Webhook / push notification
+        else Device offline or timeout
+            Queue->>Queue: Wait for acknowledgement
+            Note over Queue: Timeout window expires
+            Queue->>Platform: Mark command TIMED_OUT
+            Platform->>Operator: Alert: command not acknowledged
+        end
+    end

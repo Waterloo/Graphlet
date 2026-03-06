@@ -1,0 +1,20 @@
+flowchart TD
+    subgraph Backup
+        DB[(Live Database)] --> FullBackup[Full Backup\npg_basebackup / xtrabackup]
+        DB --> WALArchive[Continuous WAL Archiving]
+        FullBackup --> Storage[(Backup Storage\nS3 / GCS / disk)]
+        WALArchive --> Storage
+        Storage --> Verify[Verify backup integrity]
+        Verify --> RetentionPolicy[Apply retention policy\ndelete old backups]
+    end
+
+    subgraph Restore
+        RecoveryTarget[Define recovery target\ntimestamp or latest] --> FindFullBackup[Locate latest full backup]
+        FindFullBackup --> RestoreFull[Restore full backup\nto target server]
+        RestoreFull --> ApplyWAL[Apply WAL segments\nup to recovery point]
+        ApplyWAL --> ConsistencyCheck{Consistency\ncheck passed?}
+        ConsistencyCheck -->|Yes| OpenDB[Open database to traffic]
+        ConsistencyCheck -->|No| InspectCorruption[Inspect corruption\ntry earlier recovery point]
+    end
+
+    Storage --> RecoveryTarget

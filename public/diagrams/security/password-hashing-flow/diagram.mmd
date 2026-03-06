@@ -1,0 +1,18 @@
+flowchart TD
+    subgraph Registration
+        A[User submits password] --> B[Generate cryptographically\nrandom salt 16+ bytes]
+        B --> C[Combine password + salt]
+        C --> D[Run Argon2id / bcrypt\nwith configured work factor]
+        D --> E[Produce hash string\nincludes algorithm + salt + hash]
+        E --> F[Store hash string in database\nNEVER store plaintext]
+    end
+
+    subgraph Login
+        G[User submits password attempt] --> H[Retrieve stored hash\nfrom database]
+        H --> I[Extract salt and parameters\nfrom stored hash string]
+        I --> J[Re-hash submitted password\nwith same salt and parameters]
+        J --> K[Constant-time comparison\ncomputed hash vs stored hash]
+        K --> L{Hashes match?}
+        L -- Yes --> M[Authentication successful\nCreate session or issue token]
+        L -- No --> N[Authentication failed\nReturn 401 Unauthorized]
+    end
