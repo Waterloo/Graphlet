@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
-import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown, Image as ImageIcon, Info } from 'lucide-vue-next';
+import { useTutorial } from '~/composables/useTutorial';
+import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown, Image as ImageIcon, Info, GraduationCap } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
 import { onClickOutside, onKeyStroke } from '@vueuse/core';
 import { track } from '@plausible-analytics/tracker';
 
 const { themes, themeId, currentTheme, currentSvg, isInfoOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
+const { isTutorialActive, startTutorial, stopTutorial } = useTutorial();
 
 // Close theme switcher when clicking outside
 const themeDropdownRef = ref(null);
@@ -351,6 +353,15 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
                     @click="isInfoOpen = !isInfoOpen; if (isInfoOpen) track('Toggle', { props: { target: 'info' } })"
                     :class="{ active: isInfoOpen }" id="btn-info">
                     <Info :size="16" />
+                </button>
+            </TheTooltip>
+
+            <!-- Tutorial -->
+            <TheTooltip text="Interactive Tutorial">
+                <button class="icon-btn" title="Tutorial Mode"
+                    @click="isTutorialActive ? stopTutorial() : startTutorial(); track('Toggle', { props: { target: 'tutorial' } })"
+                    :class="{ active: isTutorialActive }" id="btn-tutorial">
+                    <GraduationCap :size="16" />
                 </button>
             </TheTooltip>
 

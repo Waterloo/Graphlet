@@ -12,6 +12,7 @@ import TheShareModal from '~/components/TheShareModal.vue';
 import TheWelcome from '~/components/TheWelcome.vue';
 import TheKeyboardShortcuts from '~/components/TheKeyboardShortcuts.vue';
 import TheDiagramSidebar from '~/components/TheDiagramSidebar.vue';
+import TheTutorialPanel from '~/components/TheTutorialPanel.vue';
 
 const { width } = useWindowSize();
 const { currentTheme, isInfoOpen, isWelcomeOpen, isShortcutsOpen } = useEditorState();
@@ -140,6 +141,7 @@ onUnmounted(() => {
         <div class="body-layout">
             <!-- Sidebar -->
             <TheDiagramSidebar />
+            <TheTutorialPanel />
 
             <!-- Main Content -->
             <main class="main-content" :class="{ mobile: isMobile }">
