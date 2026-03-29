@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
-import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown, Image as ImageIcon, Info } from 'lucide-vue-next';
+import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown, Image as ImageIcon, Info, Library } from 'lucide-vue-next';
 import TheTooltip from '~/components/TheTooltip.vue';
 import { onClickOutside, onKeyStroke } from '@vueuse/core';
 import { track } from '@plausible-analytics/tracker';
@@ -302,6 +302,16 @@ const getPillStyle = (theme: any, isActive: boolean) => ({
         </div>
 
         <div class="actions">
+            <!-- Diagrams Library -->
+            <TheTooltip text="Diagrams Library">
+                <a href="/diagrams" target="_blank" class="icon-btn" style="text-decoration: none;" title="Diagrams">
+                    <Library :size="16" />
+                    <span class="btn-label">Diagrams</span>
+                </a>
+            </TheTooltip>
+
+            <div class="divider"></div>
+
             <!-- New / Templates -->
             <TheTooltip text="Templates" :shortcut="`${isMac ? '⌥' : 'Alt'}N`">
                 <button class="icon-btn" title="New Diagram"
