@@ -3,6 +3,7 @@ import { useEditorState } from '~/composables/useEditorState';
 import { useDiagramStore } from '~/composables/useDiagramStore';
 import { useShareState } from '~/composables/useShareState';
 import { useWindowSize, useLocalStorage, useDebounceFn } from '@vueuse/core';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-vue-next';
 
 // Components
 import TheToolbar from '~/components/TheToolbar.vue';
@@ -27,9 +28,28 @@ const isLoaded = ref(false);
 const splitPosition = useLocalStorage('graphlet-split', 40);
 const isDragging = ref(false);
 
-// Mobile: stacked layout with tab toggle
+// Pane collapse: null = split view, 'editor' = editor hidden, 'preview' = preview hidden
+const collapsedPane = ref<null | 'editor' | 'preview'>(null);
+
+const editorWidth = computed(() => {
+    if (collapsedPane.value === 'editor') return 0;
+    if (collapsedPane.value === 'preview') return 100;
+    return splitPosition.value;
+});
+
+// '<' moves the divider left: collapse editor, or restore a collapsed preview
+const nudgeLeft = () => {
+    collapsedPane.value = collapsedPane.value === 'preview' ? null : 'editor';
+};
+
+// '>' moves the divider right: collapse preview, or restore a collapsed editor
+const nudgeRight = () => {
+    collapsedPane.value = collapsedPane.value === 'editor' ? null : 'preview';
+};
+
+// Mobile: full-screen preview with a collapsible code drawer
 const isMobile = computed(() => width.value < 768);
-const mobileTab = ref<'editor' | 'preview'>('editor');
+const isCodeOpen = ref(false);
 
 const startDrag = () => {
     if (isMobile.value) return;
@@ -40,6 +60,8 @@ const startDrag = () => {
 
 const onDrag = (e: MouseEvent) => {
     if (!isDragging.value) return;
+    // Dragging restores the split view from a collapsed state
+    if (collapsedPane.value) collapsedPane.value = null;
     const percentage = (e.clientX / width.value) * 100;
     splitPosition.value = Math.min(Math.max(percentage, 20), 80);
 };
@@ -126,14 +148,13 @@ onUnmounted(() => {
             <TheToolbar />
         </header>
 
-        <!-- Mobile Tab Bar -->
-        <div v-if="isMobile" class="mobile-tabs">
-            <button :class="{ active: mobileTab === 'editor' }" @click="mobileTab = 'editor'">
-                Editor
+        <!-- Mobile Code Drawer Bar -->
+        <div v-if="isMobile" class="code-drawer-bar" @click="isCodeOpen = !isCodeOpen">
+            <button class="code-drawer-toggle" :class="{ open: isCodeOpen }" aria-label="Toggle code editor"
+                :aria-expanded="isCodeOpen">
+                <ChevronDown :size="20" />
             </button>
-            <button :class="{ active: mobileTab === 'preview' }" @click="mobileTab = 'preview'">
-                Preview
-            </button>
+            <span class="code-drawer-label">Code</span>
         </div>
 
         <!-- Body: Sidebar + Main Content -->
@@ -142,24 +163,52 @@ onUnmounted(() => {
             <TheDiagramSidebar />
 
             <!-- Main Content -->
-            <main class="main-content" :class="{ mobile: isMobile }">
+            <main class="main-content" :class="{ mobile: isMobile, dragging: isDragging }">
                 <!-- Desktop: side by side -->
                 <template v-if="!isMobile">
-                    <div class="pane editor-pane" :style="{ width: `${splitPosition}%` }">
+                    <div class="pane editor-pane" :style="{ width: `${editorWidth}%` }">
                         <TheEditor />
                     </div>
-                    <div class="resizer" @mousedown="startDrag"></div>
-                    <div class="pane preview-pane" :style="{ width: `${100 - splitPosition}%` }">
+                    <div class="resizer" :class="{
+                        collapsed: collapsedPane,
+                        'collapsed-left': collapsedPane === 'editor',
+                        'collapsed-right': collapsedPane === 'preview'
+                    }" @mousedown="startDrag">
+                        <div class="resizer-handle" @mousedown.stop>
+                            <!-- Editor collapsed: restore it -->
+                            <button v-if="collapsedPane === 'editor'" class="resizer-btn restore-btn"
+                                title="Show code" @click="nudgeRight">
+                                <ChevronRight :size="14" />
+                                <span class="resizer-label">Code</span>
+                            </button>
+                            <!-- Preview collapsed: restore it -->
+                            <button v-else-if="collapsedPane === 'preview'" class="resizer-btn restore-btn"
+                                title="Show preview" @click="nudgeLeft">
+                                <ChevronLeft :size="14" />
+                                <span class="resizer-label">Preview</span>
+                            </button>
+                            <!-- Split view: collapse either side -->
+                            <template v-else>
+                                <button class="resizer-btn" title="Collapse editor" @click="nudgeLeft">
+                                    <ChevronLeft :size="14" />
+                                </button>
+                                <button class="resizer-btn" title="Collapse preview" @click="nudgeRight">
+                                    <ChevronRight :size="14" />
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="pane preview-pane" :style="{ width: `${100 - editorWidth}%` }">
                         <ThePreview ref="previewRef" />
                     </div>
                 </template>
 
-                <!-- Mobile: stacked with tab switch -->
+                <!-- Mobile: preview with collapsible editor drawer -->
                 <template v-else>
-                    <div v-show="mobileTab === 'editor'" class="pane mobile-pane">
+                    <div v-show="isCodeOpen" class="pane mobile-editor-pane">
                         <TheEditor />
                     </div>
-                    <div v-show="mobileTab === 'preview'" class="pane mobile-pane">
+                    <div class="pane mobile-pane">
                         <ThePreview ref="previewRef" />
                     </div>
                 </template>
@@ -269,9 +318,21 @@ onUnmounted(() => {
     position: relative;
 }
 
+/* Smooth pane collapse/expand (disabled while dragging the divider) */
+.main-content:not(.mobile):not(.dragging) .pane {
+    transition: width 0.25s ease;
+}
+
 .mobile-pane {
     width: 100% !important;
     flex: 1;
+}
+
+.mobile-editor-pane {
+    width: 100% !important;
+    height: 45%;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .editor-pane {
@@ -295,44 +356,137 @@ onUnmounted(() => {
     background: #007AFF;
 }
 
+/* Collapse handle on the divider */
+.resizer-handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px;
+    background: #16162a;
+    border: 1px solid rgba(139, 122, 255, 0.7);
+    border-radius: 12px;
+    box-shadow: 0 0 0 3px rgba(139, 122, 255, 0.12), 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 11;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.resizer:hover .resizer-handle,
+.resizer.collapsed .resizer-handle {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* When a pane is collapsed the divider sits at the screen edge —
+   anchor the handle inward so it isn't clipped by overflow:hidden */
+.resizer.collapsed-left .resizer-handle {
+    left: 8px;
+    transform: translateY(-50%);
+}
+
+.resizer.collapsed-right .resizer-handle {
+    left: auto;
+    right: 8px;
+    transform: translateY(-50%);
+}
+
+.resizer-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    color: rgba(240, 238, 255, 0.7);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.resizer-btn:hover {
+    background: rgba(139, 122, 255, 0.2);
+    color: #fff;
+}
+
+/* Vertical edge tab shown when a pane is collapsed */
+.resizer-btn.restore-btn {
+    width: 28px;
+    height: auto;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 0;
+}
+
+.resizer-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    margin-bottom: -0.25em;
+    writing-mode: vertical-rl;
+    color: rgba(170, 165, 210, 0.85);
+    transition: color 0.15s;
+    user-select: none;
+}
+
+.resizer-btn:hover .resizer-label {
+    color: #fff;
+}
+
 .preview-pane {
     overflow: hidden;
 }
 
-/* Mobile Tab Bar */
-.mobile-tabs {
+/* Mobile Code Drawer Bar */
+.code-drawer-bar {
     display: flex;
-    background: rgba(255, 255, 255, 0.03);
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.02);
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.code-drawer-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(139, 122, 255, 0.06);
+    border: 2px solid rgba(139, 122, 255, 0.8);
+    border-radius: 14px;
+    box-shadow: 0 0 0 4px rgba(139, 122, 255, 0.12);
+    color: #cfc8ff;
+    cursor: pointer;
     flex-shrink: 0;
 }
 
-.mobile-tabs button {
-    flex: 1;
-    padding: 10px;
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.4);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+.code-drawer-toggle svg {
+    transition: transform 0.25s ease;
+}
+
+.code-drawer-toggle.open svg {
+    transform: rotate(180deg);
+}
+
+.code-drawer-label {
+    font-family: 'DM Mono', monospace;
     font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-}
-
-.mobile-tabs button.active {
-    color: #fff;
-}
-
-.mobile-tabs button.active::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 20%;
-    right: 20%;
-    height: 2px;
-    background: #007AFF;
-    border-radius: 2px 2px 0 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.35em;
+    color: rgba(170, 165, 210, 0.75);
+    user-select: none;
 }
 </style>
