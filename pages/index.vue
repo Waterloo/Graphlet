@@ -51,6 +51,14 @@ const nudgeRight = () => {
 const isMobile = computed(() => width.value < 768);
 const isCodeOpen = ref(false);
 
+// Re-center the diagram after the pane size changes (collapse/restore, mobile drawer)
+watch([collapsedPane, isCodeOpen], () => {
+    // Skip while drag-restoring — fitting mid-drag would fight the cursor
+    if (isDragging.value) return;
+    // Wait for the 0.25s width transition to finish before fitting
+    setTimeout(() => previewRef.value?.fitToScreen?.(), 280);
+});
+
 const startDrag = () => {
     if (isMobile.value) return;
     isDragging.value = true;
