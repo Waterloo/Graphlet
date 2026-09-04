@@ -5,8 +5,9 @@ import { Download, Share2, Copy, Check, Plus, PanelLeft, Palette, X, ChevronDown
 import TheTooltip from '~/components/TheTooltip.vue';
 import { onClickOutside, onKeyStroke } from '@vueuse/core';
 import { track } from '@plausible-analytics/tracker';
+import { svgToPngBlob, buildStandaloneSvg } from '~/utils/svgExport';
 
-const { themes, themeId, currentTheme, currentSvg, isInfoOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
+const { themes, themeId, currentTheme, currentSvg, title, eyebrow, badges, isInfoOpen, isShareOpen, isWelcomeOpen, isThemeSwitcherOpen } = useEditorState();
 const { isSidebarOpen } = useDiagramStore();
 
 // Close theme switcher when clicking outside
@@ -22,185 +23,15 @@ onClickOutside(exportDropdownRef, () => {
     isExportMenuOpen.value = false;
 });
 
-// Parse an SVG string into an element, tolerating HTML-serialized markup
-// (unclosed <br>, missing xhtml namespace) that the strict XML parser rejects.
-// A rejected parse silently truncates the diagram, so fall back to the HTML
-// parser and re-serialize as well-formed XML.
-const parseSvg = (svgString: string): SVGSVGElement | null => {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(svgString, 'image/svg+xml');
-    if (!xmlDoc.querySelector('parsererror')) {
-        const el = xmlDoc.querySelector('svg');
-        if (el) return el as unknown as SVGSVGElement;
-    }
-
-    const htmlDoc = parser.parseFromString(svgString, 'text/html');
-    const htmlSvg = htmlDoc.querySelector('svg');
-    if (!htmlSvg) return null;
-
-    const reparsed = parser.parseFromString(
-        new XMLSerializer().serializeToString(htmlSvg),
-        'image/svg+xml'
-    );
-    if (reparsed.querySelector('parsererror')) return null;
-    return reparsed.querySelector('svg') as unknown as SVGSVGElement | null;
-};
-
-// Helper: Convert SVG string to Blob (PNG)
-const svgToPngBlob = (svgString: string, opts: {
-    bgColor: string;
-    title: string;
-    eyebrow: string;
-    theme: any;
-}): Promise<Blob | null> => {
-    return new Promise((resolve) => {
-        const svgEl = parseSvg(svgString);
-        if (!svgEl) {
-            console.error('Export failed: could not parse the rendered SVG.');
-            resolve(null);
-            return;
-        }
-
-        const viewBox = svgEl.getAttribute('viewBox');
-        let svgWidth = 800, svgHeight = 600;
-        if (viewBox) {
-            const parts = viewBox.split(/[\s,]+/).map(Number);
-            if (parts.length === 4) {
-                svgWidth = parts[2] ?? 800;
-                svgHeight = parts[3] ?? 600;
-            }
-        }
-
-        const padding = 60;
-        // Increase top padding for header
-        const headerHeight = 120; // Increased to 120px for maximum safety
-        const topPadding = padding + headerHeight;
-        const bottomPadding = padding * 1.5; // Increased for descenders
-
-        // Measure Text Widths
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        let minWidth = svgWidth;
-
-        if (ctx) {
-            let maxTextWidth = 0;
-            // Measure Eyebrow
-            if (opts.eyebrow) {
-                ctx.font = '500 13px "DM Mono", monospace';
-                const m = ctx.measureText(opts.eyebrow.toUpperCase());
-                maxTextWidth = Math.max(maxTextWidth, m.width);
-            }
-            // Measure Title
-            if (opts.title) {
-                ctx.font = '700 32px "Plus Jakarta Sans", sans-serif';
-                const m = ctx.measureText(opts.title);
-                maxTextWidth = Math.max(maxTextWidth, m.width);
-            }
-            // Measure Watermark
-            const watermarkText = "Made with graphlet.xyz";
-            ctx.font = '400 12px "DM Mono", monospace';
-            const wm = ctx.measureText(watermarkText);
-
-            // Ensure enough width for text
-            minWidth = Math.max(svgWidth, maxTextWidth);
-
-            // Ensure enough width for watermark if svg is tiny
-            minWidth = Math.max(minWidth, wm.width + 100);
-        }
-
-        // Increase total dimensions
-        const totalWidth = minWidth + padding * 2;
-        const totalHeight = svgHeight + topPadding + bottomPadding;
-
-        svgEl.setAttribute('width', `${svgWidth}px`);
-        svgEl.setAttribute('height', `${svgHeight}px`);
-        svgEl.removeAttribute('style');
-
-        const fixedSvgString = new XMLSerializer().serializeToString(svgEl);
-        const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(fixedSvgString);
-
-        const img = new Image();
-        img.onload = () => {
-            const scale = 2; // Retina scale
-            canvas.width = totalWidth * scale;
-            canvas.height = totalHeight * scale;
-
-            if (!ctx) {
-                URL.revokeObjectURL(url);
-                resolve(null);
-                return;
-            }
-
-            // Set scale
-            ctx.scale(scale, scale);
-
-            // Draw Background
-            if (opts.bgColor !== 'transparent') {
-                ctx.fillStyle = opts.bgColor;
-                ctx.fillRect(0, 0, totalWidth, totalHeight);
-            }
-
-            // --- Draw Header ---
-            const textX = padding;
-            // Start lower to allow generous ascender space
-            let currentY = padding + 20;
-
-            // 1. Eyebrow (Category)
-            if (opts.eyebrow) {
-                ctx.font = '500 13px "DM Mono", monospace';
-                ctx.fillStyle = opts.theme?.header?.eyebrow || 'rgba(255, 255, 255, 0.6)';
-                ctx.textBaseline = 'alphabetic';
-                ctx.fillText(opts.eyebrow.toUpperCase(), textX, currentY);
-                // Increased space after eyebrow
-                currentY += 14;
-            } else {
-                // Initial offset if no eyebrow so title isn't at very top
-                currentY += 10;
-            }
-
-            // 2. Title
-            if (opts.title) {
-                ctx.font = '700 32px "Plus Jakarta Sans", sans-serif';
-                ctx.fillStyle = opts.theme?.header?.title || '#ffffff';
-                ctx.textBaseline = 'alphabetic';
-                // Move down by font size + extra to avoid clash with eyebrow descenders
-                currentY += 28; // Reduced from 36
-                ctx.fillText(opts.title, textX, currentY);
-            }
-
-            // --- Draw Diagram ---
-            // Place diagram below the header area
-            // If the canvas is wider than the SVG (due to long text), we keep SVG left-aligned to align with text
-            ctx.drawImage(img, padding, topPadding, svgWidth, svgHeight);
-
-            // --- Draw Watermark ---
-            const watermarkText = "Made with graphlet.xyz";
-            ctx.font = '400 12px "DM Mono", monospace';
-            // Position: bottom right
-            // We draw at baseline = totalHeight - (padding/2). Descenders go into the bottom half of padding.
-            ctx.save();
-            ctx.globalAlpha = 0.4;
-            ctx.textAlign = 'right';
-            ctx.textBaseline = 'alphabetic';
-            ctx.fillStyle = opts.theme?.header?.eyebrow || '#ffffff';
-            ctx.fillText(watermarkText, totalWidth - padding / 2, totalHeight - padding / 2);
-            ctx.restore();
-
-            canvas.toBlob((blob) => {
-                resolve(blob);
-                URL.revokeObjectURL(url);
-            }, 'image/png');
-        };
-        img.onerror = () => {
-            URL.revokeObjectURL(url);
-            resolve(null);
-        };
-        img.src = url;
-    });
-};
+const exportOptions = (transparent = false) => ({
+    bgColor: transparent ? 'transparent' : (currentTheme.value?.mermaid?.background || '#13131f'),
+    title: title.value,
+    eyebrow: eyebrow.value,
+    badges: badges.value,
+    theme: currentTheme.value
+});
 
 const executeDownload = (blob: Blob, extension: string) => {
-    const { title } = useEditorState();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -216,21 +47,15 @@ const executeDownload = (blob: Blob, extension: string) => {
 const copyImage = async () => {
     if (!currentSvg.value) return;
     try {
-        const { title, eyebrow, currentTheme } = useEditorState();
-        const pngBlob = await svgToPngBlob(currentSvg.value, {
-            bgColor: currentTheme.value?.mermaid?.background || '#13131f',
-            title: title.value,
-            eyebrow: eyebrow.value,
-            theme: currentTheme.value
+        // Safari drops the user gesture across an await, so the blob is handed
+        // to ClipboardItem as a promise rather than awaited first.
+        const png = svgToPngBlob(currentSvg.value, exportOptions()).then((blob) => {
+            if (!blob) throw new Error('Export produced no image');
+            return blob;
         });
-
-        if (pngBlob) {
-            await navigator.clipboard.write([
-                new ClipboardItem({ 'image/png': pngBlob })
-            ]);
-            isExportMenuOpen.value = false;
-            track('Copy', { props: { method: 'image' } });
-        }
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+        isExportMenuOpen.value = false;
+        track('Copy', { props: { method: 'image' } });
     } catch (err) {
         console.error('Failed to copy image:', err);
     }
@@ -245,24 +70,14 @@ const handleCopy = async () => {
 
 const downloadImage = async (transparent = false) => {
     if (!currentSvg.value) return;
-    const { title, eyebrow, currentTheme } = useEditorState();
-
-    const pngBlob = await svgToPngBlob(currentSvg.value, {
-        bgColor: transparent ? 'transparent' : (currentTheme.value?.mermaid?.background || '#13131f'),
-        title: title.value,
-        eyebrow: eyebrow.value,
-        theme: currentTheme.value
-    });
-
-    if (pngBlob) {
-        executeDownload(pngBlob, 'png');
-    }
+    const pngBlob = await svgToPngBlob(currentSvg.value, exportOptions(transparent));
+    if (pngBlob) executeDownload(pngBlob, 'png');
 };
 
-const downloadSvg = () => {
+const downloadSvg = async () => {
     if (!currentSvg.value) return;
-    const blob = new Blob([currentSvg.value], { type: 'image/svg+xml;charset=utf-8' });
-    executeDownload(blob, 'svg');
+    const svg = await buildStandaloneSvg(currentSvg.value);
+    executeDownload(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }), 'svg');
 };
 
 const isMac = computed(() => {
