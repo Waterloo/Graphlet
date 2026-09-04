@@ -137,8 +137,11 @@ const renderDiagram = useDebounceFn(async () => {
                     svgEl.setAttribute('viewBox', `${x - padding} ${y - padding} ${w + padding * 2} ${h + padding * 2}`);
                 }
             }
-            // Update the string for export to match what we see
-            currentSvg.value = diagramRef.value.innerHTML;
+            // Update the string for export to match what we see.
+            // Must be XML-serialized: innerHTML emits HTML void tags (e.g. <br>)
+            // inside foreignObject labels, which breaks the strict XML parse the
+            // PNG export does.
+            currentSvg.value = new XMLSerializer().serializeToString(svgEl);
         } else {
             currentSvg.value = svg;
         }
@@ -283,10 +286,16 @@ const postProcessMermaid = () => {
     });
 
     // Update currentSvg with the modified DOM so exports work
-    currentSvg.value = diagramRef.value.innerHTML;
+    currentSvg.value = new XMLSerializer().serializeToString(svg);
 };
 
-defineExpose({ fitToScreen, getSvg: () => diagramRef.value?.innerHTML });
+defineExpose({
+    fitToScreen,
+    getSvg: () => {
+        const svg = diagramRef.value?.querySelector('svg');
+        return svg ? new XMLSerializer().serializeToString(svg) : '';
+    }
+});
 </script>
 
 <template>
