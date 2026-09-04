@@ -22,7 +22,30 @@ onClickOutside(exportDropdownRef, () => {
     isExportMenuOpen.value = false;
 });
 
-// Helper: Convert SVG string to Blob (PNG)
+// Parse an SVG string into an element, tolerating HTML-serialized markup
+// (unclosed <br>, missing xhtml namespace) that the strict XML parser rejects.
+// A rejected parse silently truncates the diagram, so fall back to the HTML
+// parser and re-serialize as well-formed XML.
+const parseSvg = (svgString: string): SVGSVGElement | null => {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(svgString, 'image/svg+xml');
+    if (!xmlDoc.querySelector('parsererror')) {
+        const el = xmlDoc.querySelector('svg');
+        if (el) return el as unknown as SVGSVGElement;
+    }
+
+    const htmlDoc = parser.parseFromString(svgString, 'text/html');
+    const htmlSvg = htmlDoc.querySelector('svg');
+    if (!htmlSvg) return null;
+
+    const reparsed = parser.parseFromString(
+        new XMLSerializer().serializeToString(htmlSvg),
+        'image/svg+xml'
+    );
+    if (reparsed.querySelector('parsererror')) return null;
+    return reparsed.querySelector('svg') as unknown as SVGSVGElement | null;
+};
+
 // Helper: Convert SVG string to Blob (PNG)
 const svgToPngBlob = (svgString: string, opts: {
     bgColor: string;
@@ -31,10 +54,12 @@ const svgToPngBlob = (svgString: string, opts: {
     theme: any;
 }): Promise<Blob | null> => {
     return new Promise((resolve) => {
-        const parser = new DOMParser();
-        const svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
-        const svgEl = svgDoc.querySelector('svg');
-        if (!svgEl) { resolve(null); return; }
+        const svgEl = parseSvg(svgString);
+        if (!svgEl) {
+            console.error('Export failed: could not parse the rendered SVG.');
+            resolve(null);
+            return;
+        }
 
         const viewBox = svgEl.getAttribute('viewBox');
         let svgWidth = 800, svgHeight = 600;
